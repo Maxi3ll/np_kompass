@@ -41,7 +41,7 @@ export default async function RollenPage({ searchParams }: PageProps) {
     <AppShell>
       <Header title="Rollen" showBack backHref="/kreise" />
 
-      <main className="flex-1 pb-24 lg:pb-8 page-enter">
+      <main className="flex-1 pb-24 lg:pb-8 page-enter overflow-x-hidden">
         <KreiseRollenTabs />
 
         {/* Circle Filter */}
@@ -115,7 +115,7 @@ export default async function RollenPage({ searchParams }: PageProps) {
 
                               {/* Content */}
                               <div className="flex-1 min-w-0">
-                                <h3 className="font-semibold text-foreground">
+                                <h3 className="font-semibold text-foreground truncate">
                                   {role.name}
                                 </h3>
                                 {role.purpose && (
