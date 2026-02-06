@@ -285,32 +285,36 @@ export async function createTension(data: CreateTensionData) {
     return { error: error.message };
   }
 
-  // Notify circle members (except creator)
+  // Fetch circle and creator info for notifications
+  const { data: circle } = await serviceClient
+    .from('circles')
+    .select('name')
+    .eq('id', data.circleId)
+    .single();
+
+  const { data: creator } = await serviceClient
+    .from('persons')
+    .select('name')
+    .eq('id', data.raisedBy)
+    .single();
+
+  const notifMessage = `${creator?.name || 'Jemand'} hat "${data.title}" im Kreis "${circle?.name}" erfasst.`;
+
+  // Always send Telegram notification
+  await sendTelegramMessage(`⚡ <b>Neue Spannung</b>\n${notifMessage}`);
+
+  // Notify circle members (except creator) via in-app notification
   const circleMembers = await getCircleMemberIds(data.circleId);
-  if (circleMembers.length > 0) {
-    const { data: circle } = await serviceClient
-      .from('circles')
-      .select('name')
-      .eq('id', data.circleId)
-      .single();
-
-    const { data: creator } = await serviceClient
-      .from('persons')
-      .select('name')
-      .eq('id', data.raisedBy)
-      .single();
-
-    for (const memberId of circleMembers) {
-      if (memberId !== data.raisedBy) {
-        await createNotification({
-          personId: memberId,
-          type: 'TENSION_CREATED',
-          title: 'Neue Spannung',
-          message: `${creator?.name || 'Jemand'} hat "${data.title}" im Kreis "${circle?.name}" erfasst.`,
-          tensionId: tension.id,
-          circleId: data.circleId,
-        });
-      }
+  for (const memberId of circleMembers) {
+    if (memberId !== data.raisedBy) {
+      await createNotification({
+        personId: memberId,
+        type: 'TENSION_CREATED',
+        title: 'Neue Spannung',
+        message: notifMessage,
+        tensionId: tension.id,
+        circleId: data.circleId,
+      });
     }
   }
 
@@ -843,9 +847,11 @@ async function createNotification(data: {
     circle_id: data.circleId || null,
   });
 
-  // Send Telegram notification
-  const icon = TELEGRAM_ICONS[data.type] || '🔔';
-  await sendTelegramMessage(`${icon} <b>${data.title}</b>\n${data.message}`);
+  // Send Telegram notification (except TENSION_CREATED which is handled separately)
+  if (data.type !== 'TENSION_CREATED') {
+    const icon = TELEGRAM_ICONS[data.type] || '🔔';
+    await sendTelegramMessage(`${icon} <b>${data.title}</b>\n${data.message}`);
+  }
 }
 
 async function getCircleMemberIds(circleId: string): Promise<string[]> {
