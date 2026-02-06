@@ -107,7 +107,7 @@ export default async function RollenPage({ searchParams }: PageProps) {
                             <div className="flex items-center gap-4 p-4 pl-5">
                               {/* Icon */}
                               <div
-                                className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 text-lg"
+                                className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 text-2xl"
                                 style={{ backgroundColor: `${role.circle?.color}20` }}
                               >
                                 {role.circle?.icon || "⭕"}
@@ -115,7 +115,7 @@ export default async function RollenPage({ searchParams }: PageProps) {
 
                               {/* Content */}
                               <div className="flex-1 min-w-0">
-                                <h3 className="font-semibold text-foreground">
+                                <h3 className="font-semibold text-foreground text-base">
                                   {role.name}
                                 </h3>
                                 {role.purpose && (
@@ -123,24 +123,22 @@ export default async function RollenPage({ searchParams }: PageProps) {
                                     {role.purpose}
                                   </p>
                                 )}
-                              </div>
-
-                              {/* Holder or Vacant */}
-                              <div className="flex-shrink-0 text-right">
-                                {role.holder ? (
-                                  <span className="text-sm text-foreground">
-                                    {role.holder.name?.split(" ")[0]}
-                                  </span>
-                                ) : (
-                                  <span className="text-xs text-muted-foreground italic">
-                                    Vakant
-                                  </span>
-                                )}
+                                <div className="flex items-center gap-1.5 mt-2 text-xs text-muted-foreground">
+                                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                                    <circle cx="12" cy="7" r="4" />
+                                  </svg>
+                                  {role.holder ? (
+                                    <span className="text-foreground">{role.holder.name?.split(" ")[0]}</span>
+                                  ) : (
+                                    <span className="italic">Vakant</span>
+                                  )}
+                                </div>
                               </div>
 
                               {/* Arrow */}
                               <div className="flex-shrink-0 text-muted-foreground/50">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                   <polyline points="9 18 15 12 9 6" />
                                 </svg>
                               </div>
