@@ -161,21 +161,79 @@ export async function removeAllowedEmail(id: string) {
   return { success: true };
 }
 
-export async function sendMagicLink(email: string, redirectTo: string) {
+export async function signInWithPassword(email: string, password: string) {
+  const supabase = await createClient();
+  const { error } = await supabase.auth.signInWithPassword({
+    email,
+    password,
+  });
+
+  if (error) {
+    console.error('Sign in error:', error.message, error.status);
+    if (error.message === 'Invalid login credentials') {
+      return { error: 'invalid_credentials' };
+    }
+    return { error: 'sign_in_failed', details: error.message };
+  }
+
+  return { success: true };
+}
+
+export async function signUpWithPassword(email: string, password: string) {
   const allowed = await isEmailAllowed(email);
   if (!allowed) {
     return { error: 'access_denied' };
   }
 
   const supabase = await createClient();
-  const { error } = await supabase.auth.signInWithOtp({
+  const { data, error } = await supabase.auth.signUp({
     email,
-    options: { emailRedirectTo: redirectTo },
+    password,
+    options: { emailRedirectTo: undefined },
   });
 
   if (error) {
-    console.error('Magic link error:', error.message, error.status);
-    return { error: 'send_failed', details: error.message };
+    console.error('Sign up error:', error.message, error.status);
+    if (error.message?.includes('already registered')) {
+      return { error: 'already_registered' };
+    }
+    return { error: 'sign_up_failed', details: error.message };
+  }
+
+  // Auto-link to persons record
+  if (data.user) {
+    const serviceClient = createServiceClient();
+    const { data: person } = await serviceClient
+      .from('persons')
+      .select('id, auth_user_id')
+      .eq('email', email.toLowerCase().trim())
+      .single();
+
+    if (person && !person.auth_user_id) {
+      await serviceClient
+        .from('persons')
+        .update({ auth_user_id: data.user.id })
+        .eq('id', person.id);
+    }
+  }
+
+  return { success: true };
+}
+
+export async function resetPassword(email: string, redirectTo: string) {
+  const allowed = await isEmailAllowed(email);
+  if (!allowed) {
+    return { error: 'access_denied' };
+  }
+
+  const supabase = await createClient();
+  const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo,
+  });
+
+  if (error) {
+    console.error('Reset password error:', error.message, error.status);
+    return { error: 'reset_failed', details: error.message };
   }
 
   return { success: true };
