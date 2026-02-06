@@ -65,7 +65,26 @@ export async function getAllowedEmails() {
     .order('created_at', { ascending: true });
 
   if (error) return { error: error.message };
-  return { emails: data, adminEmail: getAdminEmail() };
+
+  // Join with persons to get names
+  const serviceClient = createServiceClient();
+  const { data: persons } = await serviceClient
+    .from('persons')
+    .select('email, name');
+
+  const personMap = new Map<string, string>();
+  if (persons) {
+    for (const p of persons) {
+      personMap.set(p.email.toLowerCase(), p.name);
+    }
+  }
+
+  const emailsWithNames = data.map((entry: any) => ({
+    ...entry,
+    personName: personMap.get(entry.email.toLowerCase()) || null,
+  }));
+
+  return { emails: emailsWithNames, adminEmail: getAdminEmail() };
 }
 
 export async function addAllowedEmail(email: string, name?: string) {
@@ -569,7 +588,7 @@ export async function assignRole(roleId: string, personId: string) {
   return { success: true };
 }
 
-export async function updateProfile(personId: string, data: { name?: string; avatar_color?: string | null }) {
+export async function updateProfile(personId: string, data: { name?: string; avatar_color?: string | null; phone?: string | null }) {
   const supabase = await createClient();
   const serviceClient = createServiceClient();
 
@@ -590,6 +609,7 @@ export async function updateProfile(personId: string, data: { name?: string; ava
   const updateData: Record<string, any> = {};
   if (data.name !== undefined) updateData.name = data.name.trim();
   if (data.avatar_color !== undefined) updateData.avatar_color = data.avatar_color;
+  if (data.phone !== undefined) updateData.phone = data.phone?.trim() || null;
 
   if (Object.keys(updateData).length === 0) return { error: 'no changes' };
 

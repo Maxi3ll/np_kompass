@@ -29,15 +29,18 @@ interface ProfileEditDialogProps {
   personId: string;
   currentName: string;
   currentAvatarColor: string | null;
+  currentPhone: string | null;
 }
 
 export function ProfileEditDialog({
   personId,
   currentName,
   currentAvatarColor,
+  currentPhone,
 }: ProfileEditDialogProps) {
   const [open, setOpen] = useState(false);
   const [name, setName] = useState(currentName);
+  const [phone, setPhone] = useState(currentPhone || "");
   const [avatarColor, setAvatarColor] = useState(currentAvatarColor || "#4A90D9");
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -54,6 +57,7 @@ export function ProfileEditDialog({
       const result = await updateProfile(personId, {
         name: name.trim(),
         avatar_color: avatarColor,
+        phone: phone.trim() || null,
       });
 
       if (result.error) {
@@ -117,6 +121,18 @@ export function ProfileEditDialog({
               onChange={(e) => setName(e.target.value)}
               placeholder="Dein Name"
             />
+          </div>
+
+          {/* Phone */}
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-foreground">Telefon</label>
+            <Input
+              type="tel"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              placeholder="+49 123 456789"
+            />
+            <p className="text-xs text-muted-foreground">Optional. Wird bei deinen Rollen angezeigt.</p>
           </div>
 
           {/* Avatar Color */}

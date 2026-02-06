@@ -10,6 +10,7 @@ interface AllowedEmail {
   email: string;
   added_by: string | null;
   created_at: string;
+  personName: string | null;
 }
 
 interface AdminEmailsProps {
@@ -48,6 +49,7 @@ export function AdminEmails({ initialEmails, adminEmail }: AdminEmailsProps) {
           email: newEmail.toLowerCase().trim(),
           added_by: null,
           created_at: new Date().toISOString(),
+          personName: newName.trim() || null,
         },
       ]);
       setNewEmail("");
@@ -75,16 +77,39 @@ export function AdminEmails({ initialEmails, adminEmail }: AdminEmailsProps) {
 
   return (
     <div className="bg-card rounded-2xl shadow-card border border-border/50 p-4">
-      <div className="flex items-center gap-2 mb-4">
+      <div className="flex items-center gap-2 mb-3">
         <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-primary">
             <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
           </svg>
         </div>
         <h2 className="text-sm font-medium text-muted-foreground">
-          Admin: Freigeschaltete E-Mails
+          Administration
         </h2>
       </div>
+
+      {/* Admin rights description */}
+      <div className="rounded-xl bg-primary/5 border border-primary/10 px-3 py-2.5 mb-4">
+        <p className="text-xs font-medium text-primary mb-1.5">Deine Admin-Rechte</p>
+        <ul className="text-xs text-muted-foreground space-y-1">
+          <li className="flex items-center gap-1.5">
+            <span className="w-1 h-1 rounded-full bg-primary/60 flex-shrink-0" />
+            Kreise erstellen, bearbeiten und löschen
+          </li>
+          <li className="flex items-center gap-1.5">
+            <span className="w-1 h-1 rounded-full bg-primary/60 flex-shrink-0" />
+            Rollen erstellen, bearbeiten und zuweisen
+          </li>
+          <li className="flex items-center gap-1.5">
+            <span className="w-1 h-1 rounded-full bg-primary/60 flex-shrink-0" />
+            Mitglieder zur Allowlist hinzufügen und entfernen
+          </li>
+        </ul>
+      </div>
+
+      <h3 className="text-xs font-medium text-muted-foreground mb-3">
+        Freigeschaltete Mitglieder ({emails.length})
+      </h3>
 
       {error && (
         <div className="text-sm text-destructive bg-destructive/10 rounded-lg px-3 py-2 mb-3">
@@ -102,7 +127,12 @@ export function AdminEmails({ initialEmails, adminEmail }: AdminEmailsProps) {
               className="flex items-center justify-between gap-2 py-2 px-3 rounded-xl bg-muted/50"
             >
               <div className="flex-1 min-w-0">
-                <p className="text-sm text-foreground truncate">{entry.email}</p>
+                {entry.personName && (
+                  <p className="text-sm font-medium text-foreground truncate">{entry.personName}</p>
+                )}
+                <p className={`text-sm truncate ${entry.personName ? "text-muted-foreground text-xs" : "text-foreground"}`}>
+                  {entry.email}
+                </p>
                 {isAdmin && (
                   <span className="text-xs text-primary font-medium">Admin</span>
                 )}

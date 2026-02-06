@@ -61,7 +61,7 @@ export default async function ProfilPage() {
 
   // Check admin status and load allowlist
   const isAdmin = await isCurrentUserAdmin();
-  let allowedEmails: { id: string; email: string; added_by: string | null; created_at: string }[] = [];
+  let allowedEmails: { id: string; email: string; added_by: string | null; created_at: string; personName: string | null }[] = [];
   let adminEmail: string | null = null;
   if (isAdmin) {
     const result = await getAllowedEmails();
@@ -98,6 +98,7 @@ export default async function ProfilPage() {
                 personId={person.id}
                 currentName={person.name}
                 currentAvatarColor={person.avatar_color}
+                currentPhone={person.phone}
               />
             )}
           </div>
@@ -153,6 +154,12 @@ export default async function ProfilPage() {
                 <span className="text-sm text-foreground">E-Mail</span>
                 <span className="text-sm text-muted-foreground">{user.email}</span>
               </div>
+              {person?.phone && (
+                <div className="flex items-center justify-between py-2">
+                  <span className="text-sm text-foreground">Telefon</span>
+                  <span className="text-sm text-muted-foreground">{person.phone}</span>
+                </div>
+              )}
               <div className="flex items-center justify-between py-2">
                 <span className="text-sm text-foreground">Anmeldung via</span>
                 <span className="text-sm text-muted-foreground capitalize">
@@ -166,6 +173,20 @@ export default async function ProfilPage() {
                     {new Date(person.created_at).toLocaleDateString("de-DE", {
                       month: "long",
                       year: "numeric",
+                    })}
+                  </span>
+                </div>
+              )}
+              {user.last_sign_in_at && (
+                <div className="flex items-center justify-between py-2">
+                  <span className="text-sm text-foreground">Zuletzt aktiv</span>
+                  <span className="text-sm text-muted-foreground">
+                    {new Date(user.last_sign_in_at).toLocaleDateString("de-DE", {
+                      day: "numeric",
+                      month: "long",
+                      year: "numeric",
+                      hour: "2-digit",
+                      minute: "2-digit",
                     })}
                   </span>
                 </div>
