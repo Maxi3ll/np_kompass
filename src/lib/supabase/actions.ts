@@ -186,9 +186,9 @@ export interface CreateTensionData {
 }
 
 export async function createTension(data: CreateTensionData) {
-  const supabase = await createClient();
+  const serviceClient = createServiceClient();
 
-  const { data: tension, error } = await supabase
+  const { data: tension, error } = await serviceClient
     .from('tensions')
     .insert({
       title: data.title,
@@ -252,7 +252,7 @@ export interface UpdateTensionData {
 }
 
 export async function updateTension(data: UpdateTensionData) {
-  const supabase = await createClient();
+  const serviceClient = createServiceClient();
 
   const updateData: Record<string, any> = {};
 
@@ -267,7 +267,7 @@ export async function updateTension(data: UpdateTensionData) {
   if (data.assignedTo !== undefined) updateData.assigned_to = data.assignedTo;
   if (data.resolution !== undefined) updateData.resolution = data.resolution;
 
-  const { data: tension, error } = await supabase
+  const { data: tension, error } = await serviceClient
     .from('tensions')
     .update(updateData)
     .eq('id', data.id)
@@ -316,9 +316,9 @@ export interface CreateMeetingData {
 }
 
 export async function createMeeting(data: CreateMeetingData) {
-  const supabase = await createClient();
+  const serviceClient = createServiceClient();
 
-  const { data: meeting, error } = await supabase
+  const { data: meeting, error } = await serviceClient
     .from('meetings')
     .insert({
       type: data.type,
@@ -571,12 +571,13 @@ export async function assignRole(roleId: string, personId: string) {
 
 export async function updateProfile(personId: string, data: { name?: string; avatar_color?: string | null }) {
   const supabase = await createClient();
+  const serviceClient = createServiceClient();
 
   // Verify the user owns this person record
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { error: 'not authenticated' };
 
-  const { data: person } = await supabase
+  const { data: person } = await serviceClient
     .from('persons')
     .select('auth_user_id')
     .eq('id', personId)
@@ -592,7 +593,7 @@ export async function updateProfile(personId: string, data: { name?: string; ava
 
   if (Object.keys(updateData).length === 0) return { error: 'no changes' };
 
-  const { error } = await supabase
+  const { error } = await serviceClient
     .from('persons')
     .update(updateData)
     .eq('id', personId);
