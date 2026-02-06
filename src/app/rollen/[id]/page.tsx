@@ -1,8 +1,10 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Header } from "@/components/navigation/header";
-import { BottomNav } from "@/components/navigation/bottom-nav";
+import { AppShell } from "@/components/layout/app-shell";
 import { getRoleById, getRoleHistory } from "@/lib/supabase/queries";
+import { isCurrentUserAdmin, getPersonsList } from "@/lib/supabase/actions";
+import { RoleAdminActions } from "./role-admin-actions";
 
 export const revalidate = 60;
 
@@ -12,22 +14,30 @@ interface PageProps {
 
 export default async function RollenDetailPage({ params }: PageProps) {
   const { id } = await params;
-  const [role, history] = await Promise.all([
+  const [role, history, isAdmin] = await Promise.all([
     getRoleById(id),
     getRoleHistory(id),
+    isCurrentUserAdmin(),
   ]);
+
+  // Load persons list for admin assign dialog
+  let persons: { id: string; name: string; email: string }[] = [];
+  if (isAdmin) {
+    const result = await getPersonsList();
+    if (result.persons) persons = result.persons;
+  }
 
   if (!role) {
     notFound();
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-background">
+    <AppShell>
       <Header title={role.circle_name || "Rolle"} showBack backHref={`/kreise/${role.circle_id}`} />
 
-      <main className="flex-1 pb-24 page-enter">
+      <main className="flex-1 pb-24 lg:pb-8 page-enter">
         {/* Role Header */}
-        <div className="px-5 pt-4 pb-6 max-w-2xl mx-auto">
+        <div className="px-5 pt-4 pb-6 max-w-2xl mx-auto lg:max-w-4xl">
           <div className="flex items-center gap-2 mb-2">
             <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
               Rolle
@@ -36,7 +46,7 @@ export default async function RollenDetailPage({ params }: PageProps) {
           <h1 className="text-2xl font-bold text-foreground">{role.role_name}</h1>
         </div>
 
-        <div className="px-5 max-w-2xl mx-auto space-y-6">
+        <div className="px-5 max-w-2xl mx-auto lg:max-w-4xl space-y-6">
           {/* Current Holder Card */}
           <div className="bg-card rounded-2xl shadow-card border border-border/50 overflow-hidden">
             {role.holder_name ? (
@@ -204,6 +214,22 @@ export default async function RollenDetailPage({ params }: PageProps) {
             </div>
           )}
 
+          {/* Admin Actions */}
+          {isAdmin && (
+            <RoleAdminActions
+              role={{
+                id: role.role_id,
+                name: role.role_name,
+                purpose: role.role_purpose,
+                domains: role.domains,
+                accountabilities: role.accountabilities,
+              }}
+              hasHolder={!!role.holder_name}
+              circleId={role.circle_id}
+              persons={persons}
+            />
+          )}
+
           {/* Back to Circle */}
           <Link
             href={`/kreise/${role.circle_id}`}
@@ -217,7 +243,6 @@ export default async function RollenDetailPage({ params }: PageProps) {
         </div>
       </main>
 
-      <BottomNav />
-    </div>
+    </AppShell>
   );
 }

@@ -1,11 +1,13 @@
 import { redirect } from "next/navigation";
 import { Header } from "@/components/navigation/header";
-import { BottomNav } from "@/components/navigation/bottom-nav";
+import { AppShell } from "@/components/layout/app-shell";
 import { createClient } from "@/lib/supabase/server";
+import { createServiceClient } from "@/lib/supabase/service";
 import { getPersonWithRoles } from "@/lib/supabase/queries";
 import { isCurrentUserAdmin, getAllowedEmails } from "@/lib/supabase/actions";
 import { LogoutButton } from "./logout-button";
 import { AdminEmails } from "./admin-emails";
+import { ProfileEditDialog } from "./profile-edit-dialog";
 import Link from "next/link";
 
 export default async function ProfilPage() {
@@ -17,11 +19,36 @@ export default async function ProfilPage() {
   }
 
   // Try to get person data from database
-  const { data: person } = await supabase
+  let { data: person } = await supabase
     .from("persons")
     .select("*, family:families(*)")
     .eq("auth_user_id", user.id)
     .single();
+
+  // Auto-link: if no person found by auth_user_id, try matching by email
+  if (!person && user.email) {
+    const serviceClient = createServiceClient();
+    const { data: unlinkedPerson } = await serviceClient
+      .from("persons")
+      .select("id, auth_user_id")
+      .eq("email", user.email)
+      .single();
+
+    if (unlinkedPerson && !unlinkedPerson.auth_user_id) {
+      await serviceClient
+        .from("persons")
+        .update({ auth_user_id: user.id })
+        .eq("id", unlinkedPerson.id);
+
+      // Re-fetch with full data now that it's linked
+      const { data: linkedPerson } = await supabase
+        .from("persons")
+        .select("*, family:families(*)")
+        .eq("auth_user_id", user.id)
+        .single();
+      person = linkedPerson;
+    }
+  }
 
   // Get roles if person exists
   let personWithRoles = null;
@@ -45,21 +72,33 @@ export default async function ProfilPage() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-background">
+    <AppShell>
       <Header title="Profil" showBack backHref="/" />
 
-      <main className="flex-1 pb-24 page-enter">
+      <main className="flex-1 pb-24 lg:pb-8 page-enter">
         {/* Profile Header */}
-        <div className="px-5 py-8 max-w-2xl mx-auto text-center">
-          <div className="w-24 h-24 rounded-full bg-primary flex items-center justify-center mx-auto mb-4 text-primary-foreground text-2xl font-bold">
-            {user.user_metadata?.avatar_url ? (
-              <img
-                src={user.user_metadata.avatar_url}
-                alt={displayName}
-                className="w-full h-full rounded-full object-cover"
+        <div className="px-5 py-8 max-w-2xl mx-auto lg:max-w-4xl text-center">
+          <div className="relative inline-block mx-auto mb-4">
+            <div
+              className="w-24 h-24 rounded-full flex items-center justify-center text-white text-2xl font-bold"
+              style={{ backgroundColor: person?.avatar_color || "#4A90D9" }}
+            >
+              {user.user_metadata?.avatar_url ? (
+                <img
+                  src={user.user_metadata.avatar_url}
+                  alt={displayName}
+                  className="w-full h-full rounded-full object-cover"
+                />
+              ) : (
+                initials
+              )}
+            </div>
+            {person && (
+              <ProfileEditDialog
+                personId={person.id}
+                currentName={person.name}
+                currentAvatarColor={person.avatar_color}
               />
-            ) : (
-              initials
             )}
           </div>
           <h1 className="text-xl font-bold text-foreground">{displayName}</h1>
@@ -71,7 +110,7 @@ export default async function ProfilPage() {
           )}
         </div>
 
-        <div className="px-5 max-w-2xl mx-auto space-y-4">
+        <div className="px-5 max-w-2xl mx-auto lg:max-w-4xl space-y-4">
           {/* Roles */}
           {personWithRoles?.roles && personWithRoles.roles.length > 0 && (
             <div className="bg-card rounded-2xl shadow-card border border-border/50 p-4">
@@ -171,7 +210,6 @@ export default async function ProfilPage() {
         </div>
       </main>
 
-      <BottomNav />
-    </div>
+    </AppShell>
   );
 }

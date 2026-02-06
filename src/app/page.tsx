@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Header } from "@/components/navigation/header";
-import { BottomNav } from "@/components/navigation/bottom-nav";
+import { AppShell } from "@/components/layout/app-shell";
 import { getDashboardData } from "@/lib/supabase/queries";
 import { createClient } from "@/lib/supabase/server";
 
@@ -32,20 +32,18 @@ export default async function Home() {
 
   // User display info
   const userName = personData?.name || user?.user_metadata?.full_name || user?.email?.split("@")[0] || "Benutzer";
-  const userEmail = user?.email;
-  const avatarUrl = user?.user_metadata?.avatar_url;
   return (
-    <div className="flex min-h-screen flex-col bg-background">
-      <Header title="Kompass" userName={userName} userEmail={userEmail} avatarUrl={avatarUrl} />
+    <AppShell>
+      <Header title="Kompass" />
 
-      <main className="flex-1 pb-24 page-enter">
+      <main className="flex-1 pb-24 lg:pb-8 page-enter">
         {/* Hero Section with Greeting */}
         <div className="relative overflow-hidden">
           {/* Background decoration */}
           <div className="absolute inset-0 bg-gradient-to-br from-[var(--np-blue-pale)] via-background to-[var(--np-yellow-pale)] opacity-60" />
           <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-background to-transparent" />
 
-          <div className="relative px-5 pt-6 pb-8 max-w-2xl mx-auto">
+          <div className="relative px-5 pt-6 pb-8 max-w-2xl mx-auto lg:max-w-4xl">
             <p className="text-muted-foreground text-sm font-medium">Willkommen zurück</p>
             <h2 className="text-2xl font-bold mt-1 text-foreground">
               Ahoi, {userName.split(" ")[0]}!
@@ -56,7 +54,7 @@ export default async function Home() {
           </div>
         </div>
 
-        <div className="px-5 max-w-2xl mx-auto space-y-6 -mt-2">
+        <div className="px-5 max-w-2xl mx-auto lg:max-w-4xl space-y-6 -mt-2">
           {/* Stats Row */}
           <div className="grid grid-cols-2 gap-4 stagger-fade-in">
             {/* My Roles Card */}
@@ -288,7 +286,6 @@ export default async function Home() {
         </div>
       </main>
 
-      <BottomNav />
-    </div>
+    </AppShell>
   );
 }

@@ -1,30 +1,35 @@
 import Link from "next/link";
 import { Header } from "@/components/navigation/header";
-import { BottomNav } from "@/components/navigation/bottom-nav";
+import { AppShell } from "@/components/layout/app-shell";
 import { getCircles } from "@/lib/supabase/queries";
+import { isCurrentUserAdmin } from "@/lib/supabase/actions";
+import { AddCircleButton } from "./add-circle-button";
+import { KreiseRollenTabs } from "@/components/navigation/kreise-rollen-tabs";
 
-export const revalidate = 60; // Revalidate every 60 seconds
+export const revalidate = 60;
 
 export default async function KreisePage() {
-  const circles = await getCircles();
+  const [circles, isAdmin] = await Promise.all([getCircles(), isCurrentUserAdmin()]);
 
   // Filter out Anker-Kreis for now (show only sub-circles)
   const displayCircles = circles.filter(c => c.parent_circle_id !== null);
 
   return (
-    <div className="flex min-h-screen flex-col bg-background">
+    <AppShell>
       <Header title="Kreise" showBack backHref="/" />
 
-      <main className="flex-1 pb-24 page-enter">
+      <main className="flex-1 pb-24 lg:pb-8 page-enter">
+        <KreiseRollenTabs />
+
         {/* Page header */}
-        <div className="px-5 pt-4 pb-2 max-w-2xl mx-auto">
+        <div className="px-5 pt-2 pb-2 max-w-2xl mx-auto lg:max-w-4xl lg:pt-4">
           <p className="text-sm text-muted-foreground">
             Wähle einen Kreis, um die zugehörigen Rollen zu sehen
           </p>
         </div>
 
         {/* Circles list */}
-        <div className="px-5 max-w-2xl mx-auto">
+        <div className="px-5 max-w-2xl mx-auto lg:max-w-4xl">
           <div className="space-y-3 stagger-fade-in">
             {displayCircles.map((circle) => (
               <Link key={circle.id} href={`/kreise/${circle.id}`} className="block">
@@ -103,6 +108,13 @@ export default async function KreisePage() {
             ))}
           </div>
 
+          {/* Admin: Add circle */}
+          {isAdmin && (
+            <AddCircleButton
+              parentCircleId={circles.find((c: any) => c.parent_circle_id === null)?.id}
+            />
+          )}
+
           {/* Info card at bottom */}
           <div className="mt-6 p-4 rounded-2xl bg-[var(--np-blue-pale)] border border-[var(--np-blue)]/10">
             <div className="flex gap-3">
@@ -124,7 +136,6 @@ export default async function KreisePage() {
         </div>
       </main>
 
-      <BottomNav />
-    </div>
+    </AppShell>
   );
 }

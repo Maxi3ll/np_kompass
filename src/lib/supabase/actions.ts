@@ -68,7 +68,7 @@ export async function getAllowedEmails() {
   return { emails: data, adminEmail: getAdminEmail() };
 }
 
-export async function addAllowedEmail(email: string) {
+export async function addAllowedEmail(email: string, name?: string) {
   const isAdmin = await isCurrentUserAdmin();
   if (!isAdmin) return { error: 'unauthorized' };
 
@@ -87,6 +87,23 @@ export async function addAllowedEmail(email: string) {
   if (error) {
     if (error.code === '23505') return { error: 'already_exists' };
     return { error: error.message };
+  }
+
+  // Auto-create person entry if name is provided
+  if (name?.trim()) {
+    const { data: existingPerson } = await supabase
+      .from('persons')
+      .select('id')
+      .eq('email', normalizedEmail)
+      .maybeSingle();
+
+    if (!existingPerson) {
+      await supabase.from('persons').insert({
+        email: normalizedEmail,
+        name: name.trim(),
+        role: 'member',
+      });
+    }
   }
 
   revalidatePath('/profil');
@@ -321,4 +338,287 @@ export async function createMeeting(data: CreateMeetingData) {
   revalidatePath('/');
 
   return { meeting };
+}
+
+// =====================================================
+// CIRCLES
+// =====================================================
+
+export interface CreateCircleData {
+  name: string;
+  purpose?: string;
+  color?: string;
+  icon?: string;
+  parentCircleId?: string;
+}
+
+export async function createCircle(data: CreateCircleData) {
+  const isAdmin = await isCurrentUserAdmin();
+  if (!isAdmin) return { error: 'unauthorized' };
+
+  const serviceClient = createServiceClient();
+  const { data: circle, error } = await serviceClient
+    .from('circles')
+    .insert({
+      name: data.name,
+      purpose: data.purpose || null,
+      color: data.color || '#4A90D9',
+      icon: data.icon || '⭕',
+      parent_circle_id: data.parentCircleId || null,
+    })
+    .select()
+    .single();
+
+  if (error) return { error: error.message };
+
+  revalidatePath('/kreise');
+  revalidatePath('/');
+  return { circle };
+}
+
+export async function updateCircle(id: string, data: Partial<CreateCircleData>) {
+  const isAdmin = await isCurrentUserAdmin();
+  if (!isAdmin) return { error: 'unauthorized' };
+
+  const updateData: Record<string, any> = {};
+  if (data.name !== undefined) updateData.name = data.name;
+  if (data.purpose !== undefined) updateData.purpose = data.purpose;
+  if (data.color !== undefined) updateData.color = data.color;
+  if (data.icon !== undefined) updateData.icon = data.icon;
+
+  const serviceClient = createServiceClient();
+  const { data: circle, error } = await serviceClient
+    .from('circles')
+    .update(updateData)
+    .eq('id', id)
+    .select()
+    .single();
+
+  if (error) return { error: error.message };
+
+  revalidatePath(`/kreise/${id}`);
+  revalidatePath('/kreise');
+  revalidatePath('/');
+  return { circle };
+}
+
+export async function deleteCircle(id: string) {
+  const isAdmin = await isCurrentUserAdmin();
+  if (!isAdmin) return { error: 'unauthorized' };
+
+  const serviceClient = createServiceClient();
+
+  // Check for roles in this circle
+  const { count } = await serviceClient
+    .from('roles')
+    .select('id', { count: 'exact', head: true })
+    .eq('circle_id', id);
+
+  if (count && count > 0) {
+    return { error: 'has_roles' };
+  }
+
+  const { error } = await serviceClient.from('circles').delete().eq('id', id);
+  if (error) return { error: error.message };
+
+  revalidatePath('/kreise');
+  revalidatePath('/');
+  return { success: true };
+}
+
+// =====================================================
+// ROLES
+// =====================================================
+
+export interface CreateRoleData {
+  name: string;
+  purpose?: string;
+  domains?: string[];
+  accountabilities?: string[];
+  circleId: string;
+}
+
+export async function createRole(data: CreateRoleData) {
+  const isAdmin = await isCurrentUserAdmin();
+  if (!isAdmin) return { error: 'unauthorized' };
+
+  const serviceClient = createServiceClient();
+  const { data: role, error } = await serviceClient
+    .from('roles')
+    .insert({
+      name: data.name,
+      purpose: data.purpose || null,
+      domains: data.domains || [],
+      accountabilities: data.accountabilities || [],
+      circle_id: data.circleId,
+    })
+    .select()
+    .single();
+
+  if (error) return { error: error.message };
+
+  revalidatePath(`/kreise/${data.circleId}`);
+  revalidatePath('/kreise');
+  return { role };
+}
+
+export async function updateRole(id: string, data: Partial<Omit<CreateRoleData, 'circleId'>>) {
+  const isAdmin = await isCurrentUserAdmin();
+  if (!isAdmin) return { error: 'unauthorized' };
+
+  const updateData: Record<string, any> = {};
+  if (data.name !== undefined) updateData.name = data.name;
+  if (data.purpose !== undefined) updateData.purpose = data.purpose;
+  if (data.domains !== undefined) updateData.domains = data.domains;
+  if (data.accountabilities !== undefined) updateData.accountabilities = data.accountabilities;
+
+  const serviceClient = createServiceClient();
+  const { data: role, error } = await serviceClient
+    .from('roles')
+    .update(updateData)
+    .eq('id', id)
+    .select('*, circle_id')
+    .single();
+
+  if (error) return { error: error.message };
+
+  revalidatePath(`/rollen/${id}`);
+  revalidatePath(`/kreise/${role.circle_id}`);
+  revalidatePath('/kreise');
+  return { role };
+}
+
+export async function deleteRole(id: string) {
+  const isAdmin = await isCurrentUserAdmin();
+  if (!isAdmin) return { error: 'unauthorized' };
+
+  const serviceClient = createServiceClient();
+
+  // Get circle_id before deleting
+  const { data: role } = await serviceClient
+    .from('roles')
+    .select('circle_id')
+    .eq('id', id)
+    .single();
+
+  // Check for active assignments
+  const { count } = await serviceClient
+    .from('role_assignments')
+    .select('id', { count: 'exact', head: true })
+    .eq('role_id', id)
+    .is('valid_until', null);
+
+  if (count && count > 0) {
+    return { error: 'has_active_assignment' };
+  }
+
+  const { error } = await serviceClient.from('roles').delete().eq('id', id);
+  if (error) return { error: error.message };
+
+  if (role) {
+    revalidatePath(`/kreise/${role.circle_id}`);
+  }
+  revalidatePath('/kreise');
+  return { success: true };
+}
+
+// =====================================================
+// ROLE ASSIGNMENTS
+// =====================================================
+
+export async function getPersonsList() {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from('persons')
+    .select('id, name, email')
+    .eq('is_active', true)
+    .order('name');
+
+  if (error) return { error: error.message };
+  return { persons: data };
+}
+
+export async function assignRole(roleId: string, personId: string) {
+  const isAdmin = await isCurrentUserAdmin();
+  if (!isAdmin) return { error: 'unauthorized' };
+
+  const serviceClient = createServiceClient();
+
+  // End current assignment if any
+  await serviceClient
+    .from('role_assignments')
+    .update({ valid_until: new Date().toISOString().split('T')[0] })
+    .eq('role_id', roleId)
+    .is('valid_until', null);
+
+  // Create new assignment
+  const { error } = await serviceClient
+    .from('role_assignments')
+    .insert({
+      role_id: roleId,
+      person_id: personId,
+      valid_from: new Date().toISOString().split('T')[0],
+    });
+
+  if (error) return { error: error.message };
+
+  revalidatePath(`/rollen/${roleId}`);
+  revalidatePath('/kreise');
+  revalidatePath('/');
+  return { success: true };
+}
+
+export async function updateProfile(personId: string, data: { name?: string; avatar_color?: string | null }) {
+  const supabase = await createClient();
+
+  // Verify the user owns this person record
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { error: 'not authenticated' };
+
+  const { data: person } = await supabase
+    .from('persons')
+    .select('auth_user_id')
+    .eq('id', personId)
+    .single();
+
+  if (!person || person.auth_user_id !== user.id) {
+    return { error: 'unauthorized' };
+  }
+
+  const updateData: Record<string, any> = {};
+  if (data.name !== undefined) updateData.name = data.name.trim();
+  if (data.avatar_color !== undefined) updateData.avatar_color = data.avatar_color;
+
+  if (Object.keys(updateData).length === 0) return { error: 'no changes' };
+
+  const { error } = await supabase
+    .from('persons')
+    .update(updateData)
+    .eq('id', personId);
+
+  if (error) return { error: error.message };
+
+  revalidatePath('/profil');
+  revalidatePath('/');
+  return { success: true };
+}
+
+export async function unassignRole(roleId: string) {
+  const isAdmin = await isCurrentUserAdmin();
+  if (!isAdmin) return { error: 'unauthorized' };
+
+  const serviceClient = createServiceClient();
+
+  const { error } = await serviceClient
+    .from('role_assignments')
+    .update({ valid_until: new Date().toISOString().split('T')[0] })
+    .eq('role_id', roleId)
+    .is('valid_until', null);
+
+  if (error) return { error: error.message };
+
+  revalidatePath(`/rollen/${roleId}`);
+  revalidatePath('/kreise');
+  revalidatePath('/');
+  return { success: true };
 }

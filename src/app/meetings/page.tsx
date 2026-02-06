@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Header } from "@/components/navigation/header";
-import { BottomNav } from "@/components/navigation/bottom-nav";
+import { AppShell } from "@/components/layout/app-shell";
 import { getMeetings, getCircles } from "@/lib/supabase/queries";
 
 export const revalidate = 60;
@@ -44,12 +44,12 @@ export default async function MeetingsPage({ searchParams }: PageProps) {
   }, {});
 
   return (
-    <div className="flex min-h-screen flex-col bg-background">
+    <AppShell>
       <Header title="Meetings" showBack backHref="/" />
 
-      <main className="flex-1 pb-24 page-enter">
+      <main className="flex-1 pb-24 lg:pb-8 page-enter">
         {/* Filter Tabs */}
-        <div className="px-5 pt-4 pb-3 max-w-2xl mx-auto">
+        <div className="px-5 pt-4 pb-3 max-w-2xl mx-auto lg:max-w-4xl">
           <div className="flex gap-2">
             <Link
               href="/meetings"
@@ -92,7 +92,7 @@ export default async function MeetingsPage({ searchParams }: PageProps) {
         </div>
 
         {/* Meetings List */}
-        <div className="px-5 max-w-2xl mx-auto">
+        <div className="px-5 max-w-2xl mx-auto lg:max-w-4xl">
           {Object.keys(groupedMeetings).length > 0 ? (
             <div className="space-y-6 stagger-fade-in">
               {Object.entries(groupedMeetings).map(([date, dateMeetings]) => (
@@ -179,19 +179,8 @@ export default async function MeetingsPage({ searchParams }: PageProps) {
           )}
         </div>
 
-        {/* FAB for new meeting */}
-        <Link
-          href="/meetings/neu"
-          className="fixed bottom-24 right-5 w-14 h-14 rounded-full bg-primary shadow-lg flex items-center justify-center transition-all hover:shadow-xl hover:scale-105 active:scale-95"
-        >
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="text-primary-foreground">
-            <line x1="12" y1="5" x2="12" y2="19" />
-            <line x1="5" y1="12" x2="19" y2="12" />
-          </svg>
-        </Link>
       </main>
 
-      <BottomNav />
-    </div>
+    </AppShell>
   );
 }

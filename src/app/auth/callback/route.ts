@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server';
+import { createServiceClient } from '@/lib/supabase/service';
 import { isEmailAllowed } from '@/lib/supabase/actions';
 import { NextResponse } from 'next/server';
 
@@ -19,6 +20,21 @@ export async function GET(request: Request) {
         if (!allowed) {
           await supabase.auth.signOut();
           return NextResponse.redirect(`${origin}/login?error=access_denied`);
+        }
+
+        // Auto-link auth user to persons record (if not already linked)
+        const serviceClient = createServiceClient();
+        const { data: person } = await serviceClient
+          .from('persons')
+          .select('id, auth_user_id')
+          .eq('email', user.email)
+          .single();
+
+        if (person && !person.auth_user_id) {
+          await serviceClient
+            .from('persons')
+            .update({ auth_user_id: user.id })
+            .eq('id', person.id);
         }
       }
 

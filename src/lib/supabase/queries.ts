@@ -82,6 +82,46 @@ export async function getCircleWithRoles(id: string) {
 // ROLES
 // =====================================================
 
+export async function getAllRoles() {
+  const supabase = await createClient();
+
+  const { data: roles, error } = await supabase
+    .from('roles')
+    .select(`
+      *,
+      circle:circles(id, name, color, icon)
+    `)
+    .order('name');
+
+  if (error) {
+    console.error('Error fetching roles:', error);
+    return [];
+  }
+
+  // Get current holders for all roles
+  const { data: assignments } = await supabase
+    .from('role_assignments')
+    .select(`
+      role_id,
+      person:persons(id, name)
+    `)
+    .is('valid_until', null);
+
+  const holderMap = new Map<string, { id: string; name: string }>();
+  if (assignments) {
+    for (const a of assignments) {
+      if (a.person) {
+        holderMap.set(a.role_id, a.person as any);
+      }
+    }
+  }
+
+  return roles.map((role: any) => ({
+    ...role,
+    holder: holderMap.get(role.id) || null,
+  }));
+}
+
 export async function getRoleById(id: string) {
   const supabase = await createClient();
 

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Header } from "@/components/navigation/header";
-import { BottomNav } from "@/components/navigation/bottom-nav";
+import { AppShell } from "@/components/layout/app-shell";
 import { getMeetingById } from "@/lib/supabase/queries";
 
 export const revalidate = 30;
@@ -43,16 +43,16 @@ export default async function MeetingDetailPage({ params }: PageProps) {
   const isToday = meetingDate.toDateString() === new Date().toDateString();
 
   return (
-    <div className="flex min-h-screen flex-col bg-background">
+    <AppShell>
       <Header title="Meeting" showBack backHref="/meetings" />
 
-      <main className="flex-1 pb-24 page-enter">
+      <main className="flex-1 pb-24 lg:pb-8 page-enter">
         {/* Meeting Header */}
         <div
           className="px-5 py-5"
           style={{ backgroundColor: `color-mix(in srgb, ${meeting.circle?.color || "#4A90D9"} 15%, transparent)` }}
         >
-          <div className="max-w-2xl mx-auto">
+          <div className="max-w-2xl mx-auto lg:max-w-4xl">
             <div className="flex items-center gap-3 mb-3">
               <span className="text-3xl">{meeting.circle?.icon || "⭕"}</span>
               <div>
@@ -102,7 +102,7 @@ export default async function MeetingDetailPage({ params }: PageProps) {
           </div>
         </div>
 
-        <div className="px-5 max-w-2xl mx-auto mt-4 space-y-4">
+        <div className="px-5 max-w-2xl mx-auto lg:max-w-4xl mt-4 space-y-4">
           {/* Facilitator */}
           {meeting.facilitator && (
             <div className="bg-card rounded-2xl shadow-card border border-border/50 p-4">
@@ -254,7 +254,6 @@ export default async function MeetingDetailPage({ params }: PageProps) {
         </div>
       </main>
 
-      <BottomNav />
-    </div>
+    </AppShell>
   );
 }

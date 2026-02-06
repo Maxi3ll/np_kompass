@@ -1,10 +1,11 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 
-const navItems = [
+const navItems: { href: string; label: string; icon: React.ReactNode; matchAlso?: string }[] = [
   {
     href: "/",
     label: "Home",
@@ -29,19 +30,9 @@ const navItems = [
     ),
   },
   {
-    href: "/spannungen/neu",
-    label: "Neu",
-    isAction: true,
-    icon: (
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-        <line x1="12" y1="5" x2="12" y2="19" />
-        <line x1="5" y1="12" x2="19" y2="12" />
-      </svg>
-    ),
-  },
-  {
     href: "/kreise",
     label: "Kreise",
+    matchAlso: "/rollen",
     icon: (
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <circle cx="12" cy="12" r="10" />
@@ -54,12 +45,14 @@ const navItems = [
     ),
   },
   {
-    href: "/profil",
-    label: "Profil",
+    href: "/meetings",
+    label: "Meetings",
     icon: (
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
-        <circle cx="12" cy="7" r="4" />
+        <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+        <line x1="16" y1="2" x2="16" y2="6" />
+        <line x1="8" y1="2" x2="8" y2="6" />
+        <line x1="3" y1="10" x2="21" y2="10" />
       </svg>
     ),
   },
@@ -67,73 +60,161 @@ const navItems = [
 
 export function BottomNav() {
   const pathname = usePathname();
+  const [fabOpen, setFabOpen] = useState(false);
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 glass border-t border-border/50 bottom-nav-safe">
-      <div className="mx-auto flex h-16 max-w-lg items-center justify-around px-2">
-        {navItems.map((item) => {
-          const isActive = pathname === item.href ||
-            (item.href !== "/" && pathname.startsWith(item.href));
+    <>
+      {/* Backdrop overlay when FAB is open */}
+      {fabOpen && (
+        <div
+          className="fixed inset-0 z-40 bg-black/30 backdrop-blur-[2px] lg:hidden"
+          onClick={() => setFabOpen(false)}
+        />
+      )}
 
-          // Special styling for the "Neu" action button
-          if (item.isAction) {
+      <nav className="fixed bottom-0 left-0 right-0 z-50 glass border-t border-border/50 bottom-nav-safe lg:hidden">
+        <div className="mx-auto flex h-16 max-w-lg items-center justify-around px-2">
+          {/* Left nav items */}
+          {navItems.slice(0, 2).map((item) => {
+            const isActive = pathname === item.href ||
+              (item.href !== "/" && pathname.startsWith(item.href)) ||
+              (item.matchAlso && pathname.startsWith(item.matchAlso));
+
             return (
               <Link
                 key={item.href}
                 href={item.href}
-                className="flex items-center justify-center -mt-6"
+                onClick={() => setFabOpen(false)}
+                className={cn(
+                  "flex flex-col items-center justify-center gap-0.5 px-3 py-2 rounded-xl transition-all touch-target",
+                  "active:scale-95 active:bg-primary/10",
+                  isActive
+                    ? "text-primary"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
                 aria-label={item.label}
+                aria-current={isActive ? "page" : undefined}
               >
-                <div className="relative">
-                  {/* Glow effect */}
-                  <div className="absolute inset-0 rounded-full bg-[var(--np-yellow)] blur-lg opacity-40" />
-                  {/* Button */}
-                  <div className={cn(
-                    "relative flex items-center justify-center w-14 h-14 rounded-full shadow-lg transition-all active:scale-95",
-                    "bg-gradient-to-br from-[var(--np-yellow)] to-[var(--np-yellow-dark)]",
-                    "hover:shadow-xl hover:shadow-[var(--np-yellow)]/30"
-                  )}>
-                    <span className="text-[#5a4a00]">{item.icon}</span>
-                  </div>
-                </div>
+                <span className={cn(
+                  "transition-transform",
+                  isActive && "scale-110"
+                )}>
+                  {item.icon}
+                </span>
+                <span className={cn(
+                  "text-[11px] transition-all",
+                  isActive ? "font-semibold" : "font-medium"
+                )}>
+                  {item.label}
+                </span>
+                {isActive && (
+                  <span className="absolute -bottom-0 w-1 h-1 rounded-full bg-primary" />
+                )}
               </Link>
             );
-          }
+          })}
 
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={cn(
-                "flex flex-col items-center justify-center gap-0.5 px-3 py-2 rounded-xl transition-all touch-target",
-                "active:scale-95 active:bg-primary/10",
-                isActive
-                  ? "text-primary"
-                  : "text-muted-foreground hover:text-foreground"
-              )}
-              aria-label={item.label}
-              aria-current={isActive ? "page" : undefined}
+          {/* Center FAB */}
+          <div className="relative flex items-center justify-center -mt-6">
+            {/* Expanded action options */}
+            {fabOpen && (
+              <div className="absolute bottom-full mb-3 flex flex-col items-center gap-3">
+                <Link
+                  href="/meetings/neu"
+                  onClick={() => setFabOpen(false)}
+                  className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-primary text-primary-foreground font-medium text-sm shadow-lg whitespace-nowrap animate-in fade-in slide-in-from-bottom-2 duration-200"
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                    <line x1="16" y1="2" x2="16" y2="6" />
+                    <line x1="8" y1="2" x2="8" y2="6" />
+                    <line x1="3" y1="10" x2="21" y2="10" />
+                  </svg>
+                  Meeting
+                </Link>
+                <Link
+                  href="/spannungen/neu"
+                  onClick={() => setFabOpen(false)}
+                  className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-[var(--np-yellow)] text-[#5a4a00] font-medium text-sm shadow-lg whitespace-nowrap animate-in fade-in slide-in-from-bottom-2 duration-150"
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="12" cy="12" r="10" />
+                    <line x1="12" y1="8" x2="12" y2="16" />
+                    <line x1="8" y1="12" x2="16" y2="12" />
+                  </svg>
+                  Spannung
+                </Link>
+              </div>
+            )}
+
+            <button
+              onClick={() => setFabOpen(!fabOpen)}
+              className="relative"
+              aria-label={fabOpen ? "Menü schließen" : "Neu erstellen"}
+              aria-expanded={fabOpen}
             >
-              <span className={cn(
-                "transition-transform",
-                isActive && "scale-110"
+              {/* Glow effect */}
+              <div className="absolute inset-0 rounded-full bg-[var(--np-yellow)] blur-lg opacity-40" />
+              {/* Button */}
+              <div className={cn(
+                "relative flex items-center justify-center w-14 h-14 rounded-full shadow-lg transition-all active:scale-95",
+                "bg-gradient-to-br from-[var(--np-yellow)] to-[var(--np-yellow-dark)]",
+                "hover:shadow-xl hover:shadow-[var(--np-yellow)]/30"
               )}>
-                {item.icon}
-              </span>
-              <span className={cn(
-                "text-[11px] transition-all",
-                isActive ? "font-semibold" : "font-medium"
-              )}>
-                {item.label}
-              </span>
-              {/* Active indicator dot */}
-              {isActive && (
-                <span className="absolute -bottom-0 w-1 h-1 rounded-full bg-primary" />
-              )}
-            </Link>
-          );
-        })}
-      </div>
-    </nav>
+                <span className={cn(
+                  "text-[#5a4a00] transition-transform duration-200",
+                  fabOpen && "rotate-45"
+                )}>
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <line x1="12" y1="5" x2="12" y2="19" />
+                    <line x1="5" y1="12" x2="19" y2="12" />
+                  </svg>
+                </span>
+              </div>
+            </button>
+          </div>
+
+          {/* Right nav items */}
+          {navItems.slice(2).map((item) => {
+            const isActive = pathname === item.href ||
+              (item.href !== "/" && pathname.startsWith(item.href)) ||
+              (item.matchAlso && pathname.startsWith(item.matchAlso));
+
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                onClick={() => setFabOpen(false)}
+                className={cn(
+                  "flex flex-col items-center justify-center gap-0.5 px-3 py-2 rounded-xl transition-all touch-target",
+                  "active:scale-95 active:bg-primary/10",
+                  isActive
+                    ? "text-primary"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+                aria-label={item.label}
+                aria-current={isActive ? "page" : undefined}
+              >
+                <span className={cn(
+                  "transition-transform",
+                  isActive && "scale-110"
+                )}>
+                  {item.icon}
+                </span>
+                <span className={cn(
+                  "text-[11px] transition-all",
+                  isActive ? "font-semibold" : "font-medium"
+                )}>
+                  {item.label}
+                </span>
+                {isActive && (
+                  <span className="absolute -bottom-0 w-1 h-1 rounded-full bg-primary" />
+                )}
+              </Link>
+            );
+          })}
+        </div>
+      </nav>
+    </>
   );
 }

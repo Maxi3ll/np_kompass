@@ -1,8 +1,10 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Header } from "@/components/navigation/header";
-import { BottomNav } from "@/components/navigation/bottom-nav";
+import { AppShell } from "@/components/layout/app-shell";
 import { getCircleWithRoles } from "@/lib/supabase/queries";
+import { isCurrentUserAdmin } from "@/lib/supabase/actions";
+import { CircleAdminActions } from "./circle-admin-actions";
 
 export const revalidate = 60;
 
@@ -12,20 +14,23 @@ interface PageProps {
 
 export default async function KreisDetailPage({ params }: PageProps) {
   const { id } = await params;
-  const circle = await getCircleWithRoles(id);
+  const [circle, isAdmin] = await Promise.all([
+    getCircleWithRoles(id),
+    isCurrentUserAdmin(),
+  ]);
 
   if (!circle) {
     notFound();
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-background">
+    <AppShell>
       <Header title={circle.name} showBack backHref="/kreise" />
 
-      <main className="flex-1 pb-24 page-enter">
+      <main className="flex-1 pb-24 lg:pb-8 page-enter">
         {/* Circle Header */}
         <div
-          className="relative px-5 pt-4 pb-6 max-w-2xl mx-auto"
+          className="relative px-5 pt-4 pb-6 max-w-2xl mx-auto lg:max-w-4xl"
           style={{ backgroundColor: `${circle.color}10` }}
         >
           <div className="flex items-start gap-4">
@@ -61,10 +66,18 @@ export default async function KreisDetailPage({ params }: PageProps) {
               <span className="text-muted-foreground">Offene Spannungen</span>
             </div>
           </div>
+
+          {/* Admin Actions */}
+          {isAdmin && (
+            <CircleAdminActions
+              circle={{ id: circle.id, name: circle.name, purpose: circle.purpose, color: circle.color, icon: circle.icon }}
+              hasRoles={(circle.roles?.length || 0) > 0}
+            />
+          )}
         </div>
 
         {/* Roles List */}
-        <div className="px-5 max-w-2xl mx-auto mt-4">
+        <div className="px-5 max-w-2xl mx-auto lg:max-w-4xl mt-4">
           <h2 className="text-sm font-semibold text-foreground mb-3 px-1">
             Rollen in diesem Kreis
           </h2>
@@ -153,7 +166,6 @@ export default async function KreisDetailPage({ params }: PageProps) {
         </div>
       </main>
 
-      <BottomNav />
-    </div>
+    </AppShell>
   );
 }

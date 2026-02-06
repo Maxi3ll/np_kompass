@@ -20,6 +20,7 @@ interface AdminEmailsProps {
 export function AdminEmails({ initialEmails, adminEmail }: AdminEmailsProps) {
   const [emails, setEmails] = useState(initialEmails);
   const [newEmail, setNewEmail] = useState("");
+  const [newName, setNewName] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
@@ -28,7 +29,7 @@ export function AdminEmails({ initialEmails, adminEmail }: AdminEmailsProps) {
     setError(null);
 
     startTransition(async () => {
-      const result = await addAllowedEmail(newEmail);
+      const result = await addAllowedEmail(newEmail, newName);
       if (result.error) {
         if (result.error === "already_exists") {
           setError("Diese E-Mail ist bereits freigeschaltet.");
@@ -50,6 +51,7 @@ export function AdminEmails({ initialEmails, adminEmail }: AdminEmailsProps) {
         },
       ]);
       setNewEmail("");
+      setNewName("");
     });
   };
 
@@ -130,24 +132,33 @@ export function AdminEmails({ initialEmails, adminEmail }: AdminEmailsProps) {
       </div>
 
       {/* Add form */}
-      <div className="flex gap-2">
-        <Input
-          type="email"
-          placeholder="neue@email.de"
-          value={newEmail}
-          onChange={(e) => setNewEmail(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") {
-              e.preventDefault();
-              handleAdd();
-            }
-          }}
-          className="h-10 rounded-xl"
-        />
+      <div className="space-y-2">
+        <div className="flex gap-2">
+          <Input
+            type="text"
+            placeholder="Name"
+            value={newName}
+            onChange={(e) => setNewName(e.target.value)}
+            className="h-10 rounded-xl"
+          />
+          <Input
+            type="email"
+            placeholder="E-Mail"
+            value={newEmail}
+            onChange={(e) => setNewEmail(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                handleAdd();
+              }
+            }}
+            className="h-10 rounded-xl"
+          />
+        </div>
         <Button
           onClick={handleAdd}
-          disabled={isPending || !newEmail.trim()}
-          className="h-10 rounded-xl px-4 flex-shrink-0"
+          disabled={isPending || !newEmail.trim() || !newName.trim()}
+          className="w-full h-10 rounded-xl"
         >
           {isPending ? (
             <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
@@ -155,10 +166,13 @@ export function AdminEmails({ initialEmails, adminEmail }: AdminEmailsProps) {
               <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
             </svg>
           ) : (
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <line x1="12" y1="5" x2="12" y2="19" />
-              <line x1="5" y1="12" x2="19" y2="12" />
-            </svg>
+            <span className="flex items-center gap-2">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="12" y1="5" x2="12" y2="19" />
+                <line x1="5" y1="12" x2="19" y2="12" />
+              </svg>
+              Hinzufügen
+            </span>
           )}
         </Button>
       </div>

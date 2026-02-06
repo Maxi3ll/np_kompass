@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Header } from "@/components/navigation/header";
-import { BottomNav } from "@/components/navigation/bottom-nav";
+import { AppShell } from "@/components/layout/app-shell";
 import { getTensionById } from "@/lib/supabase/queries";
 import { createClient } from "@/lib/supabase/server";
 import { TensionActions } from "./tension-actions";
@@ -52,13 +52,13 @@ export default async function SpannungDetailPage({ params }: PageProps) {
   const priority = PRIORITY_CONFIG[tension.priority as keyof typeof PRIORITY_CONFIG] || PRIORITY_CONFIG.MEDIUM;
 
   return (
-    <div className="flex min-h-screen flex-col bg-background">
+    <AppShell>
       <Header title="Spannung" showBack backHref="/spannungen" />
 
-      <main className="flex-1 pb-24 page-enter">
+      <main className="flex-1 pb-24 lg:pb-8 page-enter">
         {/* Status Header */}
         <div className={`px-5 py-4 ${status.color}`}>
-          <div className="max-w-2xl mx-auto flex items-center justify-between">
+          <div className="max-w-2xl mx-auto lg:max-w-4xl flex items-center justify-between">
             <div>
               <span className={`text-sm font-medium ${status.textColor}`}>{status.label}</span>
               <p className={`text-xs ${status.textColor} opacity-80 mt-0.5`}>{status.description}</p>
@@ -69,7 +69,7 @@ export default async function SpannungDetailPage({ params }: PageProps) {
           </div>
         </div>
 
-        <div className="px-5 max-w-2xl mx-auto mt-4 space-y-4">
+        <div className="px-5 max-w-2xl mx-auto lg:max-w-4xl mt-4 space-y-4">
           {/* Title & Description */}
           <div className="bg-card rounded-2xl shadow-card border border-border/50 p-5">
             <h1 className="text-xl font-bold text-foreground">{tension.title}</h1>
@@ -208,7 +208,6 @@ export default async function SpannungDetailPage({ params }: PageProps) {
         </div>
       </main>
 
-      <BottomNav />
-    </div>
+    </AppShell>
   );
 }

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Header } from "@/components/navigation/header";
-import { BottomNav } from "@/components/navigation/bottom-nav";
+import { AppShell } from "@/components/layout/app-shell";
 import { getTensions, getCircles } from "@/lib/supabase/queries";
 
 export const revalidate = 30; // Revalidate every 30 seconds
@@ -44,12 +44,12 @@ export default async function SpannungenPage({ searchParams }: PageProps) {
   };
 
   return (
-    <div className="flex min-h-screen flex-col bg-background">
+    <AppShell>
       <Header title="Spannungen" showBack backHref="/" />
 
-      <main className="flex-1 pb-24 page-enter">
+      <main className="flex-1 pb-24 lg:pb-8 page-enter">
         {/* Filter Bar */}
-        <div className="px-5 pt-4 pb-3 max-w-2xl mx-auto">
+        <div className="px-5 pt-4 pb-3 max-w-2xl mx-auto lg:max-w-4xl">
           {/* Status Filter */}
           <div className="flex gap-2 overflow-x-auto pb-2 -mx-5 px-5 scrollbar-hide">
             <Link
@@ -113,7 +113,7 @@ export default async function SpannungenPage({ searchParams }: PageProps) {
         </div>
 
         {/* Tensions List */}
-        <div className="px-5 max-w-2xl mx-auto">
+        <div className="px-5 max-w-2xl mx-auto lg:max-w-4xl">
           <div className="space-y-3 stagger-fade-in">
             {tensions.map((tension: any) => {
               const status = STATUS_CONFIG[tension.status as keyof typeof STATUS_CONFIG] || STATUS_CONFIG.NEW;
@@ -195,20 +195,8 @@ export default async function SpannungenPage({ searchParams }: PageProps) {
           </div>
         </div>
 
-        {/* FAB for new tension */}
-        <Link
-          href="/spannungen/neu"
-          className="fixed bottom-24 right-5 w-14 h-14 rounded-full bg-[var(--np-yellow)] shadow-lg flex items-center justify-center transition-all hover:shadow-xl hover:scale-105 active:scale-95"
-          style={{ boxShadow: '0 4px 20px rgba(245, 200, 66, 0.4)' }}
-        >
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#5a4a00" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <line x1="12" y1="5" x2="12" y2="19" />
-            <line x1="5" y1="12" x2="19" y2="12" />
-          </svg>
-        </Link>
       </main>
 
-      <BottomNav />
-    </div>
+    </AppShell>
   );
 }
