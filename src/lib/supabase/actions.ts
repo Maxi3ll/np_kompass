@@ -284,6 +284,35 @@ export async function createTension(data: CreateTensionData) {
     return { error: error.message };
   }
 
+  // Notify circle members (except creator)
+  const circleMembers = await getCircleMemberIds(data.circleId);
+  if (circleMembers.length > 0) {
+    const { data: circle } = await serviceClient
+      .from('circles')
+      .select('name')
+      .eq('id', data.circleId)
+      .single();
+
+    const { data: creator } = await serviceClient
+      .from('persons')
+      .select('name')
+      .eq('id', data.raisedBy)
+      .single();
+
+    for (const memberId of circleMembers) {
+      if (memberId !== data.raisedBy) {
+        await createNotification({
+          personId: memberId,
+          type: 'TENSION_CREATED',
+          title: 'Neue Spannung',
+          message: `${creator?.name || 'Jemand'} hat "${data.title}" im Kreis "${circle?.name}" erfasst.`,
+          tensionId: tension.id,
+          circleId: data.circleId,
+        });
+      }
+    }
+  }
+
   revalidatePath('/spannungen');
   revalidatePath('/');
 
@@ -332,6 +361,13 @@ export interface UpdateTensionData {
 export async function updateTension(data: UpdateTensionData) {
   const serviceClient = createServiceClient();
 
+  // Get old tension data BEFORE update (for notifications)
+  const { data: oldTension } = await serviceClient
+    .from('tensions')
+    .select('title, assigned_to, raised_by, circle_id')
+    .eq('id', data.id)
+    .single();
+
   const updateData: Record<string, any> = {};
 
   if (data.status !== undefined) {
@@ -355,6 +391,30 @@ export async function updateTension(data: UpdateTensionData) {
   if (error) {
     console.error('Error updating tension:', error);
     return { error: error.message };
+  }
+
+  // Notification: tension assigned to someone new
+  if (oldTension && data.assignedTo && data.assignedTo !== oldTension.assigned_to) {
+    await createNotification({
+      personId: data.assignedTo,
+      type: 'TENSION_ASSIGNED',
+      title: 'Spannung zugewiesen',
+      message: `Dir wurde die Spannung "${oldTension.title}" zugewiesen.`,
+      tensionId: data.id,
+      circleId: oldTension.circle_id,
+    });
+  }
+
+  // Notification: tension resolved → notify creator
+  if (oldTension && data.status === 'RESOLVED' && oldTension.raised_by) {
+    await createNotification({
+      personId: oldTension.raised_by,
+      type: 'TENSION_RESOLVED',
+      title: 'Spannung erledigt',
+      message: `Deine Spannung "${oldTension.title}" wurde als erledigt markiert.`,
+      tensionId: data.id,
+      circleId: oldTension.circle_id,
+    });
   }
 
   revalidatePath(`/spannungen/${data.id}`);
@@ -641,6 +701,24 @@ export async function assignRole(roleId: string, personId: string) {
 
   if (error) return { error: error.message };
 
+  // Send notification to assigned person
+  const { data: roleData } = await serviceClient
+    .from('roles')
+    .select('name, circle_id, circle:circles(name)')
+    .eq('id', roleId)
+    .single();
+
+  if (roleData) {
+    await createNotification({
+      personId,
+      type: 'ROLE_ASSIGNED',
+      title: 'Neue Rolle zugewiesen',
+      message: `Du wurdest zur Rolle "${roleData.name}" im Kreis "${(roleData.circle as any)?.name}" zugewiesen.`,
+      roleId,
+      circleId: roleData.circle_id,
+    });
+  }
+
   revalidatePath(`/rollen/${roleId}`);
   revalidatePath('/kreise');
   revalidatePath('/');
@@ -690,6 +768,14 @@ export async function unassignRole(roleId: string) {
 
   const serviceClient = createServiceClient();
 
+  // Get current holder BEFORE unassigning (for notification)
+  const { data: currentAssignment } = await serviceClient
+    .from('role_assignments')
+    .select('person_id')
+    .eq('role_id', roleId)
+    .is('valid_until', null)
+    .single();
+
   const { error } = await serviceClient
     .from('role_assignments')
     .update({ valid_until: new Date().toISOString().split('T')[0] })
@@ -698,8 +784,157 @@ export async function unassignRole(roleId: string) {
 
   if (error) return { error: error.message };
 
+  // Send notification to former holder
+  if (currentAssignment) {
+    const { data: roleData } = await serviceClient
+      .from('roles')
+      .select('name, circle_id, circle:circles(name)')
+      .eq('id', roleId)
+      .single();
+
+    if (roleData) {
+      await createNotification({
+        personId: currentAssignment.person_id,
+        type: 'ROLE_UNASSIGNED',
+        title: 'Rolle beendet',
+        message: `Deine Rolle "${roleData.name}" im Kreis "${(roleData.circle as any)?.name}" wurde beendet.`,
+        roleId,
+        circleId: roleData.circle_id,
+      });
+    }
+  }
+
   revalidatePath(`/rollen/${roleId}`);
   revalidatePath('/kreise');
+  revalidatePath('/');
+  return { success: true };
+}
+
+// =====================================================
+// NOTIFICATIONS
+// =====================================================
+
+async function createNotification(data: {
+  personId: string;
+  type: string;
+  title: string;
+  message: string;
+  roleId?: string;
+  tensionId?: string;
+  circleId?: string;
+}) {
+  const serviceClient = createServiceClient();
+  await serviceClient.from('notifications').insert({
+    person_id: data.personId,
+    type: data.type,
+    title: data.title,
+    message: data.message,
+    role_id: data.roleId || null,
+    tension_id: data.tensionId || null,
+    circle_id: data.circleId || null,
+  });
+}
+
+async function getCircleMemberIds(circleId: string): Promise<string[]> {
+  const serviceClient = createServiceClient();
+  const { data } = await serviceClient
+    .from('role_assignments')
+    .select('person_id, role:roles!inner(circle_id)')
+    .is('valid_until', null);
+
+  if (!data) return [];
+
+  const members = data.filter((d: any) => d.role?.circle_id === circleId);
+  return [...new Set(members.map((d: any) => d.person_id))];
+}
+
+export async function fetchNotifications(limit = 20) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return [];
+
+  const serviceClient = createServiceClient();
+  const { data: person } = await serviceClient
+    .from('persons')
+    .select('id')
+    .eq('auth_user_id', user.id)
+    .single();
+
+  if (!person) return [];
+
+  const { data, error } = await serviceClient
+    .from('notifications')
+    .select('*')
+    .eq('person_id', person.id)
+    .order('created_at', { ascending: false })
+    .limit(limit);
+
+  if (error) {
+    console.error('Error fetching notifications:', error);
+    return [];
+  }
+
+  return data || [];
+}
+
+export async function markNotificationAsRead(notificationId: string) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { error: 'not authenticated' };
+
+  const serviceClient = createServiceClient();
+  const { data: person } = await serviceClient
+    .from('persons')
+    .select('id')
+    .eq('auth_user_id', user.id)
+    .single();
+
+  if (!person) return { error: 'person not found' };
+
+  // Verify ownership
+  const { data: notification } = await serviceClient
+    .from('notifications')
+    .select('person_id')
+    .eq('id', notificationId)
+    .single();
+
+  if (!notification || notification.person_id !== person.id) {
+    return { error: 'unauthorized' };
+  }
+
+  const { error } = await serviceClient
+    .from('notifications')
+    .update({ is_read: true, read_at: new Date().toISOString() })
+    .eq('id', notificationId);
+
+  if (error) return { error: error.message };
+
+  revalidatePath('/');
+  return { success: true };
+}
+
+export async function markAllNotificationsAsRead() {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { error: 'not authenticated' };
+
+  const serviceClient = createServiceClient();
+  const { data: person } = await serviceClient
+    .from('persons')
+    .select('id')
+    .eq('auth_user_id', user.id)
+    .single();
+
+  if (!person) return { error: 'person not found' };
+
+  const { error } = await serviceClient
+    .from('notifications')
+    .update({ is_read: true, read_at: new Date().toISOString() })
+    .eq('person_id', person.id)
+    .eq('is_read', false);
+
+  if (error) return { error: error.message };
+
   revalidatePath('/');
   return { success: true };
 }

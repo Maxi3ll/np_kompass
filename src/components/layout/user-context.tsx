@@ -6,12 +6,16 @@ interface UserData {
   name: string;
   email: string;
   avatarColor: string;
+  personId: string | null;
+  unreadNotifications: number;
 }
 
 const UserContext = createContext<UserData>({
   name: "Benutzer",
   email: "",
   avatarColor: "#4A90D9",
+  personId: null,
+  unreadNotifications: 0,
 });
 
 export function UserProvider({

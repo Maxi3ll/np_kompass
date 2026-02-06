@@ -533,3 +533,24 @@ export async function getDashboardData(personId?: string) {
     circles,
   };
 }
+
+// =====================================================
+// NOTIFICATIONS
+// =====================================================
+
+export async function getUnreadNotificationCount(personId: string): Promise<number> {
+  const supabase = await createClient();
+
+  const { count, error } = await supabase
+    .from('notifications')
+    .select('*', { count: 'exact', head: true })
+    .eq('person_id', personId)
+    .eq('is_read', false);
+
+  if (error) {
+    console.error('Error counting unread notifications:', error);
+    return 0;
+  }
+
+  return count || 0;
+}

@@ -147,6 +147,29 @@ export interface ChecklistCompletion {
   notes?: string;
 }
 
+// ============ Notifications ============
+
+export type NotificationType =
+  | 'ROLE_ASSIGNED'
+  | 'ROLE_UNASSIGNED'
+  | 'TENSION_CREATED'
+  | 'TENSION_ASSIGNED'
+  | 'TENSION_RESOLVED';
+
+export interface AppNotification {
+  id: string;
+  person_id: string;
+  type: NotificationType;
+  title: string;
+  message: string;
+  role_id?: string;
+  tension_id?: string;
+  circle_id?: string;
+  is_read: boolean;
+  read_at?: string;
+  created_at: string;
+}
+
 // ============ Auth & Permissions ============
 
 export type UserRole = 'member' | 'circleLeader' | 'vorstand' | 'admin';

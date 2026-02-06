@@ -2,6 +2,7 @@ import { Sidebar } from "@/components/navigation/sidebar";
 import { BottomNav } from "@/components/navigation/bottom-nav";
 import { UserProvider } from "./user-context";
 import { createClient } from "@/lib/supabase/server";
+import { getUnreadNotificationCount } from "@/lib/supabase/queries";
 
 interface AppShellProps {
   children: React.ReactNode;
@@ -11,7 +12,7 @@ export async function AppShell({ children }: AppShellProps) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
-  let userData = { name: "Benutzer", email: "", avatarColor: "#4A90D9" };
+  let userData = { name: "Benutzer", email: "", avatarColor: "#4A90D9", personId: null as string | null, unreadNotifications: 0 };
 
   if (user) {
     userData.email = user.email || "";
@@ -19,13 +20,15 @@ export async function AppShell({ children }: AppShellProps) {
 
     const { data: person } = await supabase
       .from("persons")
-      .select("name, avatar_color")
+      .select("id, name, avatar_color")
       .eq("auth_user_id", user.id)
       .single();
 
     if (person) {
+      userData.personId = person.id;
       userData.name = person.name;
       if (person.avatar_color) userData.avatarColor = person.avatar_color;
+      userData.unreadNotifications = await getUnreadNotificationCount(person.id);
     }
   }
 

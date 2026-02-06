@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { signOut } from "@/lib/supabase/actions";
 import { useUser } from "@/components/layout/user-context";
+import { NotificationBell } from "./notification-bell";
 
 interface HeaderProps {
   title?: string;
@@ -79,7 +80,10 @@ export function Header({
           </div>
         </div>
 
-        <DropdownMenu>
+        <div className="flex items-center gap-1">
+          <NotificationBell />
+
+          <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <button
               className="focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 rounded-full touch-target flex items-center justify-center"
@@ -138,6 +142,7 @@ export function Header({
             </div>
           </DropdownMenuContent>
         </DropdownMenu>
+        </div>
       </div>
     </header>
   );
