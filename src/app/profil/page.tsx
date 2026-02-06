@@ -3,7 +3,9 @@ import { Header } from "@/components/navigation/header";
 import { BottomNav } from "@/components/navigation/bottom-nav";
 import { createClient } from "@/lib/supabase/server";
 import { getPersonWithRoles } from "@/lib/supabase/queries";
+import { isCurrentUserAdmin, getAllowedEmails } from "@/lib/supabase/actions";
 import { LogoutButton } from "./logout-button";
+import { AdminEmails } from "./admin-emails";
 import Link from "next/link";
 
 export default async function ProfilPage() {
@@ -29,6 +31,18 @@ export default async function ProfilPage() {
 
   const displayName = person?.name || user.user_metadata?.full_name || user.email?.split("@")[0] || "Benutzer";
   const initials = displayName.split(" ").map((n: string) => n[0]).join("").slice(0, 2).toUpperCase();
+
+  // Check admin status and load allowlist
+  const isAdmin = await isCurrentUserAdmin();
+  let allowedEmails: { id: string; email: string; added_by: string | null; created_at: string }[] = [];
+  let adminEmail: string | null = null;
+  if (isAdmin) {
+    const result = await getAllowedEmails();
+    if (!result.error && result.emails) {
+      allowedEmails = result.emails;
+      adminEmail = result.adminEmail ?? null;
+    }
+  }
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
@@ -119,6 +133,14 @@ export default async function ProfilPage() {
               )}
             </div>
           </div>
+
+          {/* Admin Section */}
+          {isAdmin && (
+            <AdminEmails
+              initialEmails={allowedEmails}
+              adminEmail={adminEmail}
+            />
+          )}
 
           {/* Not linked warning */}
           {!person && (

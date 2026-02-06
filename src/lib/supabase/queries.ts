@@ -410,7 +410,7 @@ export async function getUpcomingMeetingsForPerson(personId: string, limit = 5) 
     .eq('person_id', personId)
     .is('valid_until', null);
 
-  const circleIds = [...new Set(roleAssignments?.map(ra => ra.role?.circle_id).filter(Boolean))] as string[];
+  const circleIds = [...new Set(roleAssignments?.map(ra => (ra.role as any)?.circle_id).filter(Boolean))] as string[];
 
   if (circleIds.length === 0) {
     return [];

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { sendMagicLink } from "@/lib/supabase/actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -42,14 +43,18 @@ export function LoginForm() {
       return;
     }
 
-    const { error } = await supabase.auth.signInWithOtp({
-      email: email.trim(),
-      options: {
-        emailRedirectTo: `${window.location.origin}/auth/callback`,
-      },
-    });
+    const result = await sendMagicLink(
+      email.trim(),
+      `${window.location.origin}/auth/callback`
+    );
 
-    if (error) {
+    if (result.error === "access_denied") {
+      setError("Zugriff verweigert. Dein Account ist nicht für diese App freigeschaltet.");
+      setIsLoading(false);
+      return;
+    }
+
+    if (result.error) {
       setError("Fehler beim Senden des Login-Links. Bitte versuche es erneut.");
       setIsLoading(false);
       return;

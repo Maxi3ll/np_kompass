@@ -1,12 +1,147 @@
 'use server';
 
 import { createClient } from './server';
+import { createServiceClient } from './service';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 
 // =====================================================
-// AUTH
+// AUTH & EMAIL ALLOWLIST
 // =====================================================
+
+function getAdminEmail(): string | null {
+  const allowedEmails = process.env.ALLOWED_EMAILS;
+  if (!allowedEmails) return null;
+  const first = allowedEmails.split(',')[0]?.trim().toLowerCase();
+  return first || null;
+}
+
+export async function isEmailAllowed(email: string): Promise<boolean> {
+  const normalizedEmail = email.toLowerCase().trim();
+
+  // Always allow admin email from env (can never lock yourself out)
+  const adminEmail = getAdminEmail();
+  if (adminEmail && normalizedEmail === adminEmail) {
+    return true;
+  }
+
+  // Check database
+  const service = createServiceClient();
+  const { data } = await service
+    .from('allowed_emails')
+    .select('id')
+    .eq('email', normalizedEmail)
+    .maybeSingle();
+
+  if (data) return true;
+
+  // Fallback: check full ALLOWED_EMAILS env list (for initial setup before DB is seeded)
+  const envList = process.env.ALLOWED_EMAILS;
+  if (envList) {
+    const list = envList.split(',').map((e) => e.trim().toLowerCase()).filter(Boolean);
+    return list.includes(normalizedEmail);
+  }
+
+  return false;
+}
+
+export async function isCurrentUserAdmin(): Promise<boolean> {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user?.email) return false;
+
+  const adminEmail = getAdminEmail();
+  return !!adminEmail && user.email.toLowerCase() === adminEmail;
+}
+
+export async function getAllowedEmails() {
+  const isAdmin = await isCurrentUserAdmin();
+  if (!isAdmin) return { error: 'unauthorized' };
+
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from('allowed_emails')
+    .select('*')
+    .order('created_at', { ascending: true });
+
+  if (error) return { error: error.message };
+  return { emails: data, adminEmail: getAdminEmail() };
+}
+
+export async function addAllowedEmail(email: string) {
+  const isAdmin = await isCurrentUserAdmin();
+  if (!isAdmin) return { error: 'unauthorized' };
+
+  const normalizedEmail = email.toLowerCase().trim();
+  if (!normalizedEmail || !normalizedEmail.includes('@')) {
+    return { error: 'invalid_email' };
+  }
+
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  const { error } = await supabase
+    .from('allowed_emails')
+    .insert({ email: normalizedEmail, added_by: user?.email || null });
+
+  if (error) {
+    if (error.code === '23505') return { error: 'already_exists' };
+    return { error: error.message };
+  }
+
+  revalidatePath('/profil');
+  return { success: true };
+}
+
+export async function removeAllowedEmail(id: string) {
+  const isAdmin = await isCurrentUserAdmin();
+  if (!isAdmin) return { error: 'unauthorized' };
+
+  const supabase = await createClient();
+
+  // Fetch the email first to prevent deleting admin
+  const { data: record } = await supabase
+    .from('allowed_emails')
+    .select('email')
+    .eq('id', id)
+    .single();
+
+  if (!record) return { error: 'not_found' };
+
+  const adminEmail = getAdminEmail();
+  if (adminEmail && record.email.toLowerCase() === adminEmail) {
+    return { error: 'cannot_remove_admin' };
+  }
+
+  const { error } = await supabase
+    .from('allowed_emails')
+    .delete()
+    .eq('id', id);
+
+  if (error) return { error: error.message };
+
+  revalidatePath('/profil');
+  return { success: true };
+}
+
+export async function sendMagicLink(email: string, redirectTo: string) {
+  const allowed = await isEmailAllowed(email);
+  if (!allowed) {
+    return { error: 'access_denied' };
+  }
+
+  const supabase = await createClient();
+  const { error } = await supabase.auth.signInWithOtp({
+    email,
+    options: { emailRedirectTo: redirectTo },
+  });
+
+  if (error) {
+    return { error: 'send_failed' };
+  }
+
+  return { success: true };
+}
 
 export async function signOut() {
   const supabase = await createClient();

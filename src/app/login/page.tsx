@@ -36,6 +36,8 @@ export default async function LoginPage({ searchParams }: PageProps) {
               <p className="text-sm text-destructive text-center">
                 {params.error === "auth"
                   ? "Anmeldung fehlgeschlagen. Bitte versuche es erneut."
+                  : params.error === "access_denied"
+                  ? "Zugriff verweigert. Dein Account ist nicht für diese App freigeschaltet."
                   : "Ein Fehler ist aufgetreten."}
               </p>
             </div>
