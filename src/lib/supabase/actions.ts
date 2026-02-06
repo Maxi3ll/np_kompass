@@ -78,9 +78,10 @@ export async function addAllowedEmail(email: string, name?: string) {
   }
 
   const supabase = await createClient();
+  const serviceClient = createServiceClient();
   const { data: { user } } = await supabase.auth.getUser();
 
-  const { error } = await supabase
+  const { error } = await serviceClient
     .from('allowed_emails')
     .insert({ email: normalizedEmail, added_by: user?.email || null });
 
@@ -91,14 +92,14 @@ export async function addAllowedEmail(email: string, name?: string) {
 
   // Auto-create person entry if name is provided
   if (name?.trim()) {
-    const { data: existingPerson } = await supabase
+    const { data: existingPerson } = await serviceClient
       .from('persons')
       .select('id')
       .eq('email', normalizedEmail)
       .maybeSingle();
 
     if (!existingPerson) {
-      await supabase.from('persons').insert({
+      await serviceClient.from('persons').insert({
         email: normalizedEmail,
         name: name.trim(),
         role: 'member',
@@ -114,10 +115,10 @@ export async function removeAllowedEmail(id: string) {
   const isAdmin = await isCurrentUserAdmin();
   if (!isAdmin) return { error: 'unauthorized' };
 
-  const supabase = await createClient();
+  const serviceClient = createServiceClient();
 
   // Fetch the email first to prevent deleting admin
-  const { data: record } = await supabase
+  const { data: record } = await serviceClient
     .from('allowed_emails')
     .select('email')
     .eq('id', id)
@@ -130,7 +131,7 @@ export async function removeAllowedEmail(id: string) {
     return { error: 'cannot_remove_admin' };
   }
 
-  const { error } = await supabase
+  const { error } = await serviceClient
     .from('allowed_emails')
     .delete()
     .eq('id', id);
