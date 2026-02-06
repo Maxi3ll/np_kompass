@@ -115,7 +115,7 @@ export default async function RollenPage({ searchParams }: PageProps) {
 
                               {/* Content */}
                               <div className="flex-1 min-w-0">
-                                <h3 className="font-semibold text-foreground text-base">
+                                <h3 className="font-semibold text-foreground text-base line-clamp-1">
                                   {role.name}
                                 </h3>
                                 {role.purpose && (
