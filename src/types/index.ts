@@ -198,9 +198,14 @@ export const PRIORITY_CONFIG = {
 } as const;
 
 export const CIRCLE_ICONS = {
-  'Anker-Kreis': '⚓',
-  'Betrieb': '🏠',
-  'Gebäude & Garten': '🔧',
-  'Gemeinschaft': '🎉',
-  'Finanzen & Ressourcen': '💰',
+  'Neckarpiraten e.V.': '⚓',
+  'Kita': '🏠',
+  'Finanzen': '💰',
+  'Haus & Hof': '🔧',
+  'Küche & Ernährung': '🍽️',
+  'Familien-Management & Kultur': '👪',
+  'Sicherheit & Compliance': '🛡️',
+  'Personal': '👥',
+  'Kommunikation': '📢',
+  'Technologie & Systeme': '💻',
 } as const;
