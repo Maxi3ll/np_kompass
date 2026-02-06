@@ -4,6 +4,7 @@ import { createClient } from './server';
 import { createServiceClient } from './service';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
+import { sendTelegramMessage } from '@/lib/telegram';
 
 // =====================================================
 // AUTH & EMAIL ALLOWLIST
@@ -814,6 +815,14 @@ export async function unassignRole(roleId: string) {
 // NOTIFICATIONS
 // =====================================================
 
+const TELEGRAM_ICONS: Record<string, string> = {
+  ROLE_ASSIGNED: '👤',
+  ROLE_UNASSIGNED: '👋',
+  TENSION_CREATED: '⚡',
+  TENSION_ASSIGNED: '📌',
+  TENSION_RESOLVED: '✅',
+};
+
 async function createNotification(data: {
   personId: string;
   type: string;
@@ -833,6 +842,10 @@ async function createNotification(data: {
     tension_id: data.tensionId || null,
     circle_id: data.circleId || null,
   });
+
+  // Send Telegram notification
+  const icon = TELEGRAM_ICONS[data.type] || '🔔';
+  await sendTelegramMessage(`${icon} <b>${data.title}</b>\n${data.message}`);
 }
 
 async function getCircleMemberIds(circleId: string): Promise<string[]> {
