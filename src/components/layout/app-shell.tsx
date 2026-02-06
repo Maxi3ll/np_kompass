@@ -36,7 +36,7 @@ export async function AppShell({ children }: AppShellProps) {
     <UserProvider userData={userData}>
       <div className="flex min-h-screen bg-background">
         <Sidebar />
-        <div className="flex-1 flex flex-col min-h-screen lg:pl-64">
+        <div className="flex-1 flex flex-col min-h-screen lg:pl-64 min-w-0">
           {children}
           <BottomNav />
         </div>
