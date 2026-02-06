@@ -174,7 +174,8 @@ export async function sendMagicLink(email: string, redirectTo: string) {
   });
 
   if (error) {
-    return { error: 'send_failed' };
+    console.error('Magic link error:', error.message, error.status);
+    return { error: 'send_failed', details: error.message };
   }
 
   return { success: true };

@@ -55,7 +55,12 @@ export function LoginForm() {
     }
 
     if (result.error) {
-      setError("Fehler beim Senden des Login-Links. Bitte versuche es erneut.");
+      const details = (result as any).details;
+      if (details?.includes('rate') || details?.includes('limit')) {
+        setError("E-Mail-Limit erreicht. Bitte warte einige Minuten und versuche es erneut.");
+      } else {
+        setError(`Fehler beim Senden des Login-Links: ${details || 'Unbekannter Fehler'}. Bitte versuche es erneut.`);
+      }
       setIsLoading(false);
       return;
     }
