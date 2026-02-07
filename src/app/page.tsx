@@ -58,8 +58,8 @@ export default async function Home() {
           {/* Stats Row */}
           <div className="grid grid-cols-2 gap-4 stagger-fade-in">
             {/* My Roles Card */}
-            <Link href="/profil" className="block">
-              <div className="relative overflow-hidden bg-card rounded-2xl p-4 shadow-card card-lift border border-border/50">
+            <Link href="/profil" className="block h-full">
+              <div className="relative overflow-hidden bg-card rounded-2xl p-4 shadow-card card-lift border border-border/50 h-full">
                 <div className="absolute -right-4 -top-4 w-20 h-20 rounded-full bg-[var(--np-blue)]/5" />
                 <div className="relative">
                   <div className="flex items-center gap-2 mb-3">
@@ -89,8 +89,8 @@ export default async function Home() {
             </Link>
 
             {/* Open Tensions Card */}
-            <Link href="/spannungen" className="block">
-              <div className="relative overflow-hidden bg-card rounded-2xl p-4 shadow-card card-lift border border-border/50">
+            <Link href="/spannungen" className="block h-full">
+              <div className="relative overflow-hidden bg-card rounded-2xl p-4 shadow-card card-lift border border-border/50 h-full">
                 <div className="absolute -right-4 -top-4 w-20 h-20 rounded-full bg-[var(--np-yellow)]/10" />
                 <div className="relative">
                   <div className="flex items-center gap-2 mb-3">

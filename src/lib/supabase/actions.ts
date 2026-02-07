@@ -5,6 +5,7 @@ import { createServiceClient } from './service';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { sendTelegramMessage } from '@/lib/telegram';
+import { searchAll } from './queries';
 
 // =====================================================
 // AUTH & EMAIL ALLOWLIST
@@ -250,6 +251,14 @@ export async function getCurrentUser() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   return user;
+}
+
+// =====================================================
+// SEARCH
+// =====================================================
+
+export async function performSearch(query: string) {
+  return searchAll(query);
 }
 
 // =====================================================

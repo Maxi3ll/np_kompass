@@ -1,6 +1,52 @@
 import { createClient } from './server';
 
 // =====================================================
+// SEARCH
+// =====================================================
+
+export async function searchAll(query: string) {
+  if (!query || query.length < 2) return { circles: [], roles: [], tensions: [], persons: [] };
+
+  const supabase = await createClient();
+  const q = `%${query}%`;
+
+  const [circlesResult, rolesResult, tensionsResult, personsResult] = await Promise.all([
+    supabase
+      .from('circles')
+      .select('id, name, purpose, color, icon')
+      .or(`name.ilike.${q},purpose.ilike.${q}`)
+      .order('name')
+      .limit(10),
+    supabase
+      .from('roles')
+      .select('id, name, purpose, circle:circles(id, name, color, icon)')
+      .or(`name.ilike.${q},purpose.ilike.${q}`)
+      .order('name')
+      .limit(10),
+    supabase
+      .from('tensions')
+      .select('id, title, status, priority, circle:circles!tensions_circle_id_fkey(id, name, color, icon)')
+      .or(`title.ilike.${q},description.ilike.${q}`)
+      .order('created_at', { ascending: false })
+      .limit(10),
+    supabase
+      .from('persons')
+      .select('id, name, email')
+      .eq('is_active', true)
+      .or(`name.ilike.${q},email.ilike.${q}`)
+      .order('name')
+      .limit(10),
+  ]);
+
+  return {
+    circles: circlesResult.data || [],
+    roles: rolesResult.data || [],
+    tensions: tensionsResult.data || [],
+    persons: personsResult.data || [],
+  };
+}
+
+// =====================================================
 // CIRCLES
 // =====================================================
 
