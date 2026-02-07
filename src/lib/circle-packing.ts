@@ -22,12 +22,38 @@ export interface CircleNode {
 }
 
 /**
- * Calculate layout positions for items inside a container circle.
- * Uses ring-based placement: items are distributed evenly around rings.
- *
- * @param containerR - Radius of the container circle
- * @param items - Items to position (sub-circles + roles)
- * @returns Positioned items with x,y relative to container center (0,0)
+ * Place items evenly on a ring, ensuring no overlap.
+ * Returns the ring radius used (may be larger than requested if items are too big).
+ */
+function placeOnRing(
+  items: { id: string; type: 'circle' | 'role'; r: number; label: string; color: string; icon?: string }[],
+  preferredRingR: number,
+  angleOffset: number
+): LayoutItem[] {
+  if (items.length === 0) return [];
+
+  // Calculate minimum ring radius to prevent overlap
+  // Adjacent items need: 2 * R * sin(π/N) >= 2 * maxR + gap
+  const maxR = Math.max(...items.map(i => i.r));
+  const gap = 6;
+  const minRingR = items.length > 1
+    ? (maxR + gap / 2) / Math.sin(Math.PI / items.length)
+    : 0;
+  const ringR = Math.max(preferredRingR, minRingR);
+
+  return items.map((item, i) => {
+    const angle = angleOffset + (2 * Math.PI * i) / items.length;
+    return {
+      ...item,
+      x: items.length === 1 ? 0 : Math.cos(angle) * ringR,
+      y: items.length === 1 ? 0 : Math.sin(angle) * ringR,
+    };
+  });
+}
+
+/**
+ * Calculate layout positions for sub-circles and roles inside a container.
+ * Sub-circles go on the main ring, roles on an inner ring.
  */
 export function packCircles(
   containerR: number,
@@ -35,92 +61,58 @@ export function packCircles(
   roles: { id: string; name: string }[],
   parentColor: string
 ): LayoutItem[] {
-  const results: LayoutItem[] = [];
-  const allItems = [
-    ...subCircles.map(c => ({ ...c, type: 'circle' as const })),
-    ...roles.map(r => ({ ...r, type: 'role' as const, color: parentColor, weight: 1, icon: undefined })),
-  ];
+  const hasSubCircles = subCircles.length > 0;
+  const hasRoles = roles.length > 0;
 
-  if (allItems.length === 0) return results;
+  // --- Sub-circle sizing ---
+  // Uniform-ish size: scale slightly by weight but keep tight range
+  const circleR = hasSubCircles
+    ? Math.min(containerR * 0.22, containerR / (subCircles.length * 0.55 + 1))
+    : 0;
 
-  // Calculate radii for sub-circles based on weight (sqrt scaling)
-  const maxWeight = Math.max(...allItems.map(i => i.weight), 1);
-  const minItemR = containerR * 0.08;
-  const maxItemR = containerR * 0.28;
+  const circleItems = subCircles.map(c => ({
+    id: c.id,
+    type: 'circle' as const,
+    r: circleR,
+    label: c.name,
+    color: c.color,
+    icon: c.icon,
+  }));
 
-  function itemRadius(item: typeof allItems[number]): number {
-    if (item.type === 'role') return minItemR;
-    const normalized = Math.sqrt(item.weight / maxWeight);
-    return minItemR + (maxItemR - minItemR) * Math.max(normalized, 0.4);
+  // --- Role sizing ---
+  const roleR = hasSubCircles
+    ? Math.min(18, containerR * 0.07)  // small when alongside sub-circles
+    : Math.min(containerR * 0.15, containerR / (roles.length * 0.5 + 1)); // larger when alone
+
+  const roleItems = roles.map(r => ({
+    id: r.id,
+    type: 'role' as const,
+    r: roleR,
+    label: r.name,
+    color: parentColor,
+    icon: undefined,
+  }));
+
+  // --- Layout ---
+  if (!hasSubCircles && !hasRoles) return [];
+
+  // Only roles: single ring centered
+  if (!hasSubCircles) {
+    return placeOnRing(roleItems, containerR * 0.5, -Math.PI / 2);
   }
 
-  // Single item: center
-  if (allItems.length === 1) {
-    const item = allItems[0];
-    const r = itemRadius(item);
-    results.push({
-      id: item.id,
-      type: item.type,
-      x: 0,
-      y: 0,
-      r,
-      label: item.type === 'circle' ? item.name : item.name,
-      color: item.color,
-      icon: item.icon,
-    });
-    return results;
+  // Only sub-circles: single ring
+  if (!hasRoles) {
+    return placeOnRing(circleItems, containerR * 0.55, -Math.PI / 2);
   }
 
-  // Place items in rings
-  // Ring 1: up to 6 items, Ring 2: remaining items
-  const ring1Count = Math.min(allItems.length, allItems.length <= 8 ? allItems.length : 6);
-  const ring1Items = allItems.slice(0, ring1Count);
-  const ring2Items = allItems.slice(ring1Count);
+  // Both: sub-circles on outer ring, roles on inner ring
+  const outerRing = placeOnRing(circleItems, containerR * 0.58, -Math.PI / 2);
+  // Offset roles to sit between sub-circles
+  const roleAngleOffset = -Math.PI / 2 + Math.PI / Math.max(roles.length, subCircles.length);
+  const innerRing = placeOnRing(roleItems, containerR * 0.22, roleAngleOffset);
 
-  // Ring 1 radius: items sit at ~55% of container radius
-  const ring1R = containerR * 0.50;
-  // Ring 2 radius: items sit at ~82% of container radius
-  const ring2R = containerR * 0.80;
-
-  // Place ring 1
-  const angleOffset1 = -Math.PI / 2; // Start from top
-  for (let i = 0; i < ring1Items.length; i++) {
-    const item = ring1Items[i];
-    const angle = angleOffset1 + (2 * Math.PI * i) / ring1Items.length;
-    const r = itemRadius(item);
-    results.push({
-      id: item.id,
-      type: item.type,
-      x: Math.cos(angle) * ring1R,
-      y: Math.sin(angle) * ring1R,
-      r,
-      label: item.name,
-      color: item.color,
-      icon: item.icon,
-    });
-  }
-
-  // Place ring 2
-  if (ring2Items.length > 0) {
-    const angleOffset2 = -Math.PI / 2 + Math.PI / ring2Items.length; // Offset to stagger
-    for (let i = 0; i < ring2Items.length; i++) {
-      const item = ring2Items[i];
-      const angle = angleOffset2 + (2 * Math.PI * i) / ring2Items.length;
-      const r = itemRadius(item);
-      results.push({
-        id: item.id,
-        type: item.type,
-        x: Math.cos(angle) * ring2R,
-        y: Math.sin(angle) * ring2R,
-        r,
-        label: item.name,
-        color: item.color,
-        icon: item.icon,
-      });
-    }
-  }
-
-  return results;
+  return [...outerRing, ...innerRing];
 }
 
 /**
@@ -130,7 +122,6 @@ export function buildCircleTree(
   circles: { id: string; name: string; color?: string | null; icon?: string | null; parent_circle_id?: string | null }[],
   roles: { id: string; name: string; circle_id?: string; circle?: { id: string; name: string; color?: string | null; icon?: string | null } | null }[]
 ): CircleNode | null {
-  // Find root (Anker-Kreis = no parent)
   const root = circles.find(c => !c.parent_circle_id);
   if (!root) return null;
 
