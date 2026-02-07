@@ -1,5 +1,5 @@
 // Circle-packing layout algorithm for GlassFrog-style visualization
-// Positions sub-circles and roles within a parent circle using ring-based layout
+// Organic "Best-Candidate + Relaxation" layout for natural-looking circle placement
 
 export interface LayoutItem {
   id: string;
@@ -21,39 +21,142 @@ export interface CircleNode {
   roles: { id: string; name: string }[];
 }
 
+// --- Seeded PRNG (mulberry32) ---
+function mulberry32(seed: number): () => number {
+  return () => {
+    seed |= 0;
+    seed = (seed + 0x6d2b79f5) | 0;
+    let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+function hashString(s: string): number {
+  let h = 0;
+  for (let i = 0; i < s.length; i++) {
+    h = (Math.imul(31, h) + s.charCodeAt(i)) | 0;
+  }
+  return h;
+}
+
+// --- Organic circle packing ---
+
+interface PackItem {
+  id: string;
+  type: 'circle' | 'role';
+  r: number;
+  label: string;
+  color: string;
+  icon?: string;
+  x: number;
+  y: number;
+}
+
 /**
- * Place items evenly on a ring, ensuring no overlap.
- * Returns the ring radius used (may be larger than requested if items are too big).
+ * Place items organically inside a container circle using
+ * best-candidate sampling + overlap relaxation.
  */
-function placeOnRing(
-  items: { id: string; type: 'circle' | 'role'; r: number; label: string; color: string; icon?: string }[],
-  preferredRingR: number,
-  angleOffset: number
-): LayoutItem[] {
-  if (items.length === 0) return [];
+function packOrganic(
+  items: PackItem[],
+  containerR: number,
+  rng: () => number
+): void {
+  if (items.length === 0) return;
 
-  // Calculate minimum ring radius to prevent overlap
-  // Adjacent items need: 2 * R * sin(π/N) >= 2 * maxR + gap
-  const maxR = Math.max(...items.map(i => i.r));
-  const gap = 6;
-  const minRingR = items.length > 1
-    ? (maxR + gap / 2) / Math.sin(Math.PI / items.length)
-    : 0;
-  const ringR = Math.max(preferredRingR, minRingR);
+  // Single item: center it
+  if (items.length === 1) {
+    items[0].x = 0;
+    items[0].y = 0;
+    return;
+  }
 
-  return items.map((item, i) => {
-    const angle = angleOffset + (2 * Math.PI * i) / items.length;
-    return {
-      ...item,
-      x: items.length === 1 ? 0 : Math.cos(angle) * ringR,
-      y: items.length === 1 ? 0 : Math.sin(angle) * ringR,
-    };
-  });
+  // Sort largest first for better packing
+  items.sort((a, b) => b.r - a.r);
+
+  const placed: PackItem[] = [];
+
+  for (const item of items) {
+    let bestX = 0;
+    let bestY = 0;
+    let bestScore = -Infinity;
+    const candidates = 50;
+
+    for (let c = 0; c < candidates; c++) {
+      // Random point inside container, leaving margin for item radius
+      const maxR = containerR - item.r - 4;
+      if (maxR <= 0) {
+        // Item too big, just center
+        bestX = 0;
+        bestY = 0;
+        break;
+      }
+      const angle = rng() * Math.PI * 2;
+      const dist = Math.sqrt(rng()) * maxR; // sqrt for uniform area distribution
+      const cx = Math.cos(angle) * dist;
+      const cy = Math.sin(angle) * dist;
+
+      // Score: minimum distance to any placed item (higher = more space)
+      let minDist = Infinity;
+      for (const p of placed) {
+        const dx = cx - p.x;
+        const dy = cy - p.y;
+        const d = Math.sqrt(dx * dx + dy * dy) - p.r - item.r;
+        minDist = Math.min(minDist, d);
+      }
+      // Also consider distance from container edge
+      const edgeDist = containerR - Math.sqrt(cx * cx + cy * cy) - item.r;
+      minDist = Math.min(minDist, edgeDist);
+
+      if (minDist > bestScore) {
+        bestScore = minDist;
+        bestX = cx;
+        bestY = cy;
+      }
+    }
+
+    item.x = bestX;
+    item.y = bestY;
+    placed.push(item);
+  }
+
+  // --- Relaxation: resolve overlaps ---
+  const gap = 5;
+  for (let iter = 0; iter < 4; iter++) {
+    for (let i = 0; i < items.length; i++) {
+      const a = items[i];
+      // Push away from other items
+      for (let j = i + 1; j < items.length; j++) {
+        const b = items[j];
+        const dx = b.x - a.x;
+        const dy = b.y - a.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        const minDist = a.r + b.r + gap;
+        if (dist < minDist && dist > 0.01) {
+          const overlap = (minDist - dist) / 2;
+          const nx = dx / dist;
+          const ny = dy / dist;
+          a.x -= nx * overlap * 0.5;
+          a.y -= ny * overlap * 0.5;
+          b.x += nx * overlap * 0.5;
+          b.y += ny * overlap * 0.5;
+        }
+      }
+      // Push back inside container
+      const d = Math.sqrt(a.x * a.x + a.y * a.y);
+      const maxDist = containerR - a.r - 2;
+      if (d > maxDist && d > 0.01) {
+        const scale = maxDist / d;
+        a.x *= scale;
+        a.y *= scale;
+      }
+    }
+  }
 }
 
 /**
  * Calculate layout positions for sub-circles and roles inside a container.
- * Sub-circles go on the main ring, roles on an inner ring.
+ * Uses organic packing with weight-based sizing.
  */
 export function packCircles(
   containerR: number,
@@ -63,56 +166,78 @@ export function packCircles(
 ): LayoutItem[] {
   const hasSubCircles = subCircles.length > 0;
   const hasRoles = roles.length > 0;
-
-  // --- Sub-circle sizing ---
-  // Uniform-ish size: scale slightly by weight but keep tight range
-  const circleR = hasSubCircles
-    ? Math.min(containerR * 0.22, containerR / (subCircles.length * 0.55 + 1))
-    : 0;
-
-  const circleItems = subCircles.map(c => ({
-    id: c.id,
-    type: 'circle' as const,
-    r: circleR,
-    label: c.name,
-    color: c.color,
-    icon: c.icon,
-  }));
-
-  // --- Role sizing ---
-  const roleR = hasSubCircles
-    ? Math.min(18, containerR * 0.07)  // small when alongside sub-circles
-    : Math.min(containerR * 0.15, containerR / (roles.length * 0.5 + 1)); // larger when alone
-
-  const roleItems = roles.map(r => ({
-    id: r.id,
-    type: 'role' as const,
-    r: roleR,
-    label: r.name,
-    color: parentColor,
-    icon: undefined,
-  }));
-
-  // --- Layout ---
   if (!hasSubCircles && !hasRoles) return [];
 
-  // Only roles: single ring centered
-  if (!hasSubCircles) {
-    return placeOnRing(roleItems, containerR * 0.5, -Math.PI / 2);
+  // Seed based on all item IDs for deterministic layout
+  const seedStr = [...subCircles.map(c => c.id), ...roles.map(r => r.id)].join(',');
+  const rng = mulberry32(hashString(seedStr));
+
+  // --- Sub-circle sizing: weight-based ---
+  let circleItems: PackItem[] = [];
+  if (hasSubCircles) {
+    const totalWeight = subCircles.reduce((s, c) => s + c.weight, 0);
+    const avgWeight = totalWeight / subCircles.length;
+    // Base radius scales with how many items we need to fit
+    const baseR = Math.min(
+      containerR * 0.28,
+      containerR / (Math.sqrt(subCircles.length) * 1.4 + 0.6)
+    );
+
+    circleItems = subCircles.map(c => {
+      // Scale radius by weight ratio (clamped to avoid extremes)
+      const wRatio = Math.max(0.7, Math.min(1.4, c.weight / avgWeight));
+      return {
+        id: c.id,
+        type: 'circle' as const,
+        r: baseR * wRatio,
+        label: c.name,
+        color: c.color,
+        icon: c.icon,
+        x: 0,
+        y: 0,
+      };
+    });
   }
 
-  // Only sub-circles: single ring
-  if (!hasRoles) {
-    return placeOnRing(circleItems, containerR * 0.55, -Math.PI / 2);
+  // --- Role sizing ---
+  let roleItems: PackItem[] = [];
+  if (hasRoles) {
+    const roleR = hasSubCircles
+      ? Math.min(18, containerR * 0.07)
+      : Math.min(containerR * 0.15, containerR / (Math.sqrt(roles.length) * 1.3 + 0.6));
+
+    roleItems = roles.map(r => ({
+      id: r.id,
+      type: 'role' as const,
+      r: roleR,
+      label: r.name,
+      color: parentColor,
+      icon: undefined,
+      x: 0,
+      y: 0,
+    }));
   }
 
-  // Both: sub-circles on outer ring, roles on inner ring
-  const outerRing = placeOnRing(circleItems, containerR * 0.58, -Math.PI / 2);
-  // Offset roles to sit between sub-circles
-  const roleAngleOffset = -Math.PI / 2 + Math.PI / Math.max(roles.length, subCircles.length);
-  const innerRing = placeOnRing(roleItems, containerR * 0.22, roleAngleOffset);
+  // --- Layout ---
+  if (hasSubCircles && hasRoles) {
+    // Pack sub-circles in upper/outer region, roles in inner region
+    // Offset sub-circles slightly upward for visual balance
+    packOrganic(circleItems, containerR * 0.92, rng);
+    // Shift circles up slightly
+    for (const c of circleItems) {
+      c.y -= containerR * 0.05;
+    }
+    // Pack roles in a smaller inner area
+    packOrganic(roleItems, containerR * 0.35, rng);
+  } else if (hasSubCircles) {
+    packOrganic(circleItems, containerR * 0.92, rng);
+  } else {
+    packOrganic(roleItems, containerR * 0.75, rng);
+  }
 
-  return [...outerRing, ...innerRing];
+  return [...circleItems, ...roleItems].map(({ x, y, r, id, type, label, color, icon }) => ({
+    id, type, x, y, r, label, color, icon,
+  }));
 }
 
 /**

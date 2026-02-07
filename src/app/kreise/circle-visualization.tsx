@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { buildCircleTree, packCircles, type CircleNode, type LayoutItem } from "@/lib/circle-packing";
 
@@ -28,10 +28,13 @@ const CENTER_X = VB_W / 2;
 const CENTER_Y = VB_H / 2;
 const OUTER_R = 265;
 
+type AnimDir = 'drill-in' | 'drill-out' | null;
+
 export function CircleVisualization({ circles, roles }: CircleVisualizationProps) {
   const router = useRouter();
   const [focusPath, setFocusPath] = useState<string[]>([]);
-  const [hoveredId, setHoveredId] = useState<string | null>(null);
+  const [animClass, setAnimClass] = useState<string | null>(null);
+  const pendingPath = useRef<string[] | null>(null);
 
   const tree = useMemo(() => buildCircleTree(circles, roles), [circles, roles]);
 
@@ -40,6 +43,18 @@ export function CircleVisualization({ circles, roles }: CircleVisualizationProps
     let node: CircleNode = tree;
     for (const id of focusPath) {
       const child = node.children.find(c => c.id === id);
+      if (!child) break;
+      node = child;
+    }
+    return node;
+  }, [tree, focusPath]);
+
+  // Get parent node name for back-navigation label
+  const parentNode = useMemo(() => {
+    if (!tree || focusPath.length === 0) return null;
+    let node: CircleNode = tree;
+    for (let i = 0; i < focusPath.length - 1; i++) {
+      const child = node.children.find(c => c.id === focusPath[i]);
       if (!child) break;
       node = child;
     }
@@ -77,17 +92,44 @@ export function CircleVisualization({ circles, roles }: CircleVisualizationProps
     return packCircles(OUTER_R, subCircles, focusedNode.roles, focusedNode.color);
   }, [focusedNode]);
 
+  // Transition helper
+  const animateTo = useCallback((newPath: string[], dir: AnimDir) => {
+    if (animClass) return; // already animating
+    const exitClass = dir === 'drill-in' ? 'circle-viz-drill-in-exit' : 'circle-viz-drill-out-exit';
+    const enterClass = dir === 'drill-in' ? 'circle-viz-drill-in-enter' : 'circle-viz-drill-out-enter';
+
+    pendingPath.current = newPath;
+    setAnimClass(exitClass);
+
+    setTimeout(() => {
+      setFocusPath(pendingPath.current!);
+      setAnimClass(enterClass);
+      setTimeout(() => {
+        setAnimClass(null);
+        pendingPath.current = null;
+      }, 250);
+    }, 150);
+  }, [animClass]);
+
   const handleCircleClick = useCallback((item: LayoutItem) => {
     if (item.type === 'circle') {
-      setFocusPath(prev => [...prev, item.id]);
+      animateTo([...focusPath, item.id], 'drill-in');
     } else {
       router.push(`/rollen/${item.id}`);
     }
-  }, [router]);
+  }, [router, focusPath, animateTo]);
 
   const handleBreadcrumbClick = useCallback((path: string[]) => {
-    setFocusPath(path);
-  }, []);
+    if (path.length < focusPath.length) {
+      animateTo(path, 'drill-out');
+    }
+  }, [focusPath, animateTo]);
+
+  const drillOut = useCallback(() => {
+    if (focusPath.length > 0) {
+      animateTo(focusPath.slice(0, -1), 'drill-out');
+    }
+  }, [focusPath, animateTo]);
 
   if (!tree || !focusedNode) {
     return (
@@ -145,167 +187,154 @@ export function CircleVisualization({ circles, roles }: CircleVisualizationProps
             strokeWidth={1.5}
           />
 
-          {/* Container label at top */}
-          <text
-            x={CENTER_X}
-            y={CENTER_Y - OUTER_R + 24}
-            textAnchor="middle"
-            className="fill-foreground font-[family-name:var(--font-display)]"
-            fontSize={14}
-            fontWeight={600}
-            opacity={0.45}
-          >
-            {focusedNode.icon ? `${focusedNode.icon} ${focusedNode.name}` : focusedNode.name}
-          </text>
-
-          {/* --- Sub-circles --- */}
-          {subCircleItems.map(item => {
-            const cx = CENTER_X + item.x;
-            const cy = CENTER_Y + item.y;
-            const isHovered = hoveredId === item.id;
-
-            return (
-              <g
-                key={item.id}
-                className="cursor-pointer"
-                onClick={() => handleCircleClick(item)}
-                onMouseEnter={() => setHoveredId(item.id)}
-                onMouseLeave={() => setHoveredId(null)}
+          {/* Container label at top — clickable back-nav when drilled in */}
+          {focusPath.length > 0 && parentNode ? (
+            <g
+              className="circle-viz-back-label"
+              onClick={drillOut}
+              opacity={0.45}
+            >
+              {/* Invisible hit area */}
+              <rect
+                x={CENTER_X - 120}
+                y={CENTER_Y - OUTER_R + 8}
+                width={240}
+                height={28}
+                fill="transparent"
+              />
+              <text
+                x={CENTER_X}
+                y={CENTER_Y - OUTER_R + 24}
+                textAnchor="middle"
+                className="fill-foreground font-[family-name:var(--font-display)]"
+                fontSize={14}
+                fontWeight={600}
               >
-                {/* Hover highlight ring */}
-                {isHovered && (
+                {`\u2190 ${parentNode.icon ? `${parentNode.icon} ` : ''}${parentNode.name}`}
+              </text>
+            </g>
+          ) : (
+            <text
+              x={CENTER_X}
+              y={CENTER_Y - OUTER_R + 24}
+              textAnchor="middle"
+              className="fill-foreground font-[family-name:var(--font-display)]"
+              fontSize={14}
+              fontWeight={600}
+              opacity={0.45}
+            >
+              {focusedNode.icon ? `${focusedNode.icon} ${focusedNode.name}` : focusedNode.name}
+            </text>
+          )}
+
+          {/* Animated content wrapper */}
+          <g className={animClass || undefined}>
+            {/* --- Sub-circles --- */}
+            {subCircleItems.map(item => {
+              const cx = CENTER_X + item.x;
+              const cy = CENTER_Y + item.y;
+
+              return (
+                <g
+                  key={item.id}
+                  className="circle-viz-item cursor-pointer"
+                  style={{ '--cx': `${cx}px`, '--cy': `${cy}px` } as React.CSSProperties}
+                  onClick={() => handleCircleClick(item)}
+                >
+                  {/* Circle shape */}
                   <circle
                     cx={cx}
                     cy={cy}
-                    r={item.r + 3}
-                    fill="none"
+                    r={item.r}
+                    fill={item.color}
+                    fillOpacity={0.08}
                     stroke={item.color}
-                    strokeOpacity={0.35}
-                    strokeWidth={2}
-                    strokeDasharray="4 3"
-                    className="circle-viz-transition"
+                    strokeOpacity={0.25}
+                    strokeWidth={1.5}
+                    className="circle-fill"
                   />
-                )}
 
-                {/* Circle shape */}
-                <circle
-                  cx={cx}
-                  cy={cy}
-                  r={item.r}
-                  fill={item.color}
-                  fillOpacity={isHovered ? 0.15 : 0.08}
-                  stroke={item.color}
-                  strokeOpacity={isHovered ? 0.5 : 0.25}
-                  strokeWidth={1.5}
-                  className="circle-viz-transition"
-                />
-
-                {/* Icon */}
-                {item.icon && (
-                  <text
-                    x={cx}
-                    y={cy - 6}
-                    textAnchor="middle"
-                    dominantBaseline="central"
-                    fontSize={Math.min(item.r * 0.4, 20)}
-                    className="pointer-events-none select-none"
-                  >
-                    {item.icon}
-                  </text>
-                )}
-
-                {/* Label - SVG text, multiline via tspans */}
-                <SubCircleLabel
-                  cx={cx}
-                  cy={item.icon ? cy + item.r * 0.32 : cy}
-                  maxWidth={item.r * 1.6}
-                  label={item.label}
-                  fontSize={Math.min(Math.max(item.r * 0.22, 10), 13)}
-                />
-              </g>
-            );
-          })}
-
-          {/* --- Roles --- */}
-          {roleItems.map(item => {
-            const cx = CENTER_X + item.x;
-            const cy = CENTER_Y + item.y;
-            const isHovered = hoveredId === item.id;
-
-            return (
-              <g
-                key={item.id}
-                className="cursor-pointer"
-                onClick={() => handleCircleClick(item)}
-                onMouseEnter={() => setHoveredId(item.id)}
-                onMouseLeave={() => setHoveredId(null)}
-              >
-                {/* Circle */}
-                <circle
-                  cx={cx}
-                  cy={cy}
-                  r={item.r}
-                  fill={item.color}
-                  fillOpacity={isHovered ? 0.25 : 0.12}
-                  stroke={item.color}
-                  strokeOpacity={isHovered ? 0.5 : 0.2}
-                  strokeWidth={1}
-                  className="circle-viz-transition"
-                />
-
-                {/* Label below the circle */}
-                <text
-                  x={cx}
-                  y={cy + item.r + 12}
-                  textAnchor="middle"
-                  className="pointer-events-none select-none fill-foreground font-[family-name:var(--font-sans)]"
-                  fontSize={9}
-                  opacity={isHovered ? 0.9 : 0.55}
-                >
-                  {truncate(item.label, 18)}
-                </text>
-
-                {/* Tooltip on hover: full name */}
-                {isHovered && item.label.length > 18 && (
-                  <g>
-                    <rect
-                      x={cx - measureText(item.label, 11) / 2 - 6}
-                      y={cy - item.r - 28}
-                      width={measureText(item.label, 11) + 12}
-                      height={20}
-                      rx={6}
-                      fill="var(--card)"
-                      stroke="var(--border)"
-                      strokeWidth={1}
-                    />
+                  {/* Icon */}
+                  {item.icon && (
                     <text
                       x={cx}
-                      y={cy - item.r - 15}
+                      y={cy - 6}
                       textAnchor="middle"
-                      className="fill-foreground font-[family-name:var(--font-sans)]"
-                      fontSize={11}
+                      dominantBaseline="central"
+                      fontSize={Math.min(item.r * 0.4, 20)}
+                      className="pointer-events-none select-none"
                     >
-                      {item.label}
+                      {item.icon}
                     </text>
-                  </g>
-                )}
-              </g>
-            );
-          })}
+                  )}
 
-          {/* Empty state */}
-          {layoutItems.length === 0 && (
-            <text
-              x={CENTER_X}
-              y={CENTER_Y}
-              textAnchor="middle"
-              dominantBaseline="central"
-              className="fill-muted-foreground"
-              fontSize={14}
-            >
-              Keine Rollen in diesem Kreis
-            </text>
-          )}
+                  {/* Label */}
+                  <SubCircleLabel
+                    cx={cx}
+                    cy={item.icon ? cy + item.r * 0.32 : cy}
+                    r={item.r}
+                    label={item.label}
+                    hasIcon={!!item.icon}
+                    fontSize={Math.min(Math.max(item.r * 0.22, 10), 13)}
+                  />
+                </g>
+              );
+            })}
+
+            {/* --- Roles --- */}
+            {roleItems.map(item => {
+              const cx = CENTER_X + item.x;
+              const cy = CENTER_Y + item.y;
+
+              return (
+                <g
+                  key={item.id}
+                  className="circle-viz-item cursor-pointer"
+                  style={{ '--cx': `${cx}px`, '--cy': `${cy}px` } as React.CSSProperties}
+                  onClick={() => handleCircleClick(item)}
+                >
+                  {/* Circle */}
+                  <circle
+                    cx={cx}
+                    cy={cy}
+                    r={item.r}
+                    fill={item.color}
+                    fillOpacity={0.12}
+                    stroke={item.color}
+                    strokeOpacity={0.2}
+                    strokeWidth={1}
+                    className="role-fill"
+                  />
+
+                  {/* Label below */}
+                  <text
+                    x={cx}
+                    y={cy + item.r + 12}
+                    textAnchor="middle"
+                    className="pointer-events-none select-none fill-foreground font-[family-name:var(--font-sans)] circle-label-text"
+                    fontSize={9}
+                    opacity={0.55}
+                  >
+                    {truncateToWidth(item.label, item.r * 2.2, 9)}
+                  </text>
+                </g>
+              );
+            })}
+
+            {/* Empty state */}
+            {layoutItems.length === 0 && (
+              <text
+                x={CENTER_X}
+                y={CENTER_Y}
+                textAnchor="middle"
+                dominantBaseline="central"
+                className="fill-muted-foreground"
+                fontSize={14}
+              >
+                Keine Rollen in diesem Kreis
+              </text>
+            )}
+          </g>
         </svg>
       </div>
 
@@ -324,12 +353,20 @@ export function CircleVisualization({ circles, roles }: CircleVisualizationProps
   );
 }
 
-/** Render a multi-line SVG text label centered at cx, cy */
-function SubCircleLabel({ cx, cy, maxWidth, label, fontSize }: {
-  cx: number; cy: number; maxWidth: number; label: string; fontSize: number;
+/** Render a multi-line SVG text label centered at cx, cy with radius-aware truncation */
+function SubCircleLabel({ cx, cy, r, label, hasIcon, fontSize }: {
+  cx: number; cy: number; r: number; label: string; hasIcon: boolean; fontSize: number;
 }) {
-  const lines = wrapText(label, maxWidth, fontSize);
+  const maxWidth = r * 1.6;
   const lineHeight = fontSize * 1.25;
+
+  // Available vertical space for text inside the circle
+  const topEdge = hasIcon ? cy - r * 0.1 : cy - r * 0.6;
+  const bottomEdge = cy + r * 0.7;
+  const availableHeight = bottomEdge - topEdge;
+  const maxLines = Math.min(3, Math.max(1, Math.floor(availableHeight / lineHeight)));
+
+  const lines = wrapText(label, maxWidth, fontSize, maxLines);
   const startY = cy - ((lines.length - 1) * lineHeight) / 2;
 
   return (
@@ -350,8 +387,8 @@ function SubCircleLabel({ cx, cy, maxWidth, label, fontSize }: {
   );
 }
 
-/** Simple text wrapping by splitting on spaces */
-function wrapText(text: string, maxWidth: number, fontSize: number): string[] {
+/** Text wrapping with max-line capping and ellipsis */
+function wrapText(text: string, maxWidth: number, fontSize: number, maxLines: number): string[] {
   const words = text.split(/\s+/);
   const lines: string[] = [];
   let current = '';
@@ -367,18 +404,31 @@ function wrapText(text: string, maxWidth: number, fontSize: number): string[] {
   }
   if (current) lines.push(current);
 
-  // Max 3 lines, truncate last if needed
-  if (lines.length > 3) {
-    return [...lines.slice(0, 2), lines[2] + '…'];
+  if (lines.length > maxLines) {
+    const truncated = lines.slice(0, maxLines);
+    // Add ellipsis to last line
+    let lastLine = truncated[maxLines - 1];
+    while (measureText(lastLine + '…', fontSize) > maxWidth && lastLine.length > 1) {
+      lastLine = lastLine.slice(0, -1).trimEnd();
+    }
+    truncated[maxLines - 1] = lastLine + '…';
+    return truncated;
   }
+
   return lines;
 }
 
-/** Rough text width measurement (avg char width ≈ 0.55 * fontSize) */
+/** Rough text width measurement (avg char width ~ 0.55 * fontSize) */
 function measureText(text: string, fontSize: number): number {
   return text.length * fontSize * 0.55;
 }
 
-function truncate(text: string, max: number): string {
-  return text.length > max ? text.slice(0, max - 1) + '…' : text;
+/** Truncate text to fit a width */
+function truncateToWidth(text: string, maxWidth: number, fontSize: number): string {
+  if (measureText(text, fontSize) <= maxWidth) return text;
+  let t = text;
+  while (t.length > 1 && measureText(t + '…', fontSize) > maxWidth) {
+    t = t.slice(0, -1);
+  }
+  return t + '…';
 }
