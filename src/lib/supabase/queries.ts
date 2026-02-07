@@ -174,7 +174,7 @@ export async function getRoleById(id: string) {
     .from('role_assignments')
     .select(`
       *,
-      person:persons(id, name, email, phone)
+      person:persons(id, name, email, phone, avatar_color)
     `)
     .eq('role_id', id)
     .is('valid_until', null);
@@ -186,6 +186,7 @@ export async function getRoleById(id: string) {
       name: a.person.name,
       email: a.person.email,
       phone: a.person.phone,
+      avatar_color: a.person.avatar_color,
       since: a.valid_from,
     }));
 
