@@ -1,16 +1,16 @@
 import type { Metadata, Viewport } from "next";
-import { Outfit, Nunito_Sans } from "next/font/google";
+import { Space_Grotesk, Inter } from "next/font/google";
 import "./globals.css";
 
-const outfit = Outfit({
+const spaceGrotesk = Space_Grotesk({
   subsets: ["latin"],
-  variable: "--font-outfit",
+  variable: "--font-space-grotesk",
   display: "swap",
 });
 
-const nunitoSans = Nunito_Sans({
+const inter = Inter({
   subsets: ["latin"],
-  variable: "--font-nunito-sans",
+  variable: "--font-inter",
   display: "swap",
 });
 
@@ -44,7 +44,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="de" suppressHydrationWarning className={`${outfit.variable} ${nunitoSans.variable}`}>
+    <html lang="de" suppressHydrationWarning className={`${spaceGrotesk.variable} ${inter.variable}`}>
       <body className="antialiased min-h-screen bg-background">
         {children}
       </body>

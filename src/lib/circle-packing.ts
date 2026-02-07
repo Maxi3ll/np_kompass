@@ -227,8 +227,12 @@ export function packCircles(
   // --- Role sizing ---
   let roleItems: PackItem[] = [];
   if (hasRoles) {
+    const totalItems = subCircles.length + roles.length;
     const roleR = hasSubCircles
-      ? Math.min(18, containerR * 0.07)
+      ? Math.min(
+          containerR * 0.14,
+          containerR / (Math.sqrt(totalItems) * 1.7)
+        )
       : Math.min(containerR * 0.15, containerR / (Math.sqrt(roles.length) * 1.3 + 0.6));
 
     roleItems = roles.map(r => ({

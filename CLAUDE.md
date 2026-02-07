@@ -100,7 +100,7 @@ Login page and auth callback do NOT use AppShell.
 
 ### Domain Model (German terms)
 - **Kreis** (Circle): Organizational unit with purpose and parent hierarchy
-- **Rolle** (Role): Function within a circle with domains and accountabilities
+- **Rolle** (Role): Function within a circle with domains and accountabilities (supports multiple holders)
 - **Spannung** (Tension): Issue/improvement opportunity to be resolved
 - **Familie** (Family): Member family unit
 - **Person**: Individual member with auth, avatar color, and family relationship
@@ -108,7 +108,7 @@ Login page and auth callback do NOT use AppShell.
 ### Database
 PostgreSQL tables with RLS enabled. Key tables: `circles`, `roles`, `role_assignments`, `tensions`, `persons`, `families`, `allowed_emails`, `notifications`. Two views: `current_role_holders`, `circle_stats`.
 
-Role history maintained via `role_assignments` with `valid_from`/`valid_until` dates.
+Roles support multiple simultaneous holders. The `role_assignments` table uses a `UNIQUE(role_id, person_id, valid_until)` constraint — the same person can't be assigned twice, but different persons can hold the same role. Role history maintained via `role_assignments` with `valid_from`/`valid_until` dates.
 
 Migrations:
 - `001_initial_schema.sql` - Full schema + RLS policies
@@ -117,6 +117,7 @@ Migrations:
 - `004_person_avatar_color.sql` - Avatar color column on persons
 - `005_notifications.sql` - Notifications table with RLS
 - `006_replace_circles_roles.sql` - Real Neckarpiraten circles (10) and roles (43)
+- `007_multi_holders.sql` - Allow multiple persons per role (drops old unique constraint)
 
 ### Auth Flow
 1. User logs in via email + password (Supabase Auth)
@@ -138,7 +139,7 @@ Migrations:
 - Admin is determined by the first email in the `ALLOWED_EMAILS` environment variable
 - `isCurrentUserAdmin()` in `src/lib/supabase/actions.ts` checks this
 - Admin actions are rendered inline on existing pages (not a separate admin area)
-- Admin can: manage circles (CRUD), roles (CRUD), role assignments, email allowlist
+- Admin can: manage circles (CRUD), roles (CRUD), role assignments (multiple holders per role), email allowlist
 - Persons are auto-created when an email+name is added to the allowlist
 - Email allowlist stored in `allowed_emails` Supabase table with env-variable fallback
 - All admin write operations use `createServiceClient()` to bypass RLS
@@ -146,7 +147,7 @@ Migrations:
 ## UI/Design Conventions
 
 - **Colors**: Neckarpiraten blue (#4A90D9) + yellow (#F5C842), defined as CSS variables
-- **Fonts**: Outfit (headings), Nunito Sans (body)
+- **Fonts**: Space Grotesk (headings), Inter (body)
 - **Responsive**: Mobile bottom-nav + desktop sidebar, `lg:` breakpoint (1024px)
 - **Touch targets**: 48px minimum on mobile
 - **Components**: Use existing shadcn/ui components from `src/components/ui/`

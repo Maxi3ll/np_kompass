@@ -26,8 +26,8 @@ const VB_W = 800;
 const VB_H = 600;
 const CENTER_X = VB_W / 2;
 const CENTER_Y = VB_H / 2;
-const CONTENT_R = 245;       // inner content circle
-const PARENT_RING_R = 280;   // outer parent ring (only when drilled in)
+const CONTENT_R = 245;
+const PARENT_RING_R = 280;
 
 type AnimDir = 'drill-in' | 'drill-out' | null;
 
@@ -35,6 +35,7 @@ export function CircleVisualization({ circles, roles }: CircleVisualizationProps
   const router = useRouter();
   const [focusPath, setFocusPath] = useState<string[]>([]);
   const [animClass, setAnimClass] = useState<string | null>(null);
+  const [hoveredId, setHoveredId] = useState<string | null>(null);
   const pendingPath = useRef<string[] | null>(null);
 
   const tree = useMemo(() => buildCircleTree(circles, roles), [circles, roles]);
@@ -94,7 +95,6 @@ export function CircleVisualization({ circles, roles }: CircleVisualizationProps
     return packCircles(CONTENT_R, subCircles, focusedNode.roles, focusedNode.color);
   }, [focusedNode]);
 
-  // Transition helper
   const animateTo = useCallback((newPath: string[], dir: AnimDir) => {
     if (animClass) return;
     const exitClass = dir === 'drill-in' ? 'circle-viz-drill-in-exit' : 'circle-viz-drill-out-exit';
@@ -183,7 +183,6 @@ export function CircleVisualization({ circles, roles }: CircleVisualizationProps
           {/* === Outer parent ring (only when drilled in) === */}
           {isDrilledIn && parentNode && (
             <g className="circle-viz-outer-ring" onClick={drillOut}>
-              {/* Ring fill between PARENT_RING_R and CONTENT_R */}
               <circle
                 cx={CENTER_X}
                 cy={CENTER_Y}
@@ -194,7 +193,6 @@ export function CircleVisualization({ circles, roles }: CircleVisualizationProps
                 strokeOpacity={0.15}
                 strokeWidth={1}
               />
-              {/* Invisible clickable ring area */}
               <circle
                 cx={CENTER_X}
                 cy={CENTER_Y}
@@ -204,8 +202,6 @@ export function CircleVisualization({ circles, roles }: CircleVisualizationProps
                 strokeWidth={PARENT_RING_R - CONTENT_R}
                 className="cursor-pointer"
               />
-
-              {/* Parent name along top of outer ring */}
               <text
                 x={CENTER_X}
                 y={CENTER_Y - PARENT_RING_R + 16}
@@ -300,6 +296,11 @@ export function CircleVisualization({ circles, roles }: CircleVisualizationProps
             {roleItems.map(item => {
               const cx = CENTER_X + item.x;
               const cy = CENTER_Y + item.y;
+              const isHovered = hoveredId === item.id;
+              const roleFontSize = Math.max(9, Math.min(11, item.r * 0.32));
+              const labelMaxW = item.r * 3.2;
+              const displayLabel = truncateToWidth(item.label, labelMaxW, roleFontSize);
+              const isTruncated = displayLabel !== item.label;
 
               return (
                 <g
@@ -307,6 +308,8 @@ export function CircleVisualization({ circles, roles }: CircleVisualizationProps
                   className="circle-viz-item cursor-pointer"
                   style={{ '--cx': `${cx}px`, '--cy': `${cy}px` } as React.CSSProperties}
                   onClick={() => handleCircleClick(item)}
+                  onMouseEnter={() => setHoveredId(item.id)}
+                  onMouseLeave={() => setHoveredId(null)}
                 >
                   <circle
                     cx={cx}
@@ -322,14 +325,39 @@ export function CircleVisualization({ circles, roles }: CircleVisualizationProps
 
                   <text
                     x={cx}
-                    y={cy + item.r + 12}
+                    y={cy + item.r + 13}
                     textAnchor="middle"
                     className="pointer-events-none select-none fill-foreground font-[family-name:var(--font-sans)] circle-label-text"
-                    fontSize={9}
-                    opacity={0.55}
+                    fontSize={roleFontSize}
+                    opacity={isHovered ? 0.9 : 0.6}
                   >
-                    {truncateToWidth(item.label, item.r * 2.2, 9)}
+                    {displayLabel}
                   </text>
+
+                  {/* Tooltip on hover for truncated names */}
+                  {isHovered && isTruncated && (
+                    <g className="pointer-events-none">
+                      <rect
+                        x={cx - measureText(item.label, 11) / 2 - 8}
+                        y={cy - item.r - 30}
+                        width={measureText(item.label, 11) + 16}
+                        height={22}
+                        rx={6}
+                        fill="var(--card)"
+                        stroke="var(--border)"
+                        strokeWidth={1}
+                      />
+                      <text
+                        x={cx}
+                        y={cy - item.r - 16}
+                        textAnchor="middle"
+                        className="fill-foreground font-[family-name:var(--font-sans)]"
+                        fontSize={11}
+                      >
+                        {item.label}
+                      </text>
+                    </g>
+                  )}
                 </g>
               );
             })}
