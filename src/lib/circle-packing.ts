@@ -56,16 +56,18 @@ interface PackItem {
 /**
  * Place items organically inside a container circle using
  * best-candidate sampling + overlap relaxation.
+ * Optionally avoids existing "obstacle" items (e.g. sub-circles when placing roles).
  */
 function packOrganic(
   items: PackItem[],
   containerR: number,
-  rng: () => number
+  rng: () => number,
+  obstacles: PackItem[] = []
 ): void {
   if (items.length === 0) return;
 
-  // Single item: center it
-  if (items.length === 1) {
+  // Single item: center it (but check for obstacles)
+  if (items.length === 1 && obstacles.length === 0) {
     items[0].x = 0;
     items[0].y = 0;
     return;
@@ -80,23 +82,21 @@ function packOrganic(
     let bestX = 0;
     let bestY = 0;
     let bestScore = -Infinity;
-    const candidates = 50;
+    const candidates = 60;
 
     for (let c = 0; c < candidates; c++) {
-      // Random point inside container, leaving margin for item radius
       const maxR = containerR - item.r - 4;
       if (maxR <= 0) {
-        // Item too big, just center
         bestX = 0;
         bestY = 0;
         break;
       }
       const angle = rng() * Math.PI * 2;
-      const dist = Math.sqrt(rng()) * maxR; // sqrt for uniform area distribution
+      const dist = Math.sqrt(rng()) * maxR;
       const cx = Math.cos(angle) * dist;
       const cy = Math.sin(angle) * dist;
 
-      // Score: minimum distance to any placed item (higher = more space)
+      // Min distance to already-placed items of same type
       let minDist = Infinity;
       for (const p of placed) {
         const dx = cx - p.x;
@@ -104,7 +104,17 @@ function packOrganic(
         const d = Math.sqrt(dx * dx + dy * dy) - p.r - item.r;
         minDist = Math.min(minDist, d);
       }
-      // Also consider distance from container edge
+
+      // Min distance to obstacles (with extra gap to keep clear)
+      const obstacleGap = 8;
+      for (const o of obstacles) {
+        const dx = cx - o.x;
+        const dy = cy - o.y;
+        const d = Math.sqrt(dx * dx + dy * dy) - o.r - item.r - obstacleGap;
+        minDist = Math.min(minDist, d);
+      }
+
+      // Distance from container edge
       const edgeDist = containerR - Math.sqrt(cx * cx + cy * cy) - item.r;
       minDist = Math.min(minDist, edgeDist);
 
@@ -122,10 +132,11 @@ function packOrganic(
 
   // --- Relaxation: resolve overlaps ---
   const gap = 5;
-  for (let iter = 0; iter < 4; iter++) {
+  const obstGap = 10;
+  for (let iter = 0; iter < 5; iter++) {
     for (let i = 0; i < items.length; i++) {
       const a = items[i];
-      // Push away from other items
+      // Push away from siblings
       for (let j = i + 1; j < items.length; j++) {
         const b = items[j];
         const dx = b.x - a.x;
@@ -140,6 +151,20 @@ function packOrganic(
           a.y -= ny * overlap * 0.5;
           b.x += nx * overlap * 0.5;
           b.y += ny * overlap * 0.5;
+        }
+      }
+      // Push away from obstacles (obstacles don't move)
+      for (const o of obstacles) {
+        const dx = a.x - o.x;
+        const dy = a.y - o.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        const minDist = a.r + o.r + obstGap;
+        if (dist < minDist && dist > 0.01) {
+          const push = minDist - dist;
+          const nx = dx / dist;
+          const ny = dy / dist;
+          a.x += nx * push;
+          a.y += ny * push;
         }
       }
       // Push back inside container
@@ -220,15 +245,10 @@ export function packCircles(
 
   // --- Layout ---
   if (hasSubCircles && hasRoles) {
-    // Pack sub-circles in upper/outer region, roles in inner region
-    // Offset sub-circles slightly upward for visual balance
+    // Pack sub-circles first
     packOrganic(circleItems, containerR * 0.92, rng);
-    // Shift circles up slightly
-    for (const c of circleItems) {
-      c.y -= containerR * 0.05;
-    }
-    // Pack roles in a smaller inner area
-    packOrganic(roleItems, containerR * 0.35, rng);
+    // Pack roles avoiding sub-circles — they'll cluster in gaps
+    packOrganic(roleItems, containerR * 0.88, rng, circleItems);
   } else if (hasSubCircles) {
     packOrganic(circleItems, containerR * 0.92, rng);
   } else {

@@ -374,14 +374,26 @@
   opacity: 0.9;
 }
 
-/* Circle viz: clickable outer label hover */
-.circle-viz-back-label {
-  transition: opacity 0.2s ease;
+/* Circle viz: outer parent ring hover */
+.circle-viz-outer-ring {
   cursor: pointer;
 }
 
-.circle-viz-back-label:hover {
-  opacity: 0.85 !important;
+.circle-viz-outer-ring circle:first-child {
+  transition: fill-opacity 0.2s ease, stroke-opacity 0.2s ease;
+}
+
+.circle-viz-outer-ring:hover circle:first-child {
+  fill-opacity: 0.1;
+  stroke-opacity: 0.3;
+}
+
+.circle-viz-outer-ring text {
+  transition: opacity 0.2s ease;
+}
+
+.circle-viz-outer-ring:hover text {
+  opacity: 0.7 !important;
 }
 
 /* Circle viz: drill transition keyframes */

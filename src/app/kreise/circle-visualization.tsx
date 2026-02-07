@@ -26,7 +26,8 @@ const VB_W = 800;
 const VB_H = 600;
 const CENTER_X = VB_W / 2;
 const CENTER_Y = VB_H / 2;
-const OUTER_R = 265;
+const CONTENT_R = 245;       // inner content circle
+const PARENT_RING_R = 280;   // outer parent ring (only when drilled in)
 
 type AnimDir = 'drill-in' | 'drill-out' | null;
 
@@ -49,7 +50,6 @@ export function CircleVisualization({ circles, roles }: CircleVisualizationProps
     return node;
   }, [tree, focusPath]);
 
-  // Get parent node name for back-navigation label
   const parentNode = useMemo(() => {
     if (!tree || focusPath.length === 0) return null;
     let node: CircleNode = tree;
@@ -80,6 +80,8 @@ export function CircleVisualization({ circles, roles }: CircleVisualizationProps
     return trail;
   }, [tree, focusPath]);
 
+  const isDrilledIn = focusPath.length > 0;
+
   const layoutItems = useMemo(() => {
     if (!focusedNode) return [];
     const subCircles = focusedNode.children.map(c => ({
@@ -89,12 +91,12 @@ export function CircleVisualization({ circles, roles }: CircleVisualizationProps
       icon: c.icon,
       weight: c.roles.length + c.children.length * 2 + 1,
     }));
-    return packCircles(OUTER_R, subCircles, focusedNode.roles, focusedNode.color);
+    return packCircles(CONTENT_R, subCircles, focusedNode.roles, focusedNode.color);
   }, [focusedNode]);
 
   // Transition helper
   const animateTo = useCallback((newPath: string[], dir: AnimDir) => {
-    if (animClass) return; // already animating
+    if (animClass) return;
     const exitClass = dir === 'drill-in' ? 'circle-viz-drill-in-exit' : 'circle-viz-drill-out-exit';
     const enterClass = dir === 'drill-in' ? 'circle-viz-drill-in-enter' : 'circle-viz-drill-out-enter';
 
@@ -141,6 +143,9 @@ export function CircleVisualization({ circles, roles }: CircleVisualizationProps
 
   const subCircleItems = layoutItems.filter(i => i.type === 'circle');
   const roleItems = layoutItems.filter(i => i.type === 'role');
+  const parentLabel = parentNode
+    ? `${parentNode.icon ? `${parentNode.icon} ` : ''}${parentNode.name}`
+    : '';
 
   return (
     <div className="bg-card rounded-2xl shadow-card border border-border/50 overflow-hidden">
@@ -175,11 +180,51 @@ export function CircleVisualization({ circles, roles }: CircleVisualizationProps
           role="img"
           aria-label={`Kreisvisualisierung: ${focusedNode.name}`}
         >
-          {/* Outer container circle */}
+          {/* === Outer parent ring (only when drilled in) === */}
+          {isDrilledIn && parentNode && (
+            <g className="circle-viz-outer-ring" onClick={drillOut}>
+              {/* Ring fill between PARENT_RING_R and CONTENT_R */}
+              <circle
+                cx={CENTER_X}
+                cy={CENTER_Y}
+                r={PARENT_RING_R}
+                fill={parentNode.color}
+                fillOpacity={0.04}
+                stroke={parentNode.color}
+                strokeOpacity={0.15}
+                strokeWidth={1}
+              />
+              {/* Invisible clickable ring area */}
+              <circle
+                cx={CENTER_X}
+                cy={CENTER_Y}
+                r={(PARENT_RING_R + CONTENT_R) / 2}
+                fill="transparent"
+                stroke="transparent"
+                strokeWidth={PARENT_RING_R - CONTENT_R}
+                className="cursor-pointer"
+              />
+
+              {/* Parent name along top of outer ring */}
+              <text
+                x={CENTER_X}
+                y={CENTER_Y - PARENT_RING_R + 16}
+                textAnchor="middle"
+                className="fill-foreground font-[family-name:var(--font-display)] pointer-events-none"
+                fontSize={12}
+                fontWeight={500}
+                opacity={0.35}
+              >
+                {`\u2190 ${parentLabel}`}
+              </text>
+            </g>
+          )}
+
+          {/* === Inner content circle === */}
           <circle
             cx={CENTER_X}
             cy={CENTER_Y}
-            r={OUTER_R}
+            r={CONTENT_R}
             fill={focusedNode.color}
             fillOpacity={0.05}
             stroke={focusedNode.color}
@@ -187,45 +232,18 @@ export function CircleVisualization({ circles, roles }: CircleVisualizationProps
             strokeWidth={1.5}
           />
 
-          {/* Container label at top — clickable back-nav when drilled in */}
-          {focusPath.length > 0 && parentNode ? (
-            <g
-              className="circle-viz-back-label"
-              onClick={drillOut}
-              opacity={0.45}
-            >
-              {/* Invisible hit area */}
-              <rect
-                x={CENTER_X - 120}
-                y={CENTER_Y - OUTER_R + 8}
-                width={240}
-                height={28}
-                fill="transparent"
-              />
-              <text
-                x={CENTER_X}
-                y={CENTER_Y - OUTER_R + 24}
-                textAnchor="middle"
-                className="fill-foreground font-[family-name:var(--font-display)]"
-                fontSize={14}
-                fontWeight={600}
-              >
-                {`\u2190 ${parentNode.icon ? `${parentNode.icon} ` : ''}${parentNode.name}`}
-              </text>
-            </g>
-          ) : (
-            <text
-              x={CENTER_X}
-              y={CENTER_Y - OUTER_R + 24}
-              textAnchor="middle"
-              className="fill-foreground font-[family-name:var(--font-display)]"
-              fontSize={14}
-              fontWeight={600}
-              opacity={0.45}
-            >
-              {focusedNode.icon ? `${focusedNode.icon} ${focusedNode.name}` : focusedNode.name}
-            </text>
-          )}
+          {/* === Current circle name (always visible inside) === */}
+          <text
+            x={CENTER_X}
+            y={CENTER_Y - CONTENT_R + 24}
+            textAnchor="middle"
+            className="fill-foreground font-[family-name:var(--font-display)] pointer-events-none"
+            fontSize={14}
+            fontWeight={600}
+            opacity={0.45}
+          >
+            {focusedNode.icon ? `${focusedNode.icon} ${focusedNode.name}` : focusedNode.name}
+          </text>
 
           {/* Animated content wrapper */}
           <g className={animClass || undefined}>
@@ -241,7 +259,6 @@ export function CircleVisualization({ circles, roles }: CircleVisualizationProps
                   style={{ '--cx': `${cx}px`, '--cy': `${cy}px` } as React.CSSProperties}
                   onClick={() => handleCircleClick(item)}
                 >
-                  {/* Circle shape */}
                   <circle
                     cx={cx}
                     cy={cy}
@@ -254,7 +271,6 @@ export function CircleVisualization({ circles, roles }: CircleVisualizationProps
                     className="circle-fill"
                   />
 
-                  {/* Icon */}
                   {item.icon && (
                     <text
                       x={cx}
@@ -268,7 +284,6 @@ export function CircleVisualization({ circles, roles }: CircleVisualizationProps
                     </text>
                   )}
 
-                  {/* Label */}
                   <SubCircleLabel
                     cx={cx}
                     cy={item.icon ? cy + item.r * 0.32 : cy}
@@ -293,7 +308,6 @@ export function CircleVisualization({ circles, roles }: CircleVisualizationProps
                   style={{ '--cx': `${cx}px`, '--cy': `${cy}px` } as React.CSSProperties}
                   onClick={() => handleCircleClick(item)}
                 >
-                  {/* Circle */}
                   <circle
                     cx={cx}
                     cy={cy}
@@ -306,7 +320,6 @@ export function CircleVisualization({ circles, roles }: CircleVisualizationProps
                     className="role-fill"
                   />
 
-                  {/* Label below */}
                   <text
                     x={cx}
                     y={cy + item.r + 12}
@@ -360,7 +373,6 @@ function SubCircleLabel({ cx, cy, r, label, hasIcon, fontSize }: {
   const maxWidth = r * 1.6;
   const lineHeight = fontSize * 1.25;
 
-  // Available vertical space for text inside the circle
   const topEdge = hasIcon ? cy - r * 0.1 : cy - r * 0.6;
   const bottomEdge = cy + r * 0.7;
   const availableHeight = bottomEdge - topEdge;
@@ -406,29 +418,26 @@ function wrapText(text: string, maxWidth: number, fontSize: number, maxLines: nu
 
   if (lines.length > maxLines) {
     const truncated = lines.slice(0, maxLines);
-    // Add ellipsis to last line
     let lastLine = truncated[maxLines - 1];
-    while (measureText(lastLine + '…', fontSize) > maxWidth && lastLine.length > 1) {
+    while (measureText(lastLine + '\u2026', fontSize) > maxWidth && lastLine.length > 1) {
       lastLine = lastLine.slice(0, -1).trimEnd();
     }
-    truncated[maxLines - 1] = lastLine + '…';
+    truncated[maxLines - 1] = lastLine + '\u2026';
     return truncated;
   }
 
   return lines;
 }
 
-/** Rough text width measurement (avg char width ~ 0.55 * fontSize) */
 function measureText(text: string, fontSize: number): number {
   return text.length * fontSize * 0.55;
 }
 
-/** Truncate text to fit a width */
 function truncateToWidth(text: string, maxWidth: number, fontSize: number): string {
   if (measureText(text, fontSize) <= maxWidth) return text;
   let t = text;
-  while (t.length > 1 && measureText(t + '…', fontSize) > maxWidth) {
+  while (t.length > 1 && measureText(t + '\u2026', fontSize) > maxWidth) {
     t = t.slice(0, -1);
   }
-  return t + '…';
+  return t + '\u2026';
 }
