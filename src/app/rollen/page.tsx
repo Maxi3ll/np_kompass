@@ -128,8 +128,12 @@ export default async function RollenPage({ searchParams }: PageProps) {
                                     <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
                                     <circle cx="12" cy="7" r="4" />
                                   </svg>
-                                  {role.holder ? (
-                                    <span className="text-foreground">{role.holder.name?.split(" ")[0]}</span>
+                                  {role.holders && role.holders.length > 0 ? (
+                                    <span className="text-foreground">
+                                      {role.holders.length === 1
+                                        ? role.holders[0].name?.split(" ")[0]
+                                        : `${role.holders.length} Personen`}
+                                    </span>
                                   ) : (
                                     <span className="italic">Vakant</span>
                                   )}

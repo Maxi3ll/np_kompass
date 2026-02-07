@@ -30,9 +30,10 @@ interface AssignDialogProps {
   onOpenChange: (open: boolean) => void;
   roleId: string;
   persons: Person[];
+  currentHolderIds?: string[];
 }
 
-export function AssignDialog({ open, onOpenChange, roleId, persons }: AssignDialogProps) {
+export function AssignDialog({ open, onOpenChange, roleId, persons, currentHolderIds = [] }: AssignDialogProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [personId, setPersonId] = useState("");
@@ -71,27 +72,32 @@ export function AssignDialog({ open, onOpenChange, roleId, persons }: AssignDial
             </div>
           )}
 
-          {persons.length === 0 ? (
-            <p className="text-sm text-muted-foreground">
-              Keine Personen verfügbar. Bitte erst Mitglieder über die Profil-Seite (E-Mail-Allowlist) hinzufügen.
-            </p>
-          ) : (
-            <Select value={personId} onValueChange={setPersonId}>
-              <SelectTrigger className="h-12 rounded-xl w-full">
-                <SelectValue placeholder="Person auswählen..." />
-              </SelectTrigger>
-              <SelectContent>
-                {persons.map((person) => (
-                  <SelectItem key={person.id} value={person.id}>
-                    <div>
-                      <span className="font-medium">{person.name}</span>
-                      <span className="text-muted-foreground ml-2 text-xs">{person.email}</span>
-                    </div>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          )}
+          {(() => {
+            const availablePersons = persons.filter(p => !currentHolderIds.includes(p.id));
+            return availablePersons.length === 0 ? (
+              <p className="text-sm text-muted-foreground">
+                {persons.length === 0
+                  ? "Keine Personen verfügbar. Bitte erst Mitglieder über die Profil-Seite (E-Mail-Allowlist) hinzufügen."
+                  : "Alle Personen sind dieser Rolle bereits zugewiesen."}
+              </p>
+            ) : (
+              <Select value={personId} onValueChange={setPersonId}>
+                <SelectTrigger className="h-12 rounded-xl w-full">
+                  <SelectValue placeholder="Person auswählen..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {availablePersons.map((person) => (
+                    <SelectItem key={person.id} value={person.id}>
+                      <div>
+                        <span className="font-medium">{person.name}</span>
+                        <span className="text-muted-foreground ml-2 text-xs">{person.email}</span>
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            );
+          })()}
         </div>
 
         <DialogFooter>

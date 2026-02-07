@@ -688,14 +688,7 @@ export async function assignRole(roleId: string, personId: string) {
 
   const serviceClient = createServiceClient();
 
-  // End current assignment if any
-  await serviceClient
-    .from('role_assignments')
-    .update({ valid_until: new Date().toISOString().split('T')[0] })
-    .eq('role_id', roleId)
-    .is('valid_until', null);
-
-  // Create new assignment
+  // Create new assignment (additive — does not end existing holders)
   const { error } = await serviceClient
     .from('role_assignments')
     .insert({
@@ -767,30 +760,23 @@ export async function updateProfile(personId: string, data: { name?: string; ava
   return { success: true };
 }
 
-export async function unassignRole(roleId: string) {
+export async function unassignRole(roleId: string, personId: string) {
   const isAdmin = await isCurrentUserAdmin();
   if (!isAdmin) return { error: 'unauthorized' };
 
   const serviceClient = createServiceClient();
 
-  // Get current holder BEFORE unassigning (for notification)
-  const { data: currentAssignment } = await serviceClient
-    .from('role_assignments')
-    .select('person_id')
-    .eq('role_id', roleId)
-    .is('valid_until', null)
-    .single();
-
   const { error } = await serviceClient
     .from('role_assignments')
     .update({ valid_until: new Date().toISOString().split('T')[0] })
     .eq('role_id', roleId)
+    .eq('person_id', personId)
     .is('valid_until', null);
 
   if (error) return { error: error.message };
 
   // Send notification to former holder
-  if (currentAssignment) {
+  if (personId) {
     const { data: roleData } = await serviceClient
       .from('roles')
       .select('name, circle_id, circle:circles(name)')
@@ -799,7 +785,7 @@ export async function unassignRole(roleId: string) {
 
     if (roleData) {
       await createNotification({
-        personId: currentAssignment.person_id,
+        personId,
         type: 'ROLE_UNASSIGNED',
         title: 'Rolle beendet',
         message: `Deine Rolle "${roleData.name}" im Kreis "${(roleData.circle as any)?.name}" wurde beendet.`,

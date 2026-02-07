@@ -47,48 +47,53 @@ export default async function RollenDetailPage({ params }: PageProps) {
         </div>
 
         <div className="px-5 max-w-2xl mx-auto lg:max-w-4xl space-y-6">
-          {/* Current Holder Card */}
+          {/* Current Holders Card */}
           <div className="bg-card rounded-2xl shadow-card border border-border/50 overflow-hidden">
-            {role.holder_name ? (
-              <div className="p-5">
-                <div className="flex items-center gap-4">
-                  <div className="w-14 h-14 rounded-full bg-gradient-to-br from-[var(--np-blue)] to-[var(--np-blue-dark)] flex items-center justify-center text-white text-lg font-semibold">
-                    {role.holder_name.split(' ').map((n: string) => n[0]).join('').slice(0, 2)}
-                  </div>
-                  <div className="flex-1">
-                    <p className="font-semibold text-foreground text-lg">{role.holder_name}</p>
-                    <p className="text-sm text-muted-foreground">
-                      seit {new Date(role.holder_since).toLocaleDateString('de-DE', { day: 'numeric', month: 'long', year: 'numeric' })}
-                    </p>
-                  </div>
-                </div>
+            {role.holders && role.holders.length > 0 ? (
+              <div className="p-5 space-y-4">
+                {role.holders.map((holder: any, index: number) => (
+                  <div key={holder.id}>
+                    {index > 0 && <div className="border-t border-border/50 -mx-5 mb-4" />}
+                    <div className="flex items-center gap-4">
+                      <div className="w-14 h-14 rounded-full bg-gradient-to-br from-[var(--np-blue)] to-[var(--np-blue-dark)] flex items-center justify-center text-white text-lg font-semibold">
+                        {holder.name.split(' ').map((n: string) => n[0]).join('').slice(0, 2)}
+                      </div>
+                      <div className="flex-1">
+                        <p className="font-semibold text-foreground text-lg">{holder.name}</p>
+                        <p className="text-sm text-muted-foreground">
+                          seit {new Date(holder.since).toLocaleDateString('de-DE', { day: 'numeric', month: 'long', year: 'numeric' })}
+                        </p>
+                      </div>
+                    </div>
 
-                {/* Contact Buttons */}
-                <div className="flex gap-2 mt-4">
-                  {role.holder_email && (
-                    <a
-                      href={`mailto:${role.holder_email}`}
-                      className="flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-primary text-primary-foreground font-medium text-sm transition-all hover:bg-primary/90 active:scale-[0.98]"
-                    >
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
-                        <polyline points="22,6 12,13 2,6" />
-                      </svg>
-                      E-Mail
-                    </a>
-                  )}
-                  {role.holder_phone && (
-                    <a
-                      href={`tel:${role.holder_phone}`}
-                      className="flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-[var(--np-yellow)] text-[#5a4a00] font-medium text-sm transition-all hover:bg-[var(--np-yellow-dark)] active:scale-[0.98]"
-                    >
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
-                      </svg>
-                      Anrufen
-                    </a>
-                  )}
-                </div>
+                    {/* Contact Buttons */}
+                    <div className="flex gap-2 mt-4">
+                      {holder.email && (
+                        <a
+                          href={`mailto:${holder.email}`}
+                          className="flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-primary text-primary-foreground font-medium text-sm transition-all hover:bg-primary/90 active:scale-[0.98]"
+                        >
+                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+                            <polyline points="22,6 12,13 2,6" />
+                          </svg>
+                          E-Mail
+                        </a>
+                      )}
+                      {holder.phone && (
+                        <a
+                          href={`tel:${holder.phone}`}
+                          className="flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-[var(--np-yellow)] text-[#5a4a00] font-medium text-sm transition-all hover:bg-[var(--np-yellow-dark)] active:scale-[0.98]"
+                        >
+                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
+                          </svg>
+                          Anrufen
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                ))}
               </div>
             ) : (
               <div className="p-5">
@@ -224,7 +229,7 @@ export default async function RollenDetailPage({ params }: PageProps) {
                 domains: role.domains,
                 accountabilities: role.accountabilities,
               }}
-              hasHolder={!!role.holder_name}
+              holders={role.holders || []}
               circleId={role.circle_id}
               persons={persons}
             />

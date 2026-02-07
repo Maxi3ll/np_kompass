@@ -64,6 +64,33 @@ export async function getCircleWithRoles(id: string) {
     return { ...circle, roles: [] };
   }
 
+  // Group rows by role (view returns one row per holder)
+  const roleMap = new Map<string, any>();
+  for (const row of (roles || [])) {
+    if (!roleMap.has(row.role_id)) {
+      roleMap.set(row.role_id, {
+        role_id: row.role_id,
+        role_name: row.role_name,
+        role_purpose: row.role_purpose,
+        domains: row.domains,
+        accountabilities: row.accountabilities,
+        circle_id: row.circle_id,
+        circle_name: row.circle_name,
+        holders: [],
+      });
+    }
+    if (row.holder_id) {
+      roleMap.get(row.role_id).holders.push({
+        id: row.holder_id,
+        name: row.holder_name,
+        email: row.holder_email,
+        phone: row.holder_phone,
+        since: row.holder_since,
+      });
+    }
+  }
+  const groupedRoles = Array.from(roleMap.values());
+
   // Get open tensions count
   const { count: openTensions } = await supabase
     .from('tensions')
@@ -73,7 +100,7 @@ export async function getCircleWithRoles(id: string) {
 
   return {
     ...circle,
-    roles,
+    roles: groupedRoles,
     openTensions: openTensions || 0,
   };
 }
@@ -107,18 +134,20 @@ export async function getAllRoles() {
     `)
     .is('valid_until', null);
 
-  const holderMap = new Map<string, { id: string; name: string }>();
+  const holderMap = new Map<string, Array<{ id: string; name: string }>>();
   if (assignments) {
     for (const a of assignments) {
       if (a.person) {
-        holderMap.set(a.role_id, a.person as any);
+        const existing = holderMap.get(a.role_id) || [];
+        existing.push(a.person as any);
+        holderMap.set(a.role_id, existing);
       }
     }
   }
 
   return roles.map((role: any) => ({
     ...role,
-    holder: holderMap.get(role.id) || null,
+    holders: holderMap.get(role.id) || [],
   }));
 }
 
@@ -140,16 +169,25 @@ export async function getRoleById(id: string) {
     return null;
   }
 
-  // Get current holder
-  const { data: assignment } = await supabase
+  // Get current holders (multiple possible)
+  const { data: assignments } = await supabase
     .from('role_assignments')
     .select(`
       *,
       person:persons(id, name, email, phone)
     `)
     .eq('role_id', id)
-    .is('valid_until', null)
-    .single();
+    .is('valid_until', null);
+
+  const holders = (assignments || [])
+    .filter((a: any) => a.person)
+    .map((a: any) => ({
+      id: a.person.id,
+      name: a.person.name,
+      email: a.person.email,
+      phone: a.person.phone,
+      since: a.valid_from,
+    }));
 
   return {
     role_id: role.id,
@@ -160,11 +198,7 @@ export async function getRoleById(id: string) {
     circle_id: role.circle?.id,
     circle_name: role.circle?.name,
     circle_color: role.circle?.color,
-    holder_id: assignment?.person?.id,
-    holder_name: assignment?.person?.name,
-    holder_email: assignment?.person?.email,
-    holder_phone: assignment?.person?.phone,
-    holder_since: assignment?.valid_from,
+    holders,
   };
 }
 

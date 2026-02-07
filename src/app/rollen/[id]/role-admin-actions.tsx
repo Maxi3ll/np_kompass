@@ -10,6 +10,13 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { deleteRole, unassignRole } from "@/lib/supabase/actions";
 import { RoleFormDialog } from "../role-form-dialog";
 import { AssignDialog } from "./assign-dialog";
@@ -20,6 +27,11 @@ interface Person {
   email: string;
 }
 
+interface Holder {
+  id: string;
+  name: string;
+}
+
 interface RoleAdminActionsProps {
   role: {
     id: string;
@@ -28,18 +40,19 @@ interface RoleAdminActionsProps {
     domains?: string[];
     accountabilities?: string[];
   };
-  hasHolder: boolean;
+  holders: Holder[];
   circleId: string;
   persons: Person[];
 }
 
-export function RoleAdminActions({ role, hasHolder, circleId, persons }: RoleAdminActionsProps) {
+export function RoleAdminActions({ role, holders, circleId, persons }: RoleAdminActionsProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [editOpen, setEditOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [assignOpen, setAssignOpen] = useState(false);
   const [unassignOpen, setUnassignOpen] = useState(false);
+  const [selectedUnassignPersonId, setSelectedUnassignPersonId] = useState("");
   const [error, setError] = useState<string | null>(null);
 
   const handleDelete = () => {
@@ -48,7 +61,7 @@ export function RoleAdminActions({ role, hasHolder, circleId, persons }: RoleAdm
       const result = await deleteRole(role.id);
       if (result.error) {
         if (result.error === "has_active_assignment") {
-          setError("Rolle ist noch besetzt. Bitte erst die Zuweisung beenden.");
+          setError("Rolle ist noch besetzt. Bitte erst alle Zuweisungen beenden.");
         } else {
           setError(result.error);
         }
@@ -60,17 +73,25 @@ export function RoleAdminActions({ role, hasHolder, circleId, persons }: RoleAdm
   };
 
   const handleUnassign = () => {
+    const personId = holders.length === 1 ? holders[0].id : selectedUnassignPersonId;
+    if (!personId) {
+      setError("Bitte wähle eine Person aus");
+      return;
+    }
     setError(null);
     startTransition(async () => {
-      const result = await unassignRole(role.id);
+      const result = await unassignRole(role.id, personId);
       if (result.error) {
         setError(result.error);
         return;
       }
       setUnassignOpen(false);
+      setSelectedUnassignPersonId("");
       router.refresh();
     });
   };
+
+  const currentHolderIds = holders.map(h => h.id);
 
   return (
     <>
@@ -97,7 +118,21 @@ export function RoleAdminActions({ role, hasHolder, circleId, persons }: RoleAdm
             Bearbeiten
           </Button>
 
-          {hasHolder ? (
+          <Button
+            variant="outline"
+            onClick={() => setAssignOpen(true)}
+            className="h-10 rounded-xl text-sm"
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1.5">
+              <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+              <circle cx="8.5" cy="7" r="4" />
+              <line x1="20" y1="8" x2="20" y2="14" />
+              <line x1="23" y1="11" x2="17" y2="11" />
+            </svg>
+            Person zuweisen
+          </Button>
+
+          {holders.length > 0 && (
             <Button
               variant="outline"
               onClick={() => setUnassignOpen(true)}
@@ -111,23 +146,9 @@ export function RoleAdminActions({ role, hasHolder, circleId, persons }: RoleAdm
               </svg>
               Zuweisung beenden
             </Button>
-          ) : (
-            <Button
-              variant="outline"
-              onClick={() => setAssignOpen(true)}
-              className="h-10 rounded-xl text-sm"
-            >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1.5">
-                <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-                <circle cx="8.5" cy="7" r="4" />
-                <line x1="20" y1="8" x2="20" y2="14" />
-                <line x1="23" y1="11" x2="17" y2="11" />
-              </svg>
-              Person zuweisen
-            </Button>
           )}
 
-          {!hasHolder && (
+          {holders.length === 0 && (
             <Button
               variant="outline"
               onClick={() => setDeleteOpen(true)}
@@ -159,22 +180,49 @@ export function RoleAdminActions({ role, hasHolder, circleId, persons }: RoleAdm
         onOpenChange={setAssignOpen}
         roleId={role.id}
         persons={persons}
+        currentHolderIds={currentHolderIds}
       />
 
-      {/* Unassign Confirmation */}
+      {/* Unassign Dialog */}
       <Dialog open={unassignOpen} onOpenChange={setUnassignOpen}>
         <DialogContent className="sm:max-w-sm">
           <DialogHeader>
-            <DialogTitle>Zuweisung beenden?</DialogTitle>
+            <DialogTitle>Zuweisung beenden</DialogTitle>
           </DialogHeader>
-          <p className="text-sm text-muted-foreground">
-            Möchtest du die aktuelle Zuweisung für &quot;{role.name}&quot; beenden? Die Rolle wird danach als vakant angezeigt.
-          </p>
+
+          {holders.length === 1 ? (
+            <p className="text-sm text-muted-foreground">
+              Möchtest du die Zuweisung von <span className="font-medium text-foreground">{holders[0].name}</span> für &quot;{role.name}&quot; beenden?
+            </p>
+          ) : (
+            <div className="space-y-3">
+              <p className="text-sm text-muted-foreground">
+                Wähle die Person, deren Zuweisung beendet werden soll:
+              </p>
+              <Select value={selectedUnassignPersonId} onValueChange={setSelectedUnassignPersonId}>
+                <SelectTrigger className="h-12 rounded-xl w-full">
+                  <SelectValue placeholder="Person auswählen..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {holders.map((holder) => (
+                    <SelectItem key={holder.id} value={holder.id}>
+                      {holder.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+
           <DialogFooter>
             <Button variant="outline" onClick={() => setUnassignOpen(false)} className="rounded-xl">
               Abbrechen
             </Button>
-            <Button onClick={handleUnassign} disabled={isPending} className="rounded-xl">
+            <Button
+              onClick={handleUnassign}
+              disabled={isPending || (holders.length > 1 && !selectedUnassignPersonId)}
+              className="rounded-xl"
+            >
               {isPending ? "Beenden..." : "Zuweisung beenden"}
             </Button>
           </DialogFooter>

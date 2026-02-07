@@ -100,22 +100,26 @@ export default async function KreisDetailPage({ params }: PageProps) {
                     </div>
                   </div>
 
-                  {/* Current Holder */}
+                  {/* Current Holders */}
                   <div className="mt-3 pt-3 border-t border-border/50">
-                    {role.holder_name ? (
-                      <div className="flex items-center gap-3">
-                        <div
-                          className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold text-white"
-                          style={{ backgroundColor: circle.color }}
-                        >
-                          {role.holder_name.split(' ').map((n: string) => n[0]).join('').slice(0, 2)}
-                        </div>
-                        <div>
-                          <p className="text-sm font-medium text-foreground">{role.holder_name}</p>
-                          <p className="text-xs text-muted-foreground">
-                            seit {new Date(role.holder_since).toLocaleDateString('de-DE', { month: 'short', year: 'numeric' })}
-                          </p>
-                        </div>
+                    {role.holders && role.holders.length > 0 ? (
+                      <div className="space-y-2">
+                        {role.holders.map((holder: any) => (
+                          <div key={holder.id} className="flex items-center gap-3">
+                            <div
+                              className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold text-white"
+                              style={{ backgroundColor: circle.color }}
+                            >
+                              {holder.name.split(' ').map((n: string) => n[0]).join('').slice(0, 2)}
+                            </div>
+                            <div>
+                              <p className="text-sm font-medium text-foreground">{holder.name}</p>
+                              <p className="text-xs text-muted-foreground">
+                                seit {new Date(holder.since).toLocaleDateString('de-DE', { month: 'short', year: 'numeric' })}
+                              </p>
+                            </div>
+                          </div>
+                        ))}
                       </div>
                     ) : (
                       <div className="flex items-center gap-2 text-sm text-amber-600">
