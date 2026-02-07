@@ -81,6 +81,16 @@ export function Header({
         </div>
 
         <div className="flex items-center gap-1">
+          <Link
+            href="/suche"
+            className="flex items-center justify-center w-10 h-10 rounded-full hover:bg-primary/10 active:bg-primary/20 transition-colors touch-target"
+            aria-label="Suche"
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-muted-foreground">
+              <circle cx="11" cy="11" r="8" />
+              <line x1="21" y1="21" x2="16.65" y2="16.65" />
+            </svg>
+          </Link>
           <NotificationBell />
 
           <DropdownMenu>

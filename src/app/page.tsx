@@ -251,7 +251,7 @@ export default async function Home() {
                 {
                   href: "/suche",
                   label: "Suche",
-                  sublabel: "",
+                  sublabel: "finden",
                   color: "var(--circle-gebaeude)",
                   bgColor: "#E6F7F1",
                   icon: (
