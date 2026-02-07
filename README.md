@@ -8,13 +8,14 @@ Governance-Tool for **Neckarpiraten e.V.**, a Stuttgart-based parent-child initi
 - **Rollen** (Roles) - Role definitions with domains, accountabilities, and current holders
 - **Spannungen** (Tensions) - Issue tracking with status, priority, and circle assignment
 - **Meetings** - Tactical and governance meeting planning
+- **Benachrichtigungen** - In-app notifications + Telegram group messages for role assignments, tensions, etc.
 - **Profil** - User profile with editable name and avatar color
 - **Admin** - Inline admin actions for managing circles, roles, assignments, and email allowlist
 
 ## Tech Stack
 
 - [Next.js 16](https://nextjs.org/) (App Router) with React 19 and TypeScript 5
-- [Supabase](https://supabase.com/) for PostgreSQL, authentication (magic links), and RLS
+- [Supabase](https://supabase.com/) for PostgreSQL, authentication (email + password), and RLS
 - [Tailwind CSS 4](https://tailwindcss.com/) + [shadcn/ui](https://ui.shadcn.com/) components
 - Responsive layout: desktop sidebar + mobile bottom navigation
 
@@ -38,6 +39,8 @@ Governance-Tool for **Neckarpiraten e.V.**, a Stuttgart-based parent-child initi
    NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
    SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
    ALLOWED_EMAILS=admin@example.com
+   TELEGRAM_BOT_TOKEN=your-bot-token        # optional
+   TELEGRAM_CHAT_ID=your-chat-id            # optional
    ```
 4. Push database migrations:
    ```bash
@@ -66,13 +69,17 @@ src/
 │   ├── layout/     # AppShell, UserContext
 │   ├── navigation/ # Header, Sidebar, BottomNav
 │   └── ui/         # shadcn/ui components
-├── lib/supabase/   # Client, server, service client, queries, actions
+├── lib/
+│   ├── supabase/   # Client, server, service client, queries, actions
+│   └── telegram.ts # Telegram bot notification helper
 └── types/          # TypeScript domain types
 ```
 
 ## Database
 
-Migrations are in `supabase/migrations/`. Key tables: `circles`, `roles`, `role_assignments`, `tensions`, `persons`, `families`, `allowed_emails`.
+Migrations are in `supabase/migrations/`. Key tables: `circles`, `roles`, `role_assignments`, `tensions`, `persons`, `families`, `allowed_emails`, `notifications`.
+
+The database contains the real Neckarpiraten organizational structure: 10 circles and 43 roles with purposes, domains, and accountabilities.
 
 ## License
 

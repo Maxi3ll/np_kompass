@@ -28,7 +28,7 @@ npx supabase db push
 
 ### Tech Stack
 - **Next.js 16** (App Router) with React 19, TypeScript 5
-- **Supabase** for PostgreSQL, auth (magic links), and real-time
+- **Supabase** for PostgreSQL, auth (email + password), and real-time
 - **Tailwind CSS 4** + **shadcn/ui** components
 - **OKLch color space** for perceptually uniform colors
 
@@ -56,11 +56,12 @@ src/
 ├── components/
 │   ├── layout/
 │   │   ├── app-shell.tsx   # Layout wrapper (sidebar + bottom-nav + user context)
-│   │   └── user-context.tsx # React Context for user data (name, email, avatar color)
+│   │   └── user-context.tsx # React Context for user data (name, email, avatar color, personId, unreadNotifications)
 │   ├── navigation/
-│   │   ├── header.tsx      # Sticky header with user avatar dropdown
+│   │   ├── header.tsx      # Sticky header with notification bell + user avatar dropdown
 │   │   ├── sidebar.tsx     # Desktop sidebar (lg:, fixed left, w-64)
 │   │   ├── bottom-nav.tsx  # Mobile bottom nav with FAB (lg:hidden)
+│   │   ├── notification-bell.tsx # Notification bell with unread badge + dropdown
 │   │   └── kreise-rollen-tabs.tsx # Mobile tabs to switch Kreise/Rollen
 │   └── ui/                 # shadcn/ui components (button, card, dialog, select, etc.)
 ├── lib/
@@ -69,7 +70,8 @@ src/
 │   │   ├── server.ts       # Server Supabase client (async cookies)
 │   │   ├── service.ts      # Service-role client (bypasses RLS)
 │   │   ├── queries.ts      # All database query functions
-│   │   └── actions.ts      # Server Actions (CRUD, auth, admin)
+│   │   └── actions.ts      # Server Actions (CRUD, auth, admin, notifications)
+│   ├── telegram.ts         # Telegram bot notification helper
 │   └── utils.ts            # cn() utility (clsx + tailwind-merge)
 └── types/index.ts          # Complete domain types (Person, Circle, Role, Tension, etc.)
 ```
@@ -78,7 +80,7 @@ src/
 All authenticated pages wrap content in `<AppShell>` which provides:
 - **Desktop (lg+)**: Fixed sidebar with navigation (Dashboard, Spannungen, Kreise, Rollen, Meetings, Profil) + action buttons ("Neue Spannung", "Neues Meeting")
 - **Mobile**: Bottom navigation (Home, Spannungen, [FAB], Kreise, Meetings) with expandable FAB for creating items
-- **User Context**: AppShell fetches user data (name, email, avatar color) from DB and provides via React Context to Header
+- **User Context**: AppShell fetches user data (name, email, avatar color, personId, unread notification count) from DB and provides via React Context to Header and NotificationBell
 
 The Kreise and Rollen pages share a tab bar on mobile (`KreiseRollenTabs`) for switching between the two views. On desktop, Rollen is a sub-item under Kreise in the sidebar.
 
@@ -104,7 +106,7 @@ Login page and auth callback do NOT use AppShell.
 - **Person**: Individual member with auth, avatar color, and family relationship
 
 ### Database
-PostgreSQL tables with RLS enabled. Key tables: `circles`, `roles`, `role_assignments`, `tensions`, `persons`, `families`, `allowed_emails`. Two views: `current_role_holders`, `circle_stats`.
+PostgreSQL tables with RLS enabled. Key tables: `circles`, `roles`, `role_assignments`, `tensions`, `persons`, `families`, `allowed_emails`, `notifications`. Two views: `current_role_holders`, `circle_stats`.
 
 Role history maintained via `role_assignments` with `valid_from`/`valid_until` dates.
 
@@ -113,12 +115,23 @@ Migrations:
 - `002_seed_data.sql` - Seed data for circles, roles, families
 - `003_allowed_emails.sql` - Email allowlist table
 - `004_person_avatar_color.sql` - Avatar color column on persons
+- `005_notifications.sql` - Notifications table with RLS
+- `006_replace_circles_roles.sql` - Real Neckarpiraten circles (10) and roles (43)
 
 ### Auth Flow
-1. User logs in via magic link (Supabase Auth)
-2. Auth callback (`/auth/callback`) checks email against allowlist
-3. Auto-links auth user to `persons` record by matching email
-4. Profile page also auto-links on visit (fallback for existing sessions)
+1. User logs in via email + password (Supabase Auth)
+2. New users register with email, password, and full name
+3. Auth callback (`/auth/callback`) checks email against allowlist
+4. Auto-links auth user to `persons` record by matching email
+5. Profile page also auto-links on visit (fallback for existing sessions)
+6. "Passwort vergessen?" flow for password reset via email
+
+### Notifications
+- **In-App**: Notifications stored in `notifications` table, shown via bell icon in header
+- **Telegram**: All notifications also sent to a Telegram group via bot API (`src/lib/telegram.ts`)
+- **Triggers**: Role assigned/unassigned, tension created/assigned/resolved
+- Circle members (persons with active role assignments in a circle) receive tension notifications
+- NotificationBell component lazy-loads full list on dropdown open
 
 ## Admin System
 
@@ -159,6 +172,9 @@ NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
 SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
 ALLOWED_EMAILS=admin@example.com,user2@example.com
+TELEGRAM_BOT_TOKEN=your-telegram-bot-token
+TELEGRAM_CHAT_ID=your-telegram-chat-id
 ```
 
 `ALLOWED_EMAILS` is comma-separated. The first email is the admin.
+`TELEGRAM_BOT_TOKEN` and `TELEGRAM_CHAT_ID` are optional - if missing, Telegram notifications are silently skipped.
