@@ -347,6 +347,11 @@
 .circle-indicator-finanzen { background-color: var(--circle-finanzen); }
 .circle-indicator-anker { background-color: var(--circle-anker); }
 
+/* Circle visualization transitions */
+.circle-viz-transition {
+  transition: transform 0.4s ease-out, opacity 0.3s ease, stroke-opacity 0.2s ease;
+}
+
 /* Safe area for iOS */
 @supports (padding: env(safe-area-inset-bottom)) {
   .bottom-nav-safe {
