@@ -150,6 +150,14 @@ export function Sidebar() {
         </div>
       </nav>
 
+      {/* Legal Links */}
+      <div className="px-4 pb-2">
+        <div className="flex gap-3 text-[11px] text-muted-foreground/60">
+          <Link href="/datenschutz" className="hover:text-muted-foreground transition-colors">Datenschutz</Link>
+          <Link href="/impressum" className="hover:text-muted-foreground transition-colors">Impressum</Link>
+        </div>
+      </div>
+
       {/* Action Buttons */}
       <div className="px-3 pb-6 space-y-2">
         <Link

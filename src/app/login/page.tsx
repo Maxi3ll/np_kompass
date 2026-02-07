@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { LoginForm } from "./login-form";
 
@@ -57,9 +58,14 @@ export default async function LoginPage({ searchParams }: PageProps) {
           <LoginForm />
 
           {/* Footer */}
-          <p className="text-xs text-muted-foreground text-center mt-8">
-            Nur für Mitglieder der Neckarpiraten e.V.
-          </p>
+          <div className="text-xs text-muted-foreground text-center mt-8 space-y-2">
+            <p>Nur für Mitglieder der Neckarpiraten e.V.</p>
+            <div className="flex justify-center gap-3">
+              <Link href="/datenschutz" className="hover:text-foreground transition-colors">Datenschutz</Link>
+              <span>&middot;</span>
+              <Link href="/impressum" className="hover:text-foreground transition-colors">Impressum</Link>
+            </div>
+          </div>
         </div>
       </main>
     </div>

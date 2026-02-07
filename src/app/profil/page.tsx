@@ -6,6 +6,9 @@ import { createServiceClient } from "@/lib/supabase/service";
 import { getPersonWithRoles } from "@/lib/supabase/queries";
 import { isCurrentUserAdmin, getAllowedEmails } from "@/lib/supabase/actions";
 import { LogoutButton } from "./logout-button";
+import { DeleteAccountButton } from "./delete-account-button";
+import { ExportDataButton } from "./export-data-button";
+import { TelegramToggle } from "./telegram-toggle";
 import { AdminEmails } from "./admin-emails";
 import { ProfileEditDialog } from "./profile-edit-dialog";
 import Link from "next/link";
@@ -191,6 +194,14 @@ export default async function ProfilPage() {
                   </span>
                 </div>
               )}
+              {person && (
+                <div className="border-t border-border pt-2">
+                  <TelegramToggle
+                    personId={person.id}
+                    initialEnabled={person.telegram_notifications !== false}
+                  />
+                </div>
+              )}
             </div>
           </div>
 
@@ -227,6 +238,30 @@ export default async function ProfilPage() {
           {/* Logout Button */}
           <div className="pt-4">
             <LogoutButton />
+          </div>
+
+          {/* DSGVO Section */}
+          <div className="bg-card rounded-2xl shadow-card border border-border/50 p-4">
+            <h2 className="text-sm font-medium text-muted-foreground mb-3">
+              Datenschutz
+            </h2>
+            <div className="space-y-3">
+              <ExportDataButton />
+              <div className="border-t border-border pt-3">
+                <DeleteAccountButton />
+              </div>
+            </div>
+          </div>
+
+          {/* Legal Links */}
+          <div className="flex justify-center gap-3 text-xs text-muted-foreground pt-2 pb-4">
+            <Link href="/datenschutz" className="hover:text-foreground transition-colors">
+              Datenschutzerkl&auml;rung
+            </Link>
+            <span>&middot;</span>
+            <Link href="/impressum" className="hover:text-foreground transition-colors">
+              Impressum
+            </Link>
           </div>
         </div>
       </main>

@@ -1,5 +1,18 @@
 import type { Metadata, Viewport } from "next";
+import { Outfit, Nunito_Sans } from "next/font/google";
 import "./globals.css";
+
+const outfit = Outfit({
+  subsets: ["latin"],
+  variable: "--font-outfit",
+  display: "swap",
+});
+
+const nunitoSans = Nunito_Sans({
+  subsets: ["latin"],
+  variable: "--font-nunito-sans",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   title: "Kompass - Neckarpiraten Governance",
@@ -31,11 +44,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="de" suppressHydrationWarning>
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-      </head>
+    <html lang="de" suppressHydrationWarning className={`${outfit.variable} ${nunitoSans.variable}`}>
       <body className="antialiased min-h-screen bg-background">
         {children}
       </body>

@@ -300,8 +300,15 @@ export async function createTension(data: CreateTensionData) {
 
   const notifMessage = `${creator?.name || 'Jemand'} hat "${data.title}" im Kreis "${circle?.name}" erfasst.`;
 
-  // Always send Telegram notification
-  await sendTelegramMessage(`⚡ <b>Neue Spannung</b>\n${notifMessage}`);
+  // Send Telegram notification (if creator hasn't opted out)
+  const { data: creatorTgPref } = await serviceClient
+    .from('persons')
+    .select('telegram_notifications')
+    .eq('id', data.raisedBy)
+    .single();
+  if (creatorTgPref?.telegram_notifications !== false) {
+    await sendTelegramMessage(`⚡ <b>Neue Spannung</b>\n${notifMessage}`);
+  }
 
   // Notify circle members (except creator) via in-app notification
   const circleMembers = await getCircleMemberIds(data.circleId);
@@ -835,8 +842,17 @@ async function createNotification(data: {
 
   // Send Telegram notification (except TENSION_CREATED which is handled separately)
   if (data.type !== 'TENSION_CREATED') {
-    const icon = TELEGRAM_ICONS[data.type] || '🔔';
-    await sendTelegramMessage(`${icon} <b>${data.title}</b>\n${data.message}`);
+    // Check if the person has Telegram notifications enabled
+    const { data: personPref } = await serviceClient
+      .from('persons')
+      .select('telegram_notifications')
+      .eq('id', data.personId)
+      .single();
+
+    if (personPref?.telegram_notifications !== false) {
+      const icon = TELEGRAM_ICONS[data.type] || '🔔';
+      await sendTelegramMessage(`${icon} <b>${data.title}</b>\n${data.message}`);
+    }
   }
 }
 
@@ -915,6 +931,194 @@ export async function markNotificationAsRead(notificationId: string) {
   if (error) return { error: error.message };
 
   revalidatePath('/');
+  return { success: true };
+}
+
+// =====================================================
+// ACCOUNT DELETION (DSGVO Art. 17)
+// =====================================================
+
+export async function deleteAccount() {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { error: 'not authenticated' };
+
+  const serviceClient = createServiceClient();
+
+  // Find person record
+  const { data: person } = await serviceClient
+    .from('persons')
+    .select('id')
+    .eq('auth_user_id', user.id)
+    .single();
+
+  if (person) {
+    // Delete notifications
+    await serviceClient.from('notifications').delete().eq('person_id', person.id);
+
+    // End all active role assignments
+    await serviceClient
+      .from('role_assignments')
+      .update({ valid_until: new Date().toISOString().split('T')[0] })
+      .eq('person_id', person.id)
+      .is('valid_until', null);
+
+    // Anonymize tensions (set raised_by/assigned_to to null)
+    await serviceClient
+      .from('tensions')
+      .update({ raised_by: null })
+      .eq('raised_by', person.id);
+    await serviceClient
+      .from('tensions')
+      .update({ assigned_to: null })
+      .eq('assigned_to', person.id);
+
+    // Anonymize meetings (set facilitator_id to null)
+    await serviceClient
+      .from('meetings')
+      .update({ facilitator_id: null })
+      .eq('facilitator_id', person.id);
+
+    // Delete person record
+    await serviceClient.from('persons').delete().eq('id', person.id);
+
+    // Remove from allowed_emails
+    await serviceClient.from('allowed_emails').delete().eq('email', user.email!);
+  }
+
+  // Delete Supabase auth user
+  const { error } = await serviceClient.auth.admin.deleteUser(user.id);
+  if (error) {
+    console.error('Error deleting auth user:', error);
+    return { error: error.message };
+  }
+
+  redirect('/login');
+}
+
+// =====================================================
+// DATA EXPORT (DSGVO Art. 20)
+// =====================================================
+
+export async function exportUserData() {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { error: 'not authenticated' };
+
+  const serviceClient = createServiceClient();
+
+  // Get person
+  const { data: person } = await serviceClient
+    .from('persons')
+    .select('*, family:families(name)')
+    .eq('auth_user_id', user.id)
+    .single();
+
+  if (!person) return { error: 'person not found' };
+
+  // Get role assignments
+  const { data: roleAssignments } = await serviceClient
+    .from('role_assignments')
+    .select('valid_from, valid_until, role:roles(name, circle:circles(name))')
+    .eq('person_id', person.id);
+
+  // Get tensions raised
+  const { data: tensionsRaised } = await serviceClient
+    .from('tensions')
+    .select('title, description, status, priority, created_at, resolved_at, circle:circles(name)')
+    .eq('raised_by', person.id);
+
+  // Get tensions assigned
+  const { data: tensionsAssigned } = await serviceClient
+    .from('tensions')
+    .select('title, status, priority, circle:circles(name)')
+    .eq('assigned_to', person.id);
+
+  // Get notifications
+  const { data: notifications } = await serviceClient
+    .from('notifications')
+    .select('type, title, message, is_read, created_at')
+    .eq('person_id', person.id)
+    .order('created_at', { ascending: false });
+
+  const exportData = {
+    exportiert_am: new Date().toISOString(),
+    person: {
+      name: person.name,
+      email: person.email,
+      telefon: person.phone || null,
+      avatar_farbe: person.avatar_color || null,
+      familie: (person.family as any)?.name || null,
+      mitglied_seit: person.created_at,
+    },
+    auth: {
+      email: user.email,
+      letzter_login: user.last_sign_in_at,
+      erstellt_am: user.created_at,
+    },
+    rollenzuweisungen: (roleAssignments || []).map((ra: any) => ({
+      rolle: ra.role?.name,
+      kreis: ra.role?.circle?.name,
+      von: ra.valid_from,
+      bis: ra.valid_until || 'aktiv',
+    })),
+    spannungen_erstellt: (tensionsRaised || []).map((t: any) => ({
+      titel: t.title,
+      beschreibung: t.description,
+      status: t.status,
+      prioritaet: t.priority,
+      kreis: t.circle?.name,
+      erstellt_am: t.created_at,
+      geloest_am: t.resolved_at,
+    })),
+    spannungen_zugewiesen: (tensionsAssigned || []).map((t: any) => ({
+      titel: t.title,
+      status: t.status,
+      prioritaet: t.priority,
+      kreis: t.circle?.name,
+    })),
+    benachrichtigungen: (notifications || []).map((n: any) => ({
+      typ: n.type,
+      titel: n.title,
+      nachricht: n.message,
+      gelesen: n.is_read,
+      erstellt_am: n.created_at,
+    })),
+  };
+
+  return { data: exportData };
+}
+
+// =====================================================
+// TELEGRAM OPT-OUT
+// =====================================================
+
+export async function toggleTelegramNotifications(personId: string, enabled: boolean) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { error: 'not authenticated' };
+
+  const serviceClient = createServiceClient();
+
+  // Verify ownership
+  const { data: person } = await serviceClient
+    .from('persons')
+    .select('auth_user_id')
+    .eq('id', personId)
+    .single();
+
+  if (!person || person.auth_user_id !== user.id) {
+    return { error: 'unauthorized' };
+  }
+
+  const { error } = await serviceClient
+    .from('persons')
+    .update({ telegram_notifications: enabled })
+    .eq('id', personId);
+
+  if (error) return { error: error.message };
+
+  revalidatePath('/profil');
   return { success: true };
 }
 
