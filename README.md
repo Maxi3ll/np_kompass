@@ -8,7 +8,8 @@ Governance-Tool for **Neckarpiraten e.V.**, a Stuttgart-based parent-child initi
 - **Rollen** (Roles) - Role definitions with domains, accountabilities, and multiple holders per role
 - **Spannungen** (Tensions) - Issue tracking with status, priority, and circle assignment
 - **Meetings** - Tactical and governance meeting planning
-- **Suche** - Global search across circles, roles, tensions, and persons
+- **Personen-Profile** - Public person profiles with avatar, roles, contact info, and family
+- **Suche** - Global search across circles, roles, tensions, and persons (all results link to detail pages)
 - **Benachrichtigungen** - In-app notifications + Telegram group messages (with per-user opt-out)
 - **Profil** - User profile with editable name, avatar color, Telegram toggle, data export (DSGVO), and account deletion
 - **Admin** - Inline admin actions for managing circles, roles, assignments, and email allowlist
@@ -66,7 +67,7 @@ npm run lint     # Run ESLint
 
 ```
 src/
-├── app/            # Pages (kreise, rollen, spannungen, meetings, suche, profil, impressum, datenschutz, login)
+├── app/            # Pages (kreise, rollen, spannungen, meetings, personen, suche, profil, impressum, datenschutz, login)
 ├── components/
 │   ├── layout/     # AppShell, UserContext
 │   ├── navigation/ # Header, Sidebar, BottomNav, NotificationBell

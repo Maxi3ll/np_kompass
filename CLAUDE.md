@@ -50,7 +50,8 @@ src/
 │   ├── rollen/             # Roles feature (list + [id] detail + admin CRUD + assign)
 │   ├── spannungen/         # Tensions feature (list + [id] detail + neu)
 │   ├── meetings/           # Meetings feature (list + [id] detail + neu)
-│   ├── suche/              # Global search (client-side, searches circles/roles/tensions/persons)
+│   ├── personen/           # Public person profiles ([id] detail with roles, contact, family)
+│   ├── suche/              # Global search (client-side, searches circles/roles/tensions/persons → links to detail pages)
 │   ├── profil/             # Profile (edit name/avatar, telegram toggle, data export, delete account) + admin email allowlist
 │   ├── impressum/          # Legal notice page
 │   ├── datenschutz/        # Privacy policy page
@@ -107,7 +108,7 @@ Login page and auth callback do NOT use AppShell.
 - **Rolle** (Role): Function within a circle with domains and accountabilities (supports multiple holders)
 - **Spannung** (Tension): Issue/improvement opportunity to be resolved
 - **Familie** (Family): Member family unit
-- **Person**: Individual member with auth, avatar color, and family relationship
+- **Person**: Individual member with auth, avatar color, and family relationship. Public profile at `/personen/[id]` shows roles, contact, and family.
 
 ### Database
 PostgreSQL tables with RLS enabled. Key tables: `circles`, `roles`, `role_assignments`, `tensions`, `persons`, `families`, `allowed_emails`, `notifications`. Two views: `current_role_holders`, `circle_stats`.
@@ -164,7 +165,8 @@ Migrations:
 - **Profile**: Users can edit name and avatar color (8 predefined colors), toggle Telegram notifications, export personal data (DSGVO), delete account
 - **Circle Visualization**: Interactive SVG with organic circle-packing layout (GlassFrog-style), drill-down navigation, hover tooltips, parent ring navigation
 - **Legal Pages**: Impressum and Datenschutz pages linked from profile/footer
-- **Global Search**: Client-side search across circles, roles, tensions, and persons (`/suche`)
+- **Global Search**: Client-side search across circles, roles, tensions, and persons (`/suche`) — all results link to detail pages
+- **Person Profiles**: Public profile pages (`/personen/[id]`) with avatar, name, family, contact info, and current roles. Linked from search results and role holder lists.
 
 ## Key Files
 
