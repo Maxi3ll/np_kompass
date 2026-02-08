@@ -24,9 +24,8 @@ interface PageProps {
 
 export default async function SpannungenPage({ searchParams }: PageProps) {
   const params = await searchParams;
-  const [tensions, circles] = await Promise.all([
+  const [allTensions, circles] = await Promise.all([
     getTensions({
-      status: params.status,
       circleId: params.circle,
     }),
     getCircles(),
@@ -35,13 +34,18 @@ export default async function SpannungenPage({ searchParams }: PageProps) {
   // Filter out Anker-Kreis
   const displayCircles = circles.filter((c: any) => c.parent_circle_id !== null);
 
-  // Count by status
+  // Count by status (always from all tensions, not filtered)
   const statusCounts = {
-    all: tensions.length,
-    NEW: tensions.filter((t: any) => t.status === 'NEW').length,
-    IN_PROGRESS: tensions.filter((t: any) => t.status === 'IN_PROGRESS').length,
-    RESOLVED: tensions.filter((t: any) => t.status === 'RESOLVED').length,
+    all: allTensions.length,
+    NEW: allTensions.filter((t: any) => t.status === 'NEW').length,
+    IN_PROGRESS: allTensions.filter((t: any) => t.status === 'IN_PROGRESS').length,
+    RESOLVED: allTensions.filter((t: any) => t.status === 'RESOLVED').length,
   };
+
+  // Apply status filter for display
+  const tensions = params.status
+    ? allTensions.filter((t: any) => t.status === params.status)
+    : allTensions;
 
   return (
     <AppShell>

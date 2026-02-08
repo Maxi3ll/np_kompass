@@ -14,8 +14,12 @@ export default async function RollenPage({ searchParams }: PageProps) {
   const params = await searchParams;
   const [roles, circles] = await Promise.all([getAllRoles(), getCircles()]);
 
-  // Filter out Anker-Kreis
-  const displayCircles = circles.filter((c: any) => c.parent_circle_id !== null);
+  // Show all circles including Anker-Kreis
+  const anchorCircle = circles.find((c: any) => c.parent_circle_id === null);
+  const displayCircles = [
+    ...(anchorCircle ? [anchorCircle] : []),
+    ...circles.filter((c: any) => c.parent_circle_id !== null),
+  ];
 
   // Filter by circle if param set
   const filteredRoles = params.circle

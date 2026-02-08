@@ -29,8 +29,12 @@ type ViewMode = 'list' | 'visual';
 
 export function KreiseContent({ circles, roles, isAdmin }: KreiseContentProps) {
   const [view, setView] = useState<ViewMode>('list');
-  const displayCircles = circles.filter(c => c.parent_circle_id !== null);
   const anchorCircle = circles.find(c => c.parent_circle_id === null);
+  // Show all circles: anchor circle first, then children sorted by name
+  const displayCircles = [
+    ...(anchorCircle ? [anchorCircle] : []),
+    ...circles.filter(c => c.parent_circle_id !== null),
+  ];
 
   return (
     <>
