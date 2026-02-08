@@ -18,17 +18,40 @@ export default async function MeetingsPage({ searchParams }: PageProps) {
   const params = await searchParams;
   const isUpcoming = params.filter !== "past";
 
-  const [meetings, circles] = await Promise.all([
+  const [allMeetings, circles] = await Promise.all([
     getMeetings({
       upcoming: isUpcoming,
       past: !isUpcoming,
-      circleId: params.circle,
     }),
     getCircles(),
   ]);
 
-  // Filter out Anker-Kreis
-  const displayCircles = circles.filter((c: any) => c.parent_circle_id !== null);
+  // All circles including Anker-Kreis
+  const anchorCircle = circles.find((c: any) => c.parent_circle_id === null);
+  const displayCircles = [
+    ...(anchorCircle ? [anchorCircle] : []),
+    ...circles.filter((c: any) => c.parent_circle_id !== null),
+  ];
+
+  // Circle counts
+  const circleCounts: Record<string, number> = {};
+  allMeetings.forEach((m: any) => {
+    if (m.circle_id) circleCounts[m.circle_id] = (circleCounts[m.circle_id] || 0) + 1;
+  });
+
+  // Apply circle filter
+  const meetings = params.circle
+    ? allMeetings.filter((m: any) => m.circle_id === params.circle)
+    : allMeetings;
+
+  // Build hrefs preserving both filters
+  const buildHref = (filter?: string, circleId?: string) => {
+    const parts = [
+      filter && `filter=${filter}`,
+      circleId && `circle=${circleId}`,
+    ].filter(Boolean);
+    return `/meetings${parts.length ? `?${parts.join('&')}` : ''}`;
+  };
 
   // Group meetings by date
   const groupedMeetings = meetings.reduce((groups: Record<string, any[]>, meeting: any) => {
@@ -52,7 +75,7 @@ export default async function MeetingsPage({ searchParams }: PageProps) {
         <div className="px-5 pt-4 pb-3 max-w-2xl mx-auto lg:max-w-4xl">
           <div className="flex gap-2">
             <Link
-              href="/meetings"
+              href={buildHref(undefined, params.circle)}
               className={`flex-1 py-2.5 rounded-xl text-sm font-medium text-center transition-all ${
                 isUpcoming
                   ? "bg-primary text-primary-foreground"
@@ -62,7 +85,7 @@ export default async function MeetingsPage({ searchParams }: PageProps) {
               Anstehend
             </Link>
             <Link
-              href="/meetings?filter=past"
+              href={buildHref("past", params.circle)}
               className={`flex-1 py-2.5 rounded-xl text-sm font-medium text-center transition-all ${
                 !isUpcoming
                   ? "bg-primary text-primary-foreground"
@@ -73,22 +96,43 @@ export default async function MeetingsPage({ searchParams }: PageProps) {
             </Link>
           </div>
 
-          {/* Circle Filter */}
-          {params.circle && (
-            <div className="mt-3 flex items-center gap-2">
-              <span className="text-xs text-muted-foreground">Gefiltert nach:</span>
-              <Link
-                href={isUpcoming ? "/meetings" : "/meetings?filter=past"}
-                className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-muted text-xs font-medium"
-              >
-                {displayCircles.find((c: any) => c.id === params.circle)?.name || "Kreis"}
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <line x1="18" y1="6" x2="6" y2="18" />
-                  <line x1="6" y1="6" x2="18" y2="18" />
-                </svg>
-              </Link>
-            </div>
-          )}
+          {/* Circle Filter - Color-dot chips */}
+          <div className="flex gap-1.5 overflow-x-auto pt-3 pb-2 -mx-5 px-5 scrollbar-hide">
+            <Link
+              href={buildHref(isUpcoming ? undefined : "past", undefined)}
+              className={`flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                !params.circle
+                  ? "bg-foreground/10 text-foreground"
+                  : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+              }`}
+            >
+              <span className="w-2 h-2 rounded-full bg-foreground/40 flex-shrink-0" />
+              Alle ({allMeetings.length})
+            </Link>
+            {displayCircles.map((circle: any) => {
+              const count = circleCounts[circle.id] || 0;
+              if (count === 0) return null;
+              const isActive = params.circle === circle.id;
+              return (
+                <Link
+                  key={circle.id}
+                  href={buildHref(isUpcoming ? undefined : "past", circle.id)}
+                  className={`flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                    isActive
+                      ? "text-foreground"
+                      : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                  }`}
+                  style={isActive ? { backgroundColor: `${circle.color}18` } : undefined}
+                >
+                  <span
+                    className="w-2 h-2 rounded-full flex-shrink-0"
+                    style={{ backgroundColor: circle.color || "#4A90D9" }}
+                  />
+                  {circle.name} ({count})
+                </Link>
+              );
+            })}
+          </div>
         </div>
 
         {/* Meetings List */}

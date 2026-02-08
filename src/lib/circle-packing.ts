@@ -133,7 +133,7 @@ function packOrganic(
   // --- Relaxation: resolve overlaps ---
   const gap = 5;
   const obstGap = 10;
-  for (let iter = 0; iter < 5; iter++) {
+  for (let iter = 0; iter < 12; iter++) {
     for (let i = 0; i < items.length; i++) {
       const a = items[i];
       // Push away from siblings
@@ -224,16 +224,27 @@ export function packCircles(
     });
   }
 
-  // --- Role sizing ---
+  // --- Role sizing (adaptive to available space) ---
   let roleItems: PackItem[] = [];
   if (hasRoles) {
-    const totalItems = subCircles.length + roles.length;
-    const roleR = hasSubCircles
-      ? Math.min(
-          containerR * 0.14,
-          containerR / (Math.sqrt(totalItems) * 1.7)
-        )
-      : Math.min(containerR * 0.15, containerR / (Math.sqrt(roles.length) * 1.3 + 0.6));
+    let roleR: number;
+    if (hasSubCircles) {
+      // Estimate area used by sub-circles
+      const circleArea = circleItems.reduce((s, c) => s + Math.PI * c.r * c.r, 0);
+      const totalArea = Math.PI * (containerR * 0.88) ** 2;
+      const freeArea = Math.max(totalArea - circleArea, totalArea * 0.2);
+      // Divide free area among roles with padding
+      const areaPerRole = freeArea / (roles.length * 2.2);
+      roleR = Math.sqrt(areaPerRole / Math.PI);
+      // Clamp: not too big, not too small to read
+      roleR = Math.max(12, Math.min(containerR * 0.13, roleR));
+    } else {
+      // Roles only: fill the space evenly
+      const totalArea = Math.PI * (containerR * 0.75) ** 2;
+      const areaPerRole = totalArea / (roles.length * 2.0);
+      roleR = Math.sqrt(areaPerRole / Math.PI);
+      roleR = Math.max(14, Math.min(containerR * 0.18, roleR));
+    }
 
     roleItems = roles.map(r => ({
       id: r.id,
