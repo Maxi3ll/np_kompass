@@ -225,31 +225,34 @@ export function packCircles(
   }
 
   // --- Role sizing (adaptive to available space) ---
+  // Labels are rendered below role circles, so we need extra collision padding
+  const ROLE_LABEL_PAD = 14;
   let roleItems: PackItem[] = [];
+  let roleVisualR = 0;
   if (hasRoles) {
-    let roleR: number;
     if (hasSubCircles) {
       // Estimate area used by sub-circles
       const circleArea = circleItems.reduce((s, c) => s + Math.PI * c.r * c.r, 0);
       const totalArea = Math.PI * (containerR * 0.88) ** 2;
       const freeArea = Math.max(totalArea - circleArea, totalArea * 0.2);
-      // Divide free area among roles with padding
-      const areaPerRole = freeArea / (roles.length * 2.2);
-      roleR = Math.sqrt(areaPerRole / Math.PI);
-      // Clamp: not too big, not too small to read
-      roleR = Math.max(12, Math.min(containerR * 0.13, roleR));
+      // Divide free area among roles with padding (account for label space)
+      const effectivePerRole = freeArea / (roles.length * 2.5);
+      const effectiveR = Math.sqrt(effectivePerRole / Math.PI);
+      roleVisualR = Math.max(10, Math.min(containerR * 0.11, effectiveR - ROLE_LABEL_PAD));
     } else {
       // Roles only: fill the space evenly
       const totalArea = Math.PI * (containerR * 0.75) ** 2;
-      const areaPerRole = totalArea / (roles.length * 2.0);
-      roleR = Math.sqrt(areaPerRole / Math.PI);
-      roleR = Math.max(14, Math.min(containerR * 0.18, roleR));
+      const effectivePerRole = totalArea / (roles.length * 2.2);
+      const effectiveR = Math.sqrt(effectivePerRole / Math.PI);
+      roleVisualR = Math.max(12, Math.min(containerR * 0.16, effectiveR - ROLE_LABEL_PAD));
     }
 
+    // Pack with collision radius = visual radius + label padding
+    const collisionR = roleVisualR + ROLE_LABEL_PAD;
     roleItems = roles.map(r => ({
       id: r.id,
       type: 'role' as const,
-      r: roleR,
+      r: collisionR,
       label: r.name,
       color: parentColor,
       icon: undefined,
@@ -262,7 +265,7 @@ export function packCircles(
   if (hasSubCircles && hasRoles) {
     // Pack sub-circles first
     packOrganic(circleItems, containerR * 0.92, rng);
-    // Pack roles avoiding sub-circles — they'll cluster in gaps
+    // Pack roles avoiding sub-circles — use collision radius for spacing
     packOrganic(roleItems, containerR * 0.88, rng, circleItems);
   } else if (hasSubCircles) {
     packOrganic(circleItems, containerR * 0.92, rng);
@@ -270,8 +273,11 @@ export function packCircles(
     packOrganic(roleItems, containerR * 0.75, rng);
   }
 
+  // Return visual radius for roles (strip label padding), keep collision positions
   return [...circleItems, ...roleItems].map(({ x, y, r, id, type, label, color, icon }) => ({
-    id, type, x, y, r, label, color, icon,
+    id, type, x, y,
+    r: type === 'role' ? roleVisualR : r,
+    label, color, icon,
   }));
 }
 
