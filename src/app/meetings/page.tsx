@@ -107,7 +107,7 @@ export default async function MeetingsPage({ searchParams }: PageProps) {
               }`}
             >
               <span className="w-2 h-2 rounded-full bg-foreground/40 flex-shrink-0" />
-              Alle ({allMeetings.length})
+              Alle Kreise ({allMeetings.length})
             </Link>
             {displayCircles.map((circle: any) => {
               const count = circleCounts[circle.id] || 0;

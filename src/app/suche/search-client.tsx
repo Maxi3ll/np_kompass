@@ -214,20 +214,22 @@ export function SearchClient() {
           {results.persons.length > 0 && (
             <ResultSection title="Personen" count={results.persons.length}>
               {results.persons.map((person) => (
-                <div
+                <Link
                   key={person.id}
-                  className="flex items-center gap-3 p-3 rounded-xl bg-card border border-border/50"
+                  href={`/personen/${person.id}`}
+                  className="flex items-center gap-3 p-3 rounded-xl bg-card border border-border/50 hover:bg-muted/50 transition-colors"
                 >
-                  <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                    <span className="text-sm font-semibold text-primary">
-                      {person.name.split(" ").map((n: string) => n[0]).join("").slice(0, 2).toUpperCase()}
-                    </span>
+                  <div
+                    className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 text-white font-semibold text-sm"
+                    style={{ backgroundColor: person.avatar_color || "#4A90D9" }}
+                  >
+                    {person.name.split(" ").map((n: string) => n[0]).join("").slice(0, 2).toUpperCase()}
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="font-medium text-sm text-foreground truncate">{person.name}</p>
                     <p className="text-xs text-muted-foreground truncate">{person.email}</p>
                   </div>
-                </div>
+                </Link>
               ))}
             </ResultSection>
           )}

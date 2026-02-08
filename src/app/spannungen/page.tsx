@@ -134,7 +134,7 @@ export default async function SpannungenPage({ searchParams }: PageProps) {
               }`}
             >
               <span className="w-2 h-2 rounded-full bg-foreground/40 flex-shrink-0" />
-              Alle ({statusFiltered.length})
+              Alle Kreise ({statusFiltered.length})
             </Link>
             {displayCircles.map((circle: any) => {
               const count = circleCounts[circle.id] || 0;

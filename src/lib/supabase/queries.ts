@@ -31,7 +31,7 @@ export async function searchAll(query: string) {
       .limit(10),
     supabase
       .from('persons')
-      .select('id, name, email')
+      .select('id, name, email, avatar_color')
       .eq('is_active', true)
       .or(`name.ilike.${q},email.ilike.${q}`)
       .order('name')

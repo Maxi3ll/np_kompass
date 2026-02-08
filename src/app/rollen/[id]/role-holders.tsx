@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 
 interface Holder {
   id: string;
@@ -47,9 +48,9 @@ function HolderRow({ holder, compact }: { holder: Holder; compact?: boolean }) {
 
       {/* Name + date */}
       <div className="flex-1 min-w-0">
-        <p className="font-semibold text-foreground text-sm truncate">
+        <Link href={`/personen/${holder.id}`} className="font-semibold text-foreground text-sm truncate block hover:text-primary transition-colors">
           {holder.name}
-        </p>
+        </Link>
         <p className="text-xs text-muted-foreground">
           seit {formatDate(holder.since)}
         </p>
