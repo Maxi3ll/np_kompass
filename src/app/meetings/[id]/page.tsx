@@ -8,12 +8,12 @@ export const revalidate = 30;
 
 const MEETING_TYPE_CONFIG = {
   TACTICAL: {
-    label: "Taktisches Meeting",
+    label: "Taktischer Termin",
     description: "Operative Abstimmung und Status-Updates",
     color: "var(--np-blue)",
   },
   GOVERNANCE: {
-    label: "Governance Meeting",
+    label: "Governance-Termin",
     description: "Strukturelle Änderungen und Rollen-Anpassungen",
     color: "var(--circle-finanzen)",
   },
@@ -44,7 +44,7 @@ export default async function MeetingDetailPage({ params }: PageProps) {
 
   return (
     <AppShell>
-      <Header title="Meeting" showBack backHref="/meetings" />
+      <Header title="Termin" showBack backHref="/meetings" />
 
       <main className="flex-1 pb-24 lg:pb-8 page-enter">
         {/* Meeting Header */}

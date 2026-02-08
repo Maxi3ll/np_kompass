@@ -11,14 +11,14 @@ export default async function NeueMeetingPage() {
 
   return (
     <AppShell>
-      <Header title="Neues Meeting" showBack backHref="/meetings" />
+      <Header title="Neuer Termin" showBack backHref="/meetings" />
 
       <main className="flex-1 pb-24 lg:pb-8 page-enter">
         <div className="px-5 py-6 max-w-2xl mx-auto lg:max-w-4xl">
           <div className="mb-6">
-            <h1 className="text-xl font-bold text-foreground">Meeting planen</h1>
+            <h1 className="text-xl font-bold text-foreground">Termin planen</h1>
             <p className="text-sm text-muted-foreground mt-1">
-              Plane ein neues Kreis-Meeting
+              Plane einen neuen Kreis-Termin
             </p>
           </div>
 

@@ -190,7 +190,7 @@ export function KreiseContent({ circles, roles, isAdmin }: KreiseContentProps) {
               <div>
                 <p className="text-sm font-medium text-foreground">Was sind Kreise?</p>
                 <p className="text-xs text-muted-foreground mt-1">
-                  Kreise sind Gruppen von Rollen mit einem gemeinsamen Zweck. Jeder Kreis hat einen Sprecher, der die Meetings moderiert.
+                  Kreise sind Gruppen von Rollen mit einem gemeinsamen Zweck. Jeder Kreis hat einen Sprecher, der die Termine moderiert.
                 </p>
               </div>
             </div>

@@ -36,7 +36,7 @@ export function DeleteAccountButton() {
       </p>
       <p className="text-xs text-muted-foreground">
         Alle deine Daten werden gelöscht: Profil, Benachrichtigungen und Rollenzuweisungen.
-        Erstellte Spannungen und Meeting-Protokolle werden anonymisiert.
+        Erstellte Spannungen und Termin-Protokolle werden anonymisiert.
         Diese Aktion kann nicht rückgängig gemacht werden.
       </p>
       <p className="text-xs text-muted-foreground">

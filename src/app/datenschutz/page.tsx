@@ -43,7 +43,7 @@ export default function DatenschutzPage() {
               <ul className="list-disc pl-5 space-y-1">
                 <li><strong className="text-foreground">Kontodaten:</strong> E-Mail-Adresse, Passwort (verschl&uuml;sselt gespeichert), Name</li>
                 <li><strong className="text-foreground">Profildaten:</strong> Telefonnummer (optional), Avatar-Farbe, Familienzugeh&ouml;rigkeit</li>
-                <li><strong className="text-foreground">Nutzungsdaten:</strong> Rollenzuweisungen, erstellte Spannungen, Meeting-Teilnahmen, Benachrichtigungen</li>
+                <li><strong className="text-foreground">Nutzungsdaten:</strong> Rollenzuweisungen, erstellte Spannungen, Termin-Teilnahmen, Benachrichtigungen</li>
                 <li><strong className="text-foreground">Technische Daten:</strong> IP-Adresse, Browser-Typ (Server-Logs des Hosting-Anbieters)</li>
               </ul>
             </section>
@@ -65,7 +65,7 @@ export default function DatenschutzPage() {
               <ul className="list-disc pl-5 space-y-1">
                 <li>Verwaltung der Vereinsorganisation (Kreise, Rollen, Zust&auml;ndigkeiten)</li>
                 <li>Erfassung und Nachverfolgung von Spannungen und Verbesserungsvorschl&auml;gen</li>
-                <li>Planung und Dokumentation von Meetings</li>
+                <li>Planung und Dokumentation von Terminen</li>
                 <li>Benachrichtigung &uuml;ber relevante &Auml;nderungen (In-App und optional per Telegram)</li>
                 <li>Authentifizierung und Zugangssteuerung</li>
               </ul>
@@ -111,7 +111,7 @@ export default function DatenschutzPage() {
                 sofern keine gesetzlichen Aufbewahrungspflichten entgegenstehen.
               </p>
               <p>
-                Rollenzuweisungen und Meeting-Protokolle k&ouml;nnen nach Anonymisierung f&uuml;r
+                Rollenzuweisungen und Termin-Protokolle k&ouml;nnen nach Anonymisierung f&uuml;r
                 die Vereinshistorie aufbewahrt werden.
               </p>
             </section>

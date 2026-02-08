@@ -7,7 +7,7 @@ Governance-Tool for **Neckarpiraten e.V.**, a Stuttgart-based parent-child initi
 - **Kreise** (Circles) - Organizational units with interactive SVG circle-packing visualization (GlassFrog-style), drill-down navigation, and stats
 - **Rollen** (Roles) - Role definitions with domains, accountabilities, and multiple holders per role
 - **Spannungen** (Tensions) - Issue tracking with status, priority, and circle assignment
-- **Meetings** - Tactical and governance meeting planning
+- **Termine** - Tactical and governance meeting planning
 - **Personen-Profile** - Public person profiles with avatar, roles, contact info, and family
 - **Suche** - Global search across circles, roles, tensions, and persons (all results link to detail pages)
 - **Benachrichtigungen** - In-app notifications + Telegram group messages (with per-user opt-out)

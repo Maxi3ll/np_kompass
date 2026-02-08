@@ -88,7 +88,7 @@ export function MeetingForm({ circles }: MeetingFormProps) {
         </label>
         <Select value={circleId} onValueChange={setCircleId}>
           <SelectTrigger className="h-12 rounded-xl w-full">
-            <SelectValue placeholder="Für welchen Kreis ist das Meeting?" />
+            <SelectValue placeholder="Für welchen Kreis ist der Termin?" />
           </SelectTrigger>
           <SelectContent>
             {circles.map((circle) => (
@@ -106,7 +106,7 @@ export function MeetingForm({ circles }: MeetingFormProps) {
       {/* Meeting Type */}
       <div className="space-y-2">
         <label className="text-sm font-medium text-foreground">
-          Meeting-Typ
+          Termin-Typ
         </label>
         <div className="grid grid-cols-2 gap-3">
           <button
@@ -230,7 +230,7 @@ export function MeetingForm({ circles }: MeetingFormProps) {
               Wird gespeichert...
             </span>
           ) : (
-            "Meeting planen"
+            "Termin planen"
           )}
         </Button>
       </div>

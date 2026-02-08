@@ -129,7 +129,7 @@ export default async function Home() {
                       <div>
                         <div className="flex items-center gap-2 mb-1">
                           <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                            Nächstes Meeting
+                            Nächster Termin
                           </span>
                         </div>
                         <h3 className="text-lg font-semibold text-foreground">
@@ -178,7 +178,7 @@ export default async function Home() {
                         <line x1="12" y1="18" x2="12" y2="12" />
                         <line x1="9" y1="15" x2="15" y2="15" />
                       </svg>
-                      Meeting vorbereiten
+                      Termin vorbereiten
                     </Link>
                   </>
                 ) : (
@@ -191,8 +191,8 @@ export default async function Home() {
                         <line x1="3" y1="10" x2="21" y2="10" />
                       </svg>
                     </div>
-                    <p className="text-sm text-muted-foreground">Kein Meeting geplant</p>
-                    <p className="text-xs text-muted-foreground mt-1">Meetings werden bald hinzugefügt</p>
+                    <p className="text-sm text-muted-foreground">Kein Termin geplant</p>
+                    <p className="text-xs text-muted-foreground mt-1">Termine werden bald hinzugefügt</p>
                   </div>
                 )}
               </div>

@@ -68,7 +68,7 @@ export default async function MeetingsPage({ searchParams }: PageProps) {
 
   return (
     <AppShell>
-      <Header title="Meetings" showBack backHref="/" />
+      <Header title="Termine" showBack backHref="/" />
 
       <main className="flex-1 pb-24 lg:pb-8 page-enter">
         {/* Filter Tabs */}
@@ -214,10 +214,10 @@ export default async function MeetingsPage({ searchParams }: PageProps) {
                 </svg>
               </div>
               <p className="font-medium text-foreground">
-                {isUpcoming ? "Keine anstehenden Meetings" : "Keine vergangenen Meetings"}
+                {isUpcoming ? "Keine anstehenden Termine" : "Keine vergangenen Termine"}
               </p>
               <p className="text-sm text-muted-foreground mt-1">
-                {isUpcoming ? "Meetings werden hier angezeigt, sobald sie geplant sind." : ""}
+                {isUpcoming ? "Termine werden hier angezeigt, sobald sie geplant sind." : ""}
               </p>
             </div>
           )}

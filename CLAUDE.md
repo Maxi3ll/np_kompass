@@ -7,7 +7,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 np-kompass is a governance tool for Neckarpiraten e.V., a Stuttgart-based parent-child initiative (~40 families). It implements a Holacracy-light model with three core modules:
 - **Rollen-Wiki**: Role definitions with domains, accountabilities, and current holders
 - **Spannungs-Log**: Tensions/issues that need resolution within circles
-- **Meeting-Board**: Tactical and governance meetings
+- **Termin-Board**: Tactical and governance meetings
 
 Target users are busy parents with mixed technical expertise - the app must be simple and mobile-friendly.
 
@@ -49,7 +49,7 @@ src/
 │   ├── kreise/             # Circles feature (list + [id] detail + admin CRUD + SVG visualization)
 │   ├── rollen/             # Roles feature (list + [id] detail + admin CRUD + assign)
 │   ├── spannungen/         # Tensions feature (list + [id] detail + neu)
-│   ├── meetings/           # Meetings feature (list + [id] detail + neu)
+│   ├── meetings/           # Termine feature (list + [id] detail + neu)
 │   ├── personen/           # Public person profiles ([id] detail with roles, contact, family)
 │   ├── suche/              # Global search (client-side, searches circles/roles/tensions/persons → links to detail pages)
 │   ├── profil/             # Profile (edit name/avatar, telegram toggle, data export, delete account) + admin email allowlist
@@ -83,8 +83,8 @@ src/
 
 ### Layout Architecture
 All authenticated pages wrap content in `<AppShell>` which provides:
-- **Desktop (lg+)**: Fixed sidebar with navigation (Dashboard, Spannungen, Kreise, Rollen, Meetings, Profil) + action buttons ("Neue Spannung", "Neues Meeting")
-- **Mobile**: Bottom navigation (Home, Spannungen, [FAB], Kreise, Meetings) with expandable FAB for creating items
+- **Desktop (lg+)**: Fixed sidebar with navigation (Dashboard, Spannungen, Kreise, Rollen, Termine, Profil) + action buttons ("Neue Spannung", "Neuer Termin")
+- **Mobile**: Bottom navigation (Home, Spannungen, [FAB], Kreise, Termine) with expandable FAB for creating items
 - **User Context**: AppShell fetches user data (name, email, avatar color, personId, unread notification count) from DB and provides via React Context to Header and NotificationBell
 
 The Kreise and Rollen pages share a tab bar on mobile (`KreiseRollenTabs`) for switching between the two views. On desktop, Rollen is a sub-item under Kreise in the sidebar.
