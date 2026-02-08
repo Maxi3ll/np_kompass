@@ -102,10 +102,10 @@ export default async function RollenDetailPage({ params }: PageProps) {
                     <polyline points="22 4 12 14.01 9 11.01" />
                   </svg>
                 </div>
-                <h2 className="font-semibold text-foreground">Aufgaben</h2>
+                <h2 className="font-semibold text-foreground">Verantwortungen</h2>
               </div>
               <p className="text-xs text-muted-foreground mb-3">
-                Wiederkehrende Tätigkeiten, für die diese Rolle verantwortlich ist
+                Wiederkehrende Tätigkeiten und Bereiche, für die diese Rolle verantwortlich ist
               </p>
               <ul className="space-y-2">
                 {role.accountabilities.map((acc: string, index: number) => (
