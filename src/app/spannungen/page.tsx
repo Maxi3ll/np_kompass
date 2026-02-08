@@ -123,32 +123,39 @@ export default async function SpannungenPage({ searchParams }: PageProps) {
             </Link>
           </div>
 
-          {/* Circle Filter */}
-          <div className="flex gap-2 overflow-x-auto pt-1 pb-2 -mx-5 px-5 scrollbar-hide">
+          {/* Circle Filter - Color-dot chips */}
+          <div className="flex gap-1.5 overflow-x-auto pt-1 pb-2 -mx-5 px-5 scrollbar-hide">
             <Link
               href={buildHref(params.status, undefined)}
-              className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+              className={`flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
                 !params.circle
-                  ? 'bg-primary/15 text-primary ring-1 ring-primary/30'
-                  : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                  ? 'bg-foreground/10 text-foreground'
+                  : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
               }`}
             >
-              Alle Kreise ({statusFiltered.length})
+              <span className="w-2 h-2 rounded-full bg-foreground/40 flex-shrink-0" />
+              Alle ({statusFiltered.length})
             </Link>
             {displayCircles.map((circle: any) => {
               const count = circleCounts[circle.id] || 0;
               if (count === 0) return null;
+              const isActive = params.circle === circle.id;
               return (
                 <Link
                   key={circle.id}
                   href={buildHref(params.status, circle.id)}
-                  className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
-                    params.circle === circle.id
-                      ? 'bg-primary/15 text-primary ring-1 ring-primary/30'
-                      : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                  className={`flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                    isActive
+                      ? 'text-foreground'
+                      : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
                   }`}
+                  style={isActive ? { backgroundColor: `${circle.color}18` } : undefined}
                 >
-                  {circle.icon} {circle.name} ({count})
+                  <span
+                    className="w-2 h-2 rounded-full flex-shrink-0"
+                    style={{ backgroundColor: circle.color || '#4A90D9' }}
+                  />
+                  {circle.name} ({count})
                 </Link>
               );
             })}
