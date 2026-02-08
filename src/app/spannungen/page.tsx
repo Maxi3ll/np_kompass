@@ -25,27 +25,52 @@ interface PageProps {
 export default async function SpannungenPage({ searchParams }: PageProps) {
   const params = await searchParams;
   const [allTensions, circles] = await Promise.all([
-    getTensions({
-      circleId: params.circle,
-    }),
+    getTensions(),
     getCircles(),
   ]);
 
-  // Filter out Anker-Kreis
-  const displayCircles = circles.filter((c: any) => c.parent_circle_id !== null);
+  // All circles including Anker-Kreis, sorted: anchor first
+  const anchorCircle = circles.find((c: any) => c.parent_circle_id === null);
+  const displayCircles = [
+    ...(anchorCircle ? [anchorCircle] : []),
+    ...circles.filter((c: any) => c.parent_circle_id !== null),
+  ];
 
-  // Count by status (always from all tensions, not filtered)
+  // Apply circle filter
+  const circleFiltered = params.circle
+    ? allTensions.filter((t: any) => t.circle_id === params.circle)
+    : allTensions;
+
+  // Status counts from circle-filtered tensions
   const statusCounts = {
-    all: allTensions.length,
-    NEW: allTensions.filter((t: any) => t.status === 'NEW').length,
-    IN_PROGRESS: allTensions.filter((t: any) => t.status === 'IN_PROGRESS').length,
-    RESOLVED: allTensions.filter((t: any) => t.status === 'RESOLVED').length,
+    all: circleFiltered.length,
+    NEW: circleFiltered.filter((t: any) => t.status === 'NEW').length,
+    IN_PROGRESS: circleFiltered.filter((t: any) => t.status === 'IN_PROGRESS').length,
+    RESOLVED: circleFiltered.filter((t: any) => t.status === 'RESOLVED').length,
   };
 
-  // Apply status filter for display
-  const tensions = params.status
+  // Circle counts from status-filtered tensions (so counts reflect active status filter)
+  const statusFiltered = params.status
     ? allTensions.filter((t: any) => t.status === params.status)
     : allTensions;
+  const circleCounts: Record<string, number> = {};
+  statusFiltered.forEach((t: any) => {
+    if (t.circle_id) circleCounts[t.circle_id] = (circleCounts[t.circle_id] || 0) + 1;
+  });
+
+  // Apply both filters for display
+  const tensions = params.status
+    ? circleFiltered.filter((t: any) => t.status === params.status)
+    : circleFiltered;
+
+  // Build hrefs that preserve the other filter
+  const buildHref = (status?: string, circleId?: string) => {
+    const parts = [
+      status && `status=${status}`,
+      circleId && `circle=${circleId}`,
+    ].filter(Boolean);
+    return `/spannungen${parts.length ? `?${parts.join('&')}` : ''}`;
+  };
 
   return (
     <AppShell>
@@ -57,7 +82,7 @@ export default async function SpannungenPage({ searchParams }: PageProps) {
           {/* Status Filter */}
           <div className="flex gap-2 overflow-x-auto pb-2 -mx-5 px-5 scrollbar-hide">
             <Link
-              href="/spannungen"
+              href={buildHref(undefined, params.circle)}
               className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-all ${
                 !params.status
                   ? 'bg-primary text-primary-foreground'
@@ -67,7 +92,7 @@ export default async function SpannungenPage({ searchParams }: PageProps) {
               Alle ({statusCounts.all})
             </Link>
             <Link
-              href="/spannungen?status=NEW"
+              href={buildHref('NEW', params.circle)}
               className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-all ${
                 params.status === 'NEW'
                   ? 'bg-[var(--status-new)] text-white'
@@ -77,7 +102,7 @@ export default async function SpannungenPage({ searchParams }: PageProps) {
               Neu ({statusCounts.NEW})
             </Link>
             <Link
-              href="/spannungen?status=IN_PROGRESS"
+              href={buildHref('IN_PROGRESS', params.circle)}
               className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-all ${
                 params.status === 'IN_PROGRESS'
                   ? 'bg-[var(--status-in-progress)] text-[#5a4a00]'
@@ -87,7 +112,7 @@ export default async function SpannungenPage({ searchParams }: PageProps) {
               In Bearbeitung ({statusCounts.IN_PROGRESS})
             </Link>
             <Link
-              href="/spannungen?status=RESOLVED"
+              href={buildHref('RESOLVED', params.circle)}
               className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-all ${
                 params.status === 'RESOLVED'
                   ? 'bg-[var(--status-resolved)] text-white'
@@ -99,21 +124,35 @@ export default async function SpannungenPage({ searchParams }: PageProps) {
           </div>
 
           {/* Circle Filter */}
-          {params.circle && (
-            <div className="mt-2 flex items-center gap-2">
-              <span className="text-xs text-muted-foreground">Gefiltert nach:</span>
-              <Link
-                href={params.status ? `/spannungen?status=${params.status}` : '/spannungen'}
-                className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-muted text-xs font-medium"
-              >
-                {displayCircles.find((c: any) => c.id === params.circle)?.name || 'Kreis'}
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <line x1="18" y1="6" x2="6" y2="18" />
-                  <line x1="6" y1="6" x2="18" y2="18" />
-                </svg>
-              </Link>
-            </div>
-          )}
+          <div className="flex gap-2 overflow-x-auto pt-1 pb-2 -mx-5 px-5 scrollbar-hide">
+            <Link
+              href={buildHref(params.status, undefined)}
+              className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+                !params.circle
+                  ? 'bg-primary/15 text-primary ring-1 ring-primary/30'
+                  : 'bg-muted text-muted-foreground hover:bg-muted/80'
+              }`}
+            >
+              Alle Kreise ({statusFiltered.length})
+            </Link>
+            {displayCircles.map((circle: any) => {
+              const count = circleCounts[circle.id] || 0;
+              if (count === 0) return null;
+              return (
+                <Link
+                  key={circle.id}
+                  href={buildHref(params.status, circle.id)}
+                  className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+                    params.circle === circle.id
+                      ? 'bg-primary/15 text-primary ring-1 ring-primary/30'
+                      : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                  }`}
+                >
+                  {circle.icon} {circle.name} ({count})
+                </Link>
+              );
+            })}
+          </div>
         </div>
 
         {/* Tensions List */}
