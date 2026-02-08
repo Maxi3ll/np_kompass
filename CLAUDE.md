@@ -46,11 +46,14 @@ Pages use ISR with revalidation intervals (30-60s). No REST API - all data acces
 ```
 src/
 ├── app/                    # Next.js App Router pages
-│   ├── kreise/             # Circles feature (list + [id] detail + admin CRUD)
+│   ├── kreise/             # Circles feature (list + [id] detail + admin CRUD + SVG visualization)
 │   ├── rollen/             # Roles feature (list + [id] detail + admin CRUD + assign)
 │   ├── spannungen/         # Tensions feature (list + [id] detail + neu)
 │   ├── meetings/           # Meetings feature (list + [id] detail + neu)
-│   ├── profil/             # Profile (edit name/avatar) + admin email allowlist
+│   ├── suche/              # Global search (client-side, searches circles/roles/tensions/persons)
+│   ├── profil/             # Profile (edit name/avatar, telegram toggle, data export, delete account) + admin email allowlist
+│   ├── impressum/          # Legal notice page
+│   ├── datenschutz/        # Privacy policy page
 │   ├── login/              # Auth login page (no AppShell)
 │   └── auth/callback/      # Auth callback (auto-links person record)
 ├── components/
@@ -63,7 +66,7 @@ src/
 │   │   ├── bottom-nav.tsx  # Mobile bottom nav with FAB (lg:hidden)
 │   │   ├── notification-bell.tsx # Notification bell with unread badge + dropdown
 │   │   └── kreise-rollen-tabs.tsx # Mobile tabs to switch Kreise/Rollen
-│   └── ui/                 # shadcn/ui components (button, card, dialog, select, etc.)
+│   └── ui/                 # shadcn/ui components (button, card, dialog, select, avatar, sheet, skeleton, etc.)
 ├── lib/
 │   ├── supabase/
 │   │   ├── client.ts       # Browser Supabase client
@@ -71,6 +74,7 @@ src/
 │   │   ├── service.ts      # Service-role client (bypasses RLS)
 │   │   ├── queries.ts      # All database query functions
 │   │   └── actions.ts      # Server Actions (CRUD, auth, admin, notifications)
+│   ├── circle-packing.ts   # Circle-packing layout algorithm for GlassFrog-style SVG visualization
 │   ├── telegram.ts         # Telegram bot notification helper
 │   └── utils.ts            # cn() utility (clsx + tailwind-merge)
 └── types/index.ts          # Complete domain types (Person, Circle, Role, Tension, etc.)
@@ -118,6 +122,7 @@ Migrations:
 - `005_notifications.sql` - Notifications table with RLS
 - `006_replace_circles_roles.sql` - Real Neckarpiraten circles (10) and roles (43)
 - `007_multi_holders.sql` - Allow multiple persons per role (drops old unique constraint)
+- `008_telegram_optout.sql` - Telegram notification opt-out preference per person
 
 ### Auth Flow
 1. User logs in via email + password (Supabase Auth)
@@ -133,6 +138,7 @@ Migrations:
 - **Triggers**: Role assigned/unassigned, tension created/assigned/resolved
 - Circle members (persons with active role assignments in a circle) receive tension notifications
 - NotificationBell component lazy-loads full list on dropdown open
+- **Telegram Opt-Out**: Users can disable Telegram notifications in their profile (`telegram_notifications` column on `persons`)
 
 ## Admin System
 
@@ -155,7 +161,10 @@ Migrations:
 - **Styling**: Tailwind utilities + `cn()` helper for conditional classes
 - **Forms**: Dialog modals (shadcn/ui Dialog) for create/edit, useState + Server Actions
 - **Language**: German throughout the UI
-- **Profile**: Users can edit name and avatar color (8 predefined colors)
+- **Profile**: Users can edit name and avatar color (8 predefined colors), toggle Telegram notifications, export personal data (DSGVO), delete account
+- **Circle Visualization**: Interactive SVG with organic circle-packing layout (GlassFrog-style), drill-down navigation, hover tooltips, parent ring navigation
+- **Legal Pages**: Impressum and Datenschutz pages linked from profile/footer
+- **Global Search**: Client-side search across circles, roles, tensions, and persons (`/suche`)
 
 ## Key Files
 
