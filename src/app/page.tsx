@@ -28,7 +28,7 @@ export default async function Home() {
   }
 
   const dashboardData = await getDashboardData(personId);
-  const { myRoles, openTensions, nextMeeting } = dashboardData;
+  const { myRoles, openTensions, nextMeeting, myOpenTasks } = dashboardData;
 
   // User display info
   const userName = personData?.name || user?.user_metadata?.full_name || user?.email?.split("@")[0] || "Benutzer";
@@ -56,34 +56,22 @@ export default async function Home() {
 
         <div className="px-5 max-w-2xl mx-auto lg:max-w-4xl space-y-6 -mt-2">
           {/* Stats Row */}
-          <div className="grid grid-cols-2 gap-4 stagger-fade-in">
+          <div className="grid grid-cols-3 gap-3 stagger-fade-in">
             {/* My Roles Card */}
             <Link href="/profil" className="block h-full">
               <div className="relative overflow-hidden bg-card rounded-2xl p-4 shadow-card card-lift border border-border/50 h-full">
-                <div className="absolute -right-4 -top-4 w-20 h-20 rounded-full bg-[var(--np-blue)]/5" />
+                <div className="absolute -right-4 -top-4 w-16 h-16 rounded-full bg-[var(--np-blue)]/5" />
                 <div className="relative">
-                  <div className="flex items-center gap-2 mb-3">
-                    <div className="w-8 h-8 rounded-lg bg-[var(--np-blue-light)] flex items-center justify-center">
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--np-blue)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <div className="flex items-center gap-1.5 mb-2">
+                    <div className="w-7 h-7 rounded-lg bg-[var(--np-blue-light)] flex items-center justify-center">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--np-blue)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                         <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
                         <circle cx="9" cy="7" r="4" />
-                        <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
-                        <path d="M16 3.13a4 4 0 0 1 0 7.75" />
                       </svg>
                     </div>
-                    <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Meine Rollen</span>
                   </div>
-                  <p className="text-3xl font-bold text-foreground">{myRoles.length}</p>
-                  <div className="mt-2 flex flex-wrap gap-1">
-                    {myRoles.slice(0, 2).map((role) => (
-                      <span
-                        key={role.id}
-                        className="inline-flex items-center text-xs px-2 py-0.5 rounded-full bg-muted text-muted-foreground"
-                      >
-                        {role.name}
-                      </span>
-                    ))}
-                  </div>
+                  <p className="text-2xl font-bold text-foreground">{myRoles.length}</p>
+                  <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">Rollen</span>
                 </div>
               </div>
             </Link>
@@ -91,23 +79,38 @@ export default async function Home() {
             {/* Open Tensions Card */}
             <Link href="/spannungen" className="block h-full">
               <div className="relative overflow-hidden bg-card rounded-2xl p-4 shadow-card card-lift border border-border/50 h-full">
-                <div className="absolute -right-4 -top-4 w-20 h-20 rounded-full bg-[var(--np-yellow)]/10" />
+                <div className="absolute -right-4 -top-4 w-16 h-16 rounded-full bg-[var(--np-yellow)]/10" />
                 <div className="relative">
-                  <div className="flex items-center gap-2 mb-3">
-                    <div className="w-8 h-8 rounded-lg bg-[var(--np-yellow-light)] flex items-center justify-center">
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--np-yellow-dark)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <div className="flex items-center gap-1.5 mb-2">
+                    <div className="w-7 h-7 rounded-lg bg-[var(--np-yellow-light)] flex items-center justify-center">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--np-yellow-dark)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                         <circle cx="12" cy="12" r="10" />
                         <line x1="12" y1="8" x2="12" y2="12" />
                         <line x1="12" y1="16" x2="12.01" y2="16" />
                       </svg>
                     </div>
-                    <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Offen</span>
                   </div>
-                  <div className="flex items-baseline gap-1">
-                    <p className="text-3xl font-bold text-foreground">{openTensions}</p>
-                    <span className="text-sm text-muted-foreground">Spannungen</span>
+                  <p className="text-2xl font-bold text-foreground">{openTensions}</p>
+                  <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">Spannungen</span>
+                </div>
+              </div>
+            </Link>
+
+            {/* My Tasks Card */}
+            <Link href="/aufgaben?assigned=me" className="block h-full">
+              <div className="relative overflow-hidden bg-card rounded-2xl p-4 shadow-card card-lift border border-border/50 h-full">
+                <div className="absolute -right-4 -top-4 w-16 h-16 rounded-full bg-[var(--status-resolved)]/10" />
+                <div className="relative">
+                  <div className="flex items-center gap-1.5 mb-2">
+                    <div className="w-7 h-7 rounded-lg bg-[var(--status-resolved)]/15 flex items-center justify-center">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--status-resolved)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <polyline points="9 11 12 14 22 4" />
+                        <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
+                      </svg>
+                    </div>
                   </div>
-                  <p className="mt-1 text-xs text-muted-foreground">in deinen Kreisen</p>
+                  <p className="text-2xl font-bold text-foreground">{myOpenTasks}</p>
+                  <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">Aufgaben</span>
                 </div>
               </div>
             </Link>

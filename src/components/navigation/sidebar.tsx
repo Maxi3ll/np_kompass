@@ -36,6 +36,16 @@ const navItems: NavItem[] = [
     ),
   },
   {
+    href: "/aufgaben",
+    label: "Aufgaben",
+    icon: (
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <polyline points="9 11 12 14 22 4" />
+        <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
+      </svg>
+    ),
+  },
+  {
     href: "/kreise",
     label: "Kreise",
     icon: (
@@ -169,6 +179,16 @@ export function Sidebar() {
             <line x1="5" y1="12" x2="19" y2="12" />
           </svg>
           Neue Spannung
+        </Link>
+        <Link
+          href="/aufgaben/neu"
+          className="flex items-center justify-center gap-2 w-full py-3 px-4 rounded-xl bg-[var(--status-resolved)] text-white font-semibold text-sm transition-all hover:bg-[var(--status-resolved)]/90 active:scale-[0.98] shadow-sm"
+        >
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="9 11 12 14 22 4" />
+            <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
+          </svg>
+          Neue Aufgabe
         </Link>
         <Link
           href="/meetings/neu"

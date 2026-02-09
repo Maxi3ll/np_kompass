@@ -9,6 +9,7 @@ interface SearchResults {
   roles: any[];
   tensions: any[];
   persons: any[];
+  tasks: any[];
 }
 
 const TENSION_STATUS: Record<string, { label: string; class: string }> = {
@@ -16,6 +17,12 @@ const TENSION_STATUS: Record<string, { label: string; class: string }> = {
   IN_PROGRESS: { label: "In Bearbeitung", class: "badge-in-progress" },
   RESOLVED: { label: "Erledigt", class: "badge-resolved" },
   ESCALATED: { label: "Eskaliert", class: "badge-escalated" },
+};
+
+const TASK_STATUS: Record<string, { label: string; class: string }> = {
+  OPEN: { label: "Offen", class: "badge-new" },
+  IN_PROGRESS: { label: "In Bearbeitung", class: "badge-in-progress" },
+  DONE: { label: "Erledigt", class: "badge-resolved" },
 };
 
 export function SearchClient() {
@@ -50,7 +57,7 @@ export function SearchClient() {
   }, [query]);
 
   const totalResults = results
-    ? results.circles.length + results.roles.length + results.tensions.length + results.persons.length
+    ? results.circles.length + results.roles.length + results.tensions.length + results.persons.length + results.tasks.length
     : 0;
 
   return (
@@ -78,7 +85,7 @@ export function SearchClient() {
           type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Kreise, Rollen, Spannungen, Personen..."
+          placeholder="Kreise, Rollen, Spannungen, Aufgaben, Personen..."
           className="w-full pl-12 pr-4 py-3.5 rounded-2xl border border-border bg-card text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary shadow-card text-sm"
         />
         {query && (
@@ -114,7 +121,7 @@ export function SearchClient() {
             </svg>
           </div>
           <p className="text-sm text-muted-foreground">
-            Durchsuche Kreise, Rollen, Spannungen und Personen
+            Durchsuche Kreise, Rollen, Spannungen, Aufgaben und Personen
           </p>
         </div>
       )}
@@ -203,6 +210,34 @@ export function SearchClient() {
                         {TENSION_STATUS[tension.status]?.label || tension.status}
                       </span>
                       <span className="text-xs text-muted-foreground">{tension.circle?.name}</span>
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </ResultSection>
+          )}
+
+          {/* Tasks */}
+          {results.tasks.length > 0 && (
+            <ResultSection title="Aufgaben" count={results.tasks.length}>
+              {results.tasks.map((task: any) => (
+                <Link
+                  key={task.id}
+                  href={`/aufgaben/${task.id}`}
+                  className="flex items-center gap-3 p-3 rounded-xl bg-card border border-border/50 hover:bg-muted/50 transition-colors"
+                >
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center text-lg flex-shrink-0 bg-[var(--np-blue-light)]">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--np-blue)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <polyline points="9 11 12 14 22 4" />
+                      <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
+                    </svg>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-sm text-foreground truncate">{task.title}</p>
+                    <div className="flex items-center gap-2 mt-0.5">
+                      <span className={`inline-flex text-[10px] px-1.5 py-0.5 rounded-full font-medium ${TASK_STATUS[task.status]?.class || ""}`}>
+                        {TASK_STATUS[task.status]?.label || task.status}
+                      </span>
                     </div>
                   </div>
                 </Link>

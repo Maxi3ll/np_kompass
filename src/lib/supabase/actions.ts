@@ -501,6 +501,213 @@ export async function createMeeting(data: CreateMeetingData) {
 }
 
 // =====================================================
+// TASKS
+// =====================================================
+
+export interface CreateTaskData {
+  title: string;
+  description?: string;
+  priority: 'LOW' | 'MEDIUM' | 'HIGH';
+  createdBy: string;
+  assignedTo?: string;
+  startDate?: string;
+  endDate?: string;
+}
+
+export async function createTask(data: CreateTaskData) {
+  const serviceClient = createServiceClient();
+
+  const { data: task, error } = await serviceClient
+    .from('tasks')
+    .insert({
+      title: data.title,
+      description: data.description || null,
+      priority: data.priority,
+      created_by: data.createdBy,
+      assigned_to: data.assignedTo || null,
+      start_date: data.startDate || null,
+      end_date: data.endDate || null,
+      status: 'OPEN',
+    })
+    .select()
+    .single();
+
+  if (error) {
+    console.error('Error creating task:', error);
+    return { error: error.message };
+  }
+
+  // Fetch creator name for notifications
+  const { data: creator } = await serviceClient
+    .from('persons')
+    .select('name')
+    .eq('id', data.createdBy)
+    .single();
+
+  // Notify assigned person (if different from creator)
+  if (data.assignedTo && data.assignedTo !== data.createdBy) {
+    await createNotification({
+      personId: data.assignedTo,
+      type: 'TASK_ASSIGNED',
+      title: 'Aufgabe zugewiesen',
+      message: `${creator?.name || 'Jemand'} hat dir die Aufgabe "${data.title}" zugewiesen.`,
+      taskId: task.id,
+    });
+  }
+
+  revalidatePath('/aufgaben');
+  revalidatePath('/');
+
+  return { task };
+}
+
+export interface UpdateTaskData {
+  id: string;
+  status?: 'OPEN' | 'IN_PROGRESS' | 'DONE';
+  priority?: 'LOW' | 'MEDIUM' | 'HIGH';
+  assignedTo?: string | null;
+  title?: string;
+  description?: string | null;
+}
+
+export async function updateTask(data: UpdateTaskData) {
+  const serviceClient = createServiceClient();
+
+  // Get old task data for notifications
+  const { data: oldTask } = await serviceClient
+    .from('tasks')
+    .select('title, assigned_to, created_by')
+    .eq('id', data.id)
+    .single();
+
+  const updateData: Record<string, any> = {};
+
+  if (data.status !== undefined) {
+    updateData.status = data.status;
+    if (data.status === 'DONE') {
+      updateData.completed_at = new Date().toISOString();
+    }
+    if (data.status !== 'DONE') {
+      updateData.completed_at = null;
+    }
+  }
+  if (data.priority !== undefined) updateData.priority = data.priority;
+  if (data.assignedTo !== undefined) updateData.assigned_to = data.assignedTo;
+  if (data.title !== undefined) updateData.title = data.title;
+  if (data.description !== undefined) updateData.description = data.description;
+
+  const { data: task, error } = await serviceClient
+    .from('tasks')
+    .update(updateData)
+    .eq('id', data.id)
+    .select()
+    .single();
+
+  if (error) {
+    console.error('Error updating task:', error);
+    return { error: error.message };
+  }
+
+  // Notification: task assigned to someone new
+  if (oldTask && data.assignedTo && data.assignedTo !== oldTask.assigned_to) {
+    await createNotification({
+      personId: data.assignedTo,
+      type: 'TASK_ASSIGNED',
+      title: 'Aufgabe zugewiesen',
+      message: `Dir wurde die Aufgabe "${oldTask.title}" zugewiesen.`,
+      taskId: data.id,
+    });
+  }
+
+  // Notification: task completed → notify creator
+  if (oldTask && data.status === 'DONE' && oldTask.created_by) {
+    await createNotification({
+      personId: oldTask.created_by,
+      type: 'TASK_COMPLETED',
+      title: 'Aufgabe erledigt',
+      message: `Die Aufgabe "${oldTask.title}" wurde als erledigt markiert.`,
+      taskId: data.id,
+    });
+  }
+
+  revalidatePath(`/aufgaben/${data.id}`);
+  revalidatePath('/aufgaben');
+  revalidatePath('/');
+
+  return { task };
+}
+
+export async function createTaskComment(taskId: string, personId: string, content: string) {
+  const serviceClient = createServiceClient();
+
+  const { data: comment, error } = await serviceClient
+    .from('task_comments')
+    .insert({
+      task_id: taskId,
+      person_id: personId,
+      content,
+    })
+    .select()
+    .single();
+
+  if (error) {
+    console.error('Error creating task comment:', error);
+    return { error: error.message };
+  }
+
+  // Fetch task + commenter info for notifications
+  const { data: task } = await serviceClient
+    .from('tasks')
+    .select('title, created_by, assigned_to')
+    .eq('id', taskId)
+    .single();
+
+  const { data: commenter } = await serviceClient
+    .from('persons')
+    .select('name')
+    .eq('id', personId)
+    .single();
+
+  if (task) {
+    const notifMessage = `${commenter?.name || 'Jemand'} hat die Aufgabe "${task.title}" kommentiert.`;
+    const notifyIds = new Set<string>();
+
+    if (task.created_by && task.created_by !== personId) notifyIds.add(task.created_by);
+    if (task.assigned_to && task.assigned_to !== personId) notifyIds.add(task.assigned_to);
+
+    for (const recipientId of notifyIds) {
+      await createNotification({
+        personId: recipientId,
+        type: 'TASK_COMMENTED',
+        title: 'Neuer Kommentar',
+        message: notifMessage,
+        taskId,
+      });
+    }
+  }
+
+  revalidatePath(`/aufgaben/${taskId}`);
+
+  return { comment };
+}
+
+export async function deleteTaskComment(commentId: string) {
+  const serviceClient = createServiceClient();
+
+  const { error } = await serviceClient
+    .from('task_comments')
+    .delete()
+    .eq('id', commentId);
+
+  if (error) {
+    console.error('Error deleting task comment:', error);
+    return { error: error.message };
+  }
+
+  return { success: true };
+}
+
+// =====================================================
 // CIRCLES
 // =====================================================
 
@@ -827,6 +1034,10 @@ const TELEGRAM_ICONS: Record<string, string> = {
   TENSION_CREATED: '⚡',
   TENSION_ASSIGNED: '📌',
   TENSION_RESOLVED: '✅',
+  TASK_CREATED: '📋',
+  TASK_ASSIGNED: '📌',
+  TASK_COMPLETED: '✅',
+  TASK_COMMENTED: '💬',
 };
 
 async function createNotification(data: {
@@ -836,6 +1047,7 @@ async function createNotification(data: {
   message: string;
   roleId?: string;
   tensionId?: string;
+  taskId?: string;
   circleId?: string;
 }) {
   const serviceClient = createServiceClient();
@@ -846,6 +1058,7 @@ async function createNotification(data: {
     message: data.message,
     role_id: data.roleId || null,
     tension_id: data.tensionId || null,
+    task_id: data.taskId || null,
     circle_id: data.circleId || null,
   });
 
@@ -982,6 +1195,16 @@ export async function deleteAccount() {
       .update({ assigned_to: null })
       .eq('assigned_to', person.id);
 
+    // Anonymize tasks
+    await serviceClient
+      .from('tasks')
+      .update({ created_by: null })
+      .eq('created_by', person.id);
+    await serviceClient
+      .from('tasks')
+      .update({ assigned_to: null })
+      .eq('assigned_to', person.id);
+
     // Anonymize meetings (set facilitator_id to null)
     await serviceClient
       .from('meetings')
@@ -1043,6 +1266,18 @@ export async function exportUserData() {
     .select('title, status, priority, circle:circles(name)')
     .eq('assigned_to', person.id);
 
+  // Get tasks created
+  const { data: tasksCreated } = await serviceClient
+    .from('tasks')
+    .select('title, description, status, priority, start_date, end_date, created_at, completed_at')
+    .eq('created_by', person.id);
+
+  // Get tasks assigned
+  const { data: tasksAssigned } = await serviceClient
+    .from('tasks')
+    .select('title, status, priority')
+    .eq('assigned_to', person.id);
+
   // Get notifications
   const { data: notifications } = await serviceClient
     .from('notifications')
@@ -1085,6 +1320,21 @@ export async function exportUserData() {
       status: t.status,
       prioritaet: t.priority,
       kreis: t.circle?.name,
+    })),
+    aufgaben_erstellt: (tasksCreated || []).map((t: any) => ({
+      titel: t.title,
+      beschreibung: t.description,
+      status: t.status,
+      prioritaet: t.priority,
+      startdatum: t.start_date,
+      enddatum: t.end_date,
+      erstellt_am: t.created_at,
+      erledigt_am: t.completed_at,
+    })),
+    aufgaben_zugewiesen: (tasksAssigned || []).map((t: any) => ({
+      titel: t.title,
+      status: t.status,
+      prioritaet: t.priority,
     })),
     benachrichtigungen: (notifications || []).map((n: any) => ({
       typ: n.type,

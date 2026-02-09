@@ -32,6 +32,7 @@ function formatRelativeTime(dateStr: string): string {
 }
 
 function getNotificationHref(n: AppNotification): string {
+  if (n.task_id) return `/aufgaben/${n.task_id}`;
   if (n.tension_id) return `/spannungen/${n.tension_id}`;
   if (n.role_id) return `/rollen/${n.role_id}`;
   return "/";
@@ -40,13 +41,17 @@ function getNotificationHref(n: AppNotification): string {
 function getNotificationIcon(type: string): string {
   switch (type) {
     case "ROLE_ASSIGNED":
-      return "M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2";
     case "ROLE_UNASSIGNED":
       return "M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2";
     case "TENSION_CREATED":
     case "TENSION_ASSIGNED":
     case "TENSION_RESOLVED":
       return "M12 9v4m0 4h.01M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0z";
+    case "TASK_CREATED":
+    case "TASK_ASSIGNED":
+    case "TASK_COMPLETED":
+    case "TASK_COMMENTED":
+      return "M9 11l3 3L22 4M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11";
     default:
       return "M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9";
   }

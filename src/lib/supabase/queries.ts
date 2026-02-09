@@ -5,12 +5,12 @@ import { createClient } from './server';
 // =====================================================
 
 export async function searchAll(query: string) {
-  if (!query || query.length < 2) return { circles: [], roles: [], tensions: [], persons: [] };
+  if (!query || query.length < 2) return { circles: [], roles: [], tensions: [], persons: [], tasks: [] };
 
   const supabase = await createClient();
   const q = `%${query}%`;
 
-  const [circlesResult, rolesResult, tensionsResult, personsResult] = await Promise.all([
+  const [circlesResult, rolesResult, tensionsResult, personsResult, tasksResult] = await Promise.all([
     supabase
       .from('circles')
       .select('id, name, purpose, color, icon')
@@ -36,6 +36,12 @@ export async function searchAll(query: string) {
       .or(`name.ilike.${q},email.ilike.${q}`)
       .order('name')
       .limit(10),
+    supabase
+      .from('tasks')
+      .select('id, title, status, priority')
+      .or(`title.ilike.${q},description.ilike.${q}`)
+      .order('created_at', { ascending: false })
+      .limit(10),
   ]);
 
   return {
@@ -43,6 +49,7 @@ export async function searchAll(query: string) {
     roles: rolesResult.data || [],
     tensions: tensionsResult.data || [],
     persons: personsResult.data || [],
+    tasks: tasksResult.data || [],
   };
 }
 
@@ -557,6 +564,89 @@ export async function getUpcomingMeetingsForPerson(personId: string, limit = 5) 
 }
 
 // =====================================================
+// TASKS
+// =====================================================
+
+export async function getTasks(filters?: {
+  status?: string;
+  assignedTo?: string;
+  limit?: number;
+}) {
+  const supabase = await createClient();
+
+  let query = supabase
+    .from('tasks')
+    .select(`
+      *,
+      created_by_person:persons!tasks_created_by_fkey(id, name, avatar_color),
+      assigned_to_person:persons!tasks_assigned_to_fkey(id, name, avatar_color)
+    `)
+    .order('created_at', { ascending: false });
+
+  if (filters?.status) {
+    query = query.eq('status', filters.status);
+  }
+
+  if (filters?.assignedTo) {
+    query = query.eq('assigned_to', filters.assignedTo);
+  }
+
+  if (filters?.limit) {
+    query = query.limit(filters.limit);
+  }
+
+  const { data, error } = await query;
+
+  if (error) {
+    console.error('Error fetching tasks:', error);
+    return [];
+  }
+
+  return data;
+}
+
+export async function getTaskById(id: string) {
+  const supabase = await createClient();
+
+  const { data, error } = await supabase
+    .from('tasks')
+    .select(`
+      *,
+      created_by_person:persons!tasks_created_by_fkey(id, name, email, phone, avatar_color),
+      assigned_to_person:persons!tasks_assigned_to_fkey(id, name, email, phone, avatar_color)
+    `)
+    .eq('id', id)
+    .single();
+
+  if (error) {
+    console.error('Error fetching task:', error);
+    return null;
+  }
+
+  return data;
+}
+
+export async function getTaskComments(taskId: string) {
+  const supabase = await createClient();
+
+  const { data, error } = await supabase
+    .from('task_comments')
+    .select(`
+      *,
+      person:persons(id, name, avatar_color)
+    `)
+    .eq('task_id', taskId)
+    .order('created_at', { ascending: true });
+
+  if (error) {
+    console.error('Error fetching task comments:', error);
+    return [];
+  }
+
+  return data;
+}
+
+// =====================================================
 // DASHBOARD
 // =====================================================
 
@@ -595,7 +685,7 @@ export async function getDashboardData(personId?: string) {
     })) || [];
   }
 
-  // Get next meeting (placeholder - we'd need actual meeting data)
+  // Get next meeting
   const { data: nextMeeting } = await supabase
     .from('meetings')
     .select(`
@@ -607,11 +697,23 @@ export async function getDashboardData(personId?: string) {
     .limit(1)
     .single();
 
+  // Get open tasks count for current user
+  let myOpenTasks = 0;
+  if (personId) {
+    const { count } = await supabase
+      .from('tasks')
+      .select('*', { count: 'exact', head: true })
+      .eq('assigned_to', personId)
+      .in('status', ['OPEN', 'IN_PROGRESS']);
+    myOpenTasks = count || 0;
+  }
+
   return {
     openTensions,
     myRoles,
     nextMeeting,
     circles,
+    myOpenTasks,
   };
 }
 

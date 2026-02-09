@@ -117,6 +117,11 @@
   --status-resolved: #6EC9A8;
   --status-escalated: #E8927C;
 
+  /* Task Status Colors (same as tension status for consistency) */
+  --task-open: #4A90D9;
+  --task-in-progress: #F5C842;
+  --task-done: #6EC9A8;
+
   /* Semantic Colors */
   --success: #6EC9A8;
   --warning: #F5C842;

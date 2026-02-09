@@ -147,6 +147,44 @@ export interface ChecklistCompletion {
   notes?: string;
 }
 
+// ============ Tasks ============
+
+export type TaskStatus = 'OPEN' | 'IN_PROGRESS' | 'DONE';
+export type TaskPriority = 'LOW' | 'MEDIUM' | 'HIGH';
+
+export interface Task {
+  id: string;
+  title: string;
+  description?: string;
+  status: TaskStatus;
+  priority: TaskPriority;
+  created_by?: string;
+  assigned_to?: string;
+  start_date?: string;
+  end_date?: string;
+  completed_at?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface TaskWithDetails extends Task {
+  created_by_person?: Person;
+  assigned_to_person?: Person;
+}
+
+export interface TaskComment {
+  id: string;
+  task_id: string;
+  person_id: string;
+  content: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface TaskCommentWithPerson extends TaskComment {
+  person?: Person;
+}
+
 // ============ Notifications ============
 
 export type NotificationType =
@@ -154,7 +192,11 @@ export type NotificationType =
   | 'ROLE_UNASSIGNED'
   | 'TENSION_CREATED'
   | 'TENSION_ASSIGNED'
-  | 'TENSION_RESOLVED';
+  | 'TENSION_RESOLVED'
+  | 'TASK_CREATED'
+  | 'TASK_ASSIGNED'
+  | 'TASK_COMPLETED'
+  | 'TASK_COMMENTED';
 
 export interface AppNotification {
   id: string;
@@ -164,6 +206,7 @@ export interface AppNotification {
   message: string;
   role_id?: string;
   tension_id?: string;
+  task_id?: string;
   circle_id?: string;
   is_read: boolean;
   read_at?: string;
@@ -195,6 +238,12 @@ export const PRIORITY_CONFIG = {
   LOW: { label: 'Niedrig', color: 'text-gray-500' },
   MEDIUM: { label: 'Mittel', color: 'text-yellow-600' },
   HIGH: { label: 'Hoch', color: 'text-red-600' },
+} as const;
+
+export const TASK_STATUS_CONFIG = {
+  OPEN: { label: 'Offen', color: 'bg-[var(--status-new)] text-white' },
+  IN_PROGRESS: { label: 'In Bearbeitung', color: 'bg-[var(--status-in-progress)] text-gray-900' },
+  DONE: { label: 'Erledigt', color: 'bg-[var(--status-resolved)] text-white' },
 } as const;
 
 export const CIRCLE_ICONS = {
