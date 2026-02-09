@@ -160,16 +160,8 @@ export function Sidebar() {
         </div>
       </nav>
 
-      {/* Legal Links */}
-      <div className="px-4 pb-2">
-        <div className="flex gap-3 text-[11px] text-muted-foreground/60">
-          <Link href="/datenschutz" className="hover:text-muted-foreground transition-colors">Datenschutz</Link>
-          <Link href="/impressum" className="hover:text-muted-foreground transition-colors">Impressum</Link>
-        </div>
-      </div>
-
       {/* Action Buttons */}
-      <div className="px-3 pb-6 space-y-2">
+      <div className="px-3 space-y-2">
         <Link
           href="/spannungen/neu"
           className="flex items-center justify-center gap-2 w-full py-3 px-4 rounded-xl bg-[var(--np-yellow)] text-[#5a4a00] font-semibold text-sm transition-all hover:bg-[var(--np-yellow-dark)] active:scale-[0.98] shadow-sm"
@@ -202,6 +194,14 @@ export function Sidebar() {
           </svg>
           Neuer Termin
         </Link>
+      </div>
+
+      {/* Legal Links */}
+      <div className="px-4 py-3">
+        <div className="flex gap-3 text-[11px] text-muted-foreground/60">
+          <Link href="/datenschutz" className="hover:text-muted-foreground transition-colors">Datenschutz</Link>
+          <Link href="/impressum" className="hover:text-muted-foreground transition-colors">Impressum</Link>
+        </div>
       </div>
     </aside>
   );
