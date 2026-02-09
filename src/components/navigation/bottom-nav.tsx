@@ -30,16 +30,6 @@ const navItems: { href: string; label: string; icon: React.ReactNode; matchAlso?
     ),
   },
   {
-    href: "/aufgaben",
-    label: "Aufgaben",
-    icon: (
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <polyline points="9 11 12 14 22 4" />
-        <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
-      </svg>
-    ),
-  },
-  {
     href: "/kreise",
     label: "Kreise",
     matchAlso: "/rollen",
@@ -51,6 +41,16 @@ const navItems: { href: string; label: string; icon: React.ReactNode; matchAlso?
         <line x1="14.83" y1="14.83" x2="19.07" y2="19.07" />
         <line x1="14.83" y1="9.17" x2="19.07" y2="4.93" />
         <line x1="4.93" y1="19.07" x2="9.17" y2="14.83" />
+      </svg>
+    ),
+  },
+  {
+    href: "/aufgaben",
+    label: "Aufgaben",
+    icon: (
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <polyline points="9 11 12 14 22 4" />
+        <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
       </svg>
     ),
   },
