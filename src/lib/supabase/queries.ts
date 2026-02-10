@@ -822,13 +822,22 @@ export async function getDashboardData(personId?: string) {
 
   // Get active vorhaben count for current user (as coordinator)
   let myActiveVorhaben = 0;
+  let myVolunteerCount = 0;
   if (personId) {
-    const { count } = await supabase
-      .from('vorhaben')
-      .select('*', { count: 'exact', head: true })
-      .eq('coordinator_id', personId)
-      .in('status', ['OPEN', 'IN_PROGRESS']);
-    myActiveVorhaben = count || 0;
+    const [vorhabenResult, volunteerResult] = await Promise.all([
+      supabase
+        .from('vorhaben')
+        .select('*', { count: 'exact', head: true })
+        .eq('coordinator_id', personId)
+        .in('status', ['OPEN', 'IN_PROGRESS']),
+      supabase
+        .from('subtask_volunteers')
+        .select('subtask:subtasks!inner(vorhaben:vorhaben!inner(status))', { count: 'exact', head: true })
+        .eq('person_id', personId)
+        .in('subtasks.vorhaben.status', ['OPEN', 'IN_PROGRESS']),
+    ]);
+    myActiveVorhaben = vorhabenResult.count || 0;
+    myVolunteerCount = volunteerResult.count || 0;
   }
 
   return {
@@ -837,6 +846,7 @@ export async function getDashboardData(personId?: string) {
     nextMeeting,
     circles,
     myActiveVorhaben,
+    myVolunteerCount,
   };
 }
 

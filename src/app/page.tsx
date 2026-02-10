@@ -28,7 +28,7 @@ export default async function Home() {
   }
 
   const dashboardData = await getDashboardData(personId);
-  const { myRoles, openTensions, nextMeeting, myActiveVorhaben } = dashboardData;
+  const { myRoles, openTensions, nextMeeting, myActiveVorhaben, myVolunteerCount } = dashboardData;
 
   // User display info
   const userName = personData?.name || user?.user_metadata?.full_name || user?.email?.split("@")[0] || "Benutzer";
@@ -109,6 +109,15 @@ export default async function Home() {
                   </div>
                   <p className="text-2xl font-bold text-foreground">{myActiveVorhaben}</p>
                   <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">Vorhaben</span>
+                  {myVolunteerCount > 0 && (
+                    <div className="flex items-center gap-1 mt-1">
+                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="var(--status-resolved)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                        <circle cx="9" cy="7" r="4" />
+                      </svg>
+                      <span className="text-[10px] font-medium text-[var(--status-resolved)]">{myVolunteerCount} dabei</span>
+                    </div>
+                  )}
                 </div>
               </div>
             </Link>
@@ -205,7 +214,7 @@ export default async function Home() {
             <h3 className="text-sm font-semibold text-foreground mb-3 px-1">
               Schnellzugriff
             </h3>
-            <div className="grid grid-cols-4 gap-3 stagger-fade-in">
+            <div className="grid grid-cols-3 gap-3 stagger-fade-in">
               {[
                 {
                   href: "/spannungen/neu",
@@ -244,19 +253,6 @@ export default async function Home() {
                       <circle cx="9" cy="7" r="4" />
                       <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
                       <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-                    </svg>
-                  ),
-                },
-                {
-                  href: "/suche",
-                  label: "Suche",
-                  sublabel: "finden",
-                  color: "var(--circle-gebaeude)",
-                  bgColor: "#E6F7F1",
-                  icon: (
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <circle cx="11" cy="11" r="8" />
-                      <line x1="21" y1="21" x2="16.65" y2="16.65" />
                     </svg>
                   ),
                 },
