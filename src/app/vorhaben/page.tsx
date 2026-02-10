@@ -40,14 +40,17 @@ export default async function VorhabenPage({ searchParams }: PageProps) {
       <Header title="Vorhaben" showBack backHref="/" />
 
       <main className="flex-1 pb-24 lg:pb-8 page-enter">
-        {/* Intro + Create Button */}
-        <div className="px-5 pt-4 pb-2 max-w-2xl mx-auto lg:max-w-4xl">
-          <p className="text-sm text-muted-foreground">
+        {/* Hero Section */}
+        <div className="px-5 pt-6 pb-6 max-w-2xl mx-auto lg:max-w-4xl">
+          <h1 className="text-2xl lg:text-3xl font-bold font-display text-foreground">
+            Vorhaben
+          </h1>
+          <p className="text-sm text-muted-foreground mt-2">
             Vorhaben sind zeitlich begrenzte Themen, die mehrere Aufgaben betreffen und gemeinsam umgesetzt werden.
           </p>
           <Link
             href="/vorhaben/neu"
-            className="mt-3 inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-primary text-primary-foreground font-semibold text-sm transition-all hover:bg-primary/90 active:scale-[0.98] shadow-sm"
+            className="mt-4 inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-primary text-primary-foreground font-semibold text-sm transition-all hover:bg-primary/90 active:scale-[0.98] shadow-sm"
           >
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <line x1="12" y1="5" x2="12" y2="19" />
@@ -57,8 +60,13 @@ export default async function VorhabenPage({ searchParams }: PageProps) {
           </Link>
         </div>
 
+        {/* Divider */}
+        <div className="max-w-2xl mx-auto lg:max-w-4xl px-5">
+          <hr className="border-border" />
+        </div>
+
         {/* Filter Bar */}
-        <div className="px-5 pt-3 pb-3 max-w-2xl mx-auto lg:max-w-4xl">
+        <div className="px-5 pt-5 pb-3 max-w-2xl mx-auto lg:max-w-4xl">
           <div className="flex gap-2 overflow-x-auto pb-2 -mx-5 px-5 scrollbar-hide">
             <Link
               href={buildHref(undefined)}
