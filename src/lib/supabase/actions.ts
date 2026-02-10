@@ -501,6 +501,60 @@ export async function createMeeting(data: CreateMeetingData) {
 }
 
 // =====================================================
+// MEETING AGENDA
+// =====================================================
+
+export async function addAgendaItem(meetingId: string, data: { notes?: string; tensionId?: string }) {
+  const serviceClient = createServiceClient();
+
+  // Get next position
+  const { data: existing } = await serviceClient
+    .from('meeting_agenda_items')
+    .select('position')
+    .eq('meeting_id', meetingId)
+    .order('position', { ascending: false })
+    .limit(1);
+
+  const nextPosition = (existing && existing.length > 0) ? existing[0].position + 1 : 1;
+
+  const { data: item, error } = await serviceClient
+    .from('meeting_agenda_items')
+    .insert({
+      meeting_id: meetingId,
+      tension_id: data.tensionId || null,
+      notes: data.notes || null,
+      position: nextPosition,
+    })
+    .select()
+    .single();
+
+  if (error) {
+    console.error('Error adding agenda item:', error);
+    return { error: error.message };
+  }
+
+  revalidatePath(`/meetings/${meetingId}`);
+  return { item };
+}
+
+export async function removeAgendaItem(agendaItemId: string, meetingId: string) {
+  const serviceClient = createServiceClient();
+
+  const { error } = await serviceClient
+    .from('meeting_agenda_items')
+    .delete()
+    .eq('id', agendaItemId);
+
+  if (error) {
+    console.error('Error removing agenda item:', error);
+    return { error: error.message };
+  }
+
+  revalidatePath(`/meetings/${meetingId}`);
+  return { success: true };
+}
+
+// =====================================================
 // VORHABEN (Initiatives)
 // =====================================================
 

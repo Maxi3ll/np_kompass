@@ -513,12 +513,23 @@ export async function getMeetingById(id: string) {
     .order('position');
 
   // Get open tensions from this circle that could be added to agenda
-  const { data: openTensions } = await supabase
+  // Exclude tensions already linked to an agenda item
+  const linkedTensionIds = (agendaItems || [])
+    .map((item: any) => item.tension_id)
+    .filter(Boolean);
+
+  let openTensionsQuery = supabase
     .from('tensions')
     .select('id, title, priority, status')
     .eq('circle_id', meeting.circle_id)
     .in('status', ['NEW', 'IN_PROGRESS'])
     .order('priority', { ascending: false });
+
+  if (linkedTensionIds.length > 0) {
+    openTensionsQuery = openTensionsQuery.not('id', 'in', `(${linkedTensionIds.join(',')})`);
+  }
+
+  const { data: openTensions } = await openTensionsQuery;
 
   return {
     ...meeting,

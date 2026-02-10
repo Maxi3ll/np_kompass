@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { Header } from "@/components/navigation/header";
 import { AppShell } from "@/components/layout/app-shell";
 import { getMeetingById } from "@/lib/supabase/queries";
+import { AgendaSection } from "./agenda-section";
 
 export const revalidate = 30;
 
@@ -17,12 +18,6 @@ const MEETING_TYPE_CONFIG = {
     description: "Strukturelle Änderungen und Rollen-Anpassungen",
     color: "var(--circle-finanzen)",
   },
-};
-
-const PRIORITY_ICONS = {
-  LOW: "○",
-  MEDIUM: "◐",
-  HIGH: "●",
 };
 
 interface PageProps {
@@ -143,85 +138,13 @@ export default async function MeetingDetailPage({ params }: PageProps) {
             </div>
           )}
 
-          {/* Agenda */}
-          <div className="bg-card rounded-2xl shadow-card border border-border/50 p-4">
-            <div className="flex items-center justify-between mb-3">
-              <p className="text-xs text-muted-foreground">
-                Agenda ({meeting.agendaItems?.length || 0} Punkte)
-              </p>
-            </div>
-
-            {meeting.agendaItems && meeting.agendaItems.length > 0 ? (
-              <div className="space-y-2">
-                {meeting.agendaItems.map((item: any, index: number) => (
-                  <div
-                    key={item.id}
-                    className="flex items-start gap-3 p-3 rounded-xl bg-muted/50"
-                  >
-                    <span className="w-6 h-6 rounded-full bg-primary/10 text-primary text-xs font-medium flex items-center justify-center flex-shrink-0">
-                      {index + 1}
-                    </span>
-                    <div className="flex-1 min-w-0">
-                      {item.tension ? (
-                        <Link href={`/spannungen/${item.tension.id}`} className="hover:underline">
-                          <p className="font-medium text-foreground">{item.tension.title}</p>
-                          <div className="flex items-center gap-2 mt-1">
-                            <span className={`text-xs ${
-                              item.tension.priority === "HIGH" ? "text-[var(--status-escalated)]" : "text-muted-foreground"
-                            }`}>
-                              {PRIORITY_ICONS[item.tension.priority as keyof typeof PRIORITY_ICONS]} {item.tension.priority === "HIGH" ? "Hoch" : item.tension.priority === "MEDIUM" ? "Mittel" : "Niedrig"}
-                            </span>
-                          </div>
-                        </Link>
-                      ) : (
-                        <p className="text-muted-foreground italic">Kein Thema verknüpft</p>
-                      )}
-                      {item.notes && (
-                        <p className="text-xs text-muted-foreground mt-1">{item.notes}</p>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-6">
-                <p className="text-sm text-muted-foreground">Noch keine Agenda-Punkte</p>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Füge offene Spannungen zur Agenda hinzu
-                </p>
-              </div>
-            )}
-          </div>
-
-          {/* Open Tensions to Add */}
-          {!isPast && meeting.openTensions && meeting.openTensions.length > 0 && (
-            <div className="bg-[var(--np-yellow-light)] rounded-2xl border border-[var(--np-yellow)]/20 p-4">
-              <p className="text-xs font-medium text-[#5a4a00] mb-3">
-                Offene Spannungen in diesem Kreis ({meeting.openTensions.length})
-              </p>
-              <div className="space-y-2">
-                {meeting.openTensions.slice(0, 5).map((tension: any) => (
-                  <Link
-                    key={tension.id}
-                    href={`/spannungen/${tension.id}`}
-                    className="flex items-center justify-between p-2 rounded-lg bg-white/50 hover:bg-white/80 transition-colors"
-                  >
-                    <span className="text-sm text-foreground truncate">{tension.title}</span>
-                    <span className={`text-xs flex-shrink-0 ml-2 ${
-                      tension.priority === "HIGH" ? "text-[var(--status-escalated)]" : "text-muted-foreground"
-                    }`}>
-                      {PRIORITY_ICONS[tension.priority as keyof typeof PRIORITY_ICONS]}
-                    </span>
-                  </Link>
-                ))}
-                {meeting.openTensions.length > 5 && (
-                  <p className="text-xs text-[#5a4a00] text-center pt-1">
-                    +{meeting.openTensions.length - 5} weitere
-                  </p>
-                )}
-              </div>
-            </div>
-          )}
+          {/* Agenda + Open Tensions */}
+          <AgendaSection
+            meetingId={meeting.id}
+            agendaItems={meeting.agendaItems}
+            openTensions={meeting.openTensions}
+            isPast={isPast}
+          />
 
           {/* Notes */}
           {meeting.notes && (
