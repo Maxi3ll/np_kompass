@@ -9,6 +9,9 @@ ALTER TABLE notifications DROP COLUMN IF EXISTS task_id;
 DROP TABLE IF EXISTS task_comments CASCADE;
 DROP TABLE IF EXISTS tasks CASCADE;
 
+-- Delete old TASK_* notifications that would violate the new constraint
+DELETE FROM notifications WHERE type LIKE 'TASK_%';
+
 -- Clean up old notification type constraint (remove TASK_* types)
 ALTER TABLE notifications DROP CONSTRAINT IF EXISTS notifications_type_check;
 
