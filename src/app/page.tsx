@@ -28,7 +28,7 @@ export default async function Home() {
   }
 
   const dashboardData = await getDashboardData(personId);
-  const { myRoles, openTensions, nextMeeting, myOpenTasks } = dashboardData;
+  const { myRoles, openTensions, nextMeeting, myActiveVorhaben } = dashboardData;
 
   // User display info
   const userName = personData?.name || user?.user_metadata?.full_name || user?.email?.split("@")[0] || "Benutzer";
@@ -96,21 +96,21 @@ export default async function Home() {
               </div>
             </Link>
 
-            {/* My Tasks Card */}
-            <Link href="/aufgaben?assigned=me" className="block h-full">
+            {/* My Vorhaben Card */}
+            <Link href="/vorhaben" className="block h-full">
               <div className="relative overflow-hidden bg-card rounded-2xl p-4 shadow-card card-lift border border-border/50 h-full">
                 <div className="absolute -right-4 -top-4 w-16 h-16 rounded-full bg-[var(--status-resolved)]/10" />
                 <div className="relative">
                   <div className="flex items-center gap-1.5 mb-2">
                     <div className="w-7 h-7 rounded-lg bg-[var(--status-resolved)]/15 flex items-center justify-center">
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--status-resolved)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                        <polyline points="9 11 12 14 22 4" />
-                        <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--status-resolved)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z" />
+                        <path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z" />
                       </svg>
                     </div>
                   </div>
-                  <p className="text-2xl font-bold text-foreground">{myOpenTasks}</p>
-                  <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">Aufgaben</span>
+                  <p className="text-2xl font-bold text-foreground">{myActiveVorhaben}</p>
+                  <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">Vorhaben</span>
                 </div>
               </div>
             </Link>

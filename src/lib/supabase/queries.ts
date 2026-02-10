@@ -5,12 +5,12 @@ import { createClient } from './server';
 // =====================================================
 
 export async function searchAll(query: string) {
-  if (!query || query.length < 2) return { circles: [], roles: [], tensions: [], persons: [], tasks: [] };
+  if (!query || query.length < 2) return { circles: [], roles: [], tensions: [], persons: [], vorhaben: [] };
 
   const supabase = await createClient();
   const q = `%${query}%`;
 
-  const [circlesResult, rolesResult, tensionsResult, personsResult, tasksResult] = await Promise.all([
+  const [circlesResult, rolesResult, tensionsResult, personsResult, vorhabenResult] = await Promise.all([
     supabase
       .from('circles')
       .select('id, name, purpose, color, icon')
@@ -37,9 +37,9 @@ export async function searchAll(query: string) {
       .order('name')
       .limit(10),
     supabase
-      .from('tasks')
-      .select('id, title, status, priority')
-      .or(`title.ilike.${q},description.ilike.${q}`)
+      .from('vorhaben')
+      .select('id, title, short_description, status')
+      .or(`title.ilike.${q},description.ilike.${q},short_description.ilike.${q}`)
       .order('created_at', { ascending: false })
       .limit(10),
   ]);
@@ -49,7 +49,7 @@ export async function searchAll(query: string) {
     roles: rolesResult.data || [],
     tensions: tensionsResult.data || [],
     persons: personsResult.data || [],
-    tasks: tasksResult.data || [],
+    vorhaben: vorhabenResult.data || [],
   };
 }
 
@@ -564,31 +564,26 @@ export async function getUpcomingMeetingsForPerson(personId: string, limit = 5) 
 }
 
 // =====================================================
-// TASKS
+// VORHABEN (Initiatives)
 // =====================================================
 
-export async function getTasks(filters?: {
+export async function getVorhaben(filters?: {
   status?: string;
-  assignedTo?: string;
   limit?: number;
 }) {
   const supabase = await createClient();
 
   let query = supabase
-    .from('tasks')
+    .from('vorhaben')
     .select(`
       *,
-      created_by_person:persons!tasks_created_by_fkey(id, name, avatar_color),
-      assigned_to_person:persons!tasks_assigned_to_fkey(id, name, avatar_color)
+      coordinator:persons!vorhaben_coordinator_id_fkey(id, name, avatar_color),
+      created_by_person:persons!vorhaben_created_by_fkey(id, name, avatar_color)
     `)
     .order('created_at', { ascending: false });
 
   if (filters?.status) {
     query = query.eq('status', filters.status);
-  }
-
-  if (filters?.assignedTo) {
-    query = query.eq('assigned_to', filters.assignedTo);
   }
 
   if (filters?.limit) {
@@ -598,48 +593,165 @@ export async function getTasks(filters?: {
   const { data, error } = await query;
 
   if (error) {
-    console.error('Error fetching tasks:', error);
+    console.error('Error fetching vorhaben:', error);
     return [];
   }
 
-  return data;
+  // Fetch circles and subtask counts for each vorhaben
+  if (data && data.length > 0) {
+    const vorhabenIds = data.map((v: any) => v.id);
+
+    const [circlesResult, subtaskResult] = await Promise.all([
+      supabase
+        .from('vorhaben_circles')
+        .select('vorhaben_id, circle:circles(id, name, color, icon)')
+        .in('vorhaben_id', vorhabenIds),
+      supabase
+        .from('subtasks')
+        .select('vorhaben_id, status')
+        .in('vorhaben_id', vorhabenIds),
+    ]);
+
+    const circleMap = new Map<string, any[]>();
+    for (const vc of (circlesResult.data || [])) {
+      const existing = circleMap.get(vc.vorhaben_id) || [];
+      if (vc.circle) existing.push(vc.circle);
+      circleMap.set(vc.vorhaben_id, existing);
+    }
+
+    const subtaskCountMap = new Map<string, { total: number; done: number }>();
+    for (const st of (subtaskResult.data || [])) {
+      const existing = subtaskCountMap.get(st.vorhaben_id) || { total: 0, done: 0 };
+      existing.total++;
+      if (st.status === 'DONE') existing.done++;
+      subtaskCountMap.set(st.vorhaben_id, existing);
+    }
+
+    return data.map((v: any) => ({
+      ...v,
+      circles: circleMap.get(v.id) || [],
+      subtask_count: subtaskCountMap.get(v.id)?.total || 0,
+      subtask_done_count: subtaskCountMap.get(v.id)?.done || 0,
+    }));
+  }
+
+  return data || [];
 }
 
-export async function getTaskById(id: string) {
+export async function getVorhabenById(id: string) {
   const supabase = await createClient();
 
-  const { data, error } = await supabase
-    .from('tasks')
+  const { data: vorhaben, error } = await supabase
+    .from('vorhaben')
     .select(`
       *,
-      created_by_person:persons!tasks_created_by_fkey(id, name, email, phone, avatar_color),
-      assigned_to_person:persons!tasks_assigned_to_fkey(id, name, email, phone, avatar_color)
+      coordinator:persons!vorhaben_coordinator_id_fkey(id, name, email, phone, avatar_color),
+      created_by_person:persons!vorhaben_created_by_fkey(id, name, avatar_color)
     `)
     .eq('id', id)
     .single();
 
   if (error) {
-    console.error('Error fetching task:', error);
+    console.error('Error fetching vorhaben:', error);
     return null;
   }
 
-  return data;
+  // Fetch circles
+  const { data: circles } = await supabase
+    .from('vorhaben_circles')
+    .select('circle:circles(id, name, color, icon)')
+    .eq('vorhaben_id', id);
+
+  // Fetch subtasks with volunteer counts
+  const { data: subtasks } = await supabase
+    .from('subtasks')
+    .select(`
+      *,
+      contact_person:persons!subtasks_contact_person_id_fkey(id, name, avatar_color),
+      created_by_person:persons!subtasks_created_by_fkey(id, name)
+    `)
+    .eq('vorhaben_id', id)
+    .order('created_at', { ascending: true });
+
+  // Fetch volunteer counts for subtasks
+  let subtasksWithVolunteers = subtasks || [];
+  if (subtasks && subtasks.length > 0) {
+    const subtaskIds = subtasks.map((s: any) => s.id);
+    const { data: volunteers } = await supabase
+      .from('subtask_volunteers')
+      .select('subtask_id, person:persons(id, name, avatar_color)')
+      .in('subtask_id', subtaskIds);
+
+    const volunteerMap = new Map<string, any[]>();
+    for (const v of (volunteers || [])) {
+      const existing = volunteerMap.get(v.subtask_id) || [];
+      if (v.person) existing.push(v.person);
+      volunteerMap.set(v.subtask_id, existing);
+    }
+
+    subtasksWithVolunteers = subtasks.map((s: any) => ({
+      ...s,
+      volunteers: volunteerMap.get(s.id) || [],
+      volunteer_count: (volunteerMap.get(s.id) || []).length,
+    }));
+  }
+
+  return {
+    ...vorhaben,
+    circles: (circles || []).map((c: any) => c.circle).filter(Boolean),
+    subtasks: subtasksWithVolunteers,
+    subtask_count: subtasksWithVolunteers.length,
+    subtask_done_count: subtasksWithVolunteers.filter((s: any) => s.status === 'DONE').length,
+  };
 }
 
-export async function getTaskComments(taskId: string) {
+export async function getSubtaskById(subtaskId: string) {
+  const supabase = await createClient();
+
+  const { data: subtask, error } = await supabase
+    .from('subtasks')
+    .select(`
+      *,
+      contact_person:persons!subtasks_contact_person_id_fkey(id, name, email, phone, avatar_color),
+      created_by_person:persons!subtasks_created_by_fkey(id, name, avatar_color),
+      vorhaben:vorhaben!subtasks_vorhaben_id_fkey(id, title)
+    `)
+    .eq('id', subtaskId)
+    .single();
+
+  if (error) {
+    console.error('Error fetching subtask:', error);
+    return null;
+  }
+
+  // Fetch volunteers
+  const { data: volunteers } = await supabase
+    .from('subtask_volunteers')
+    .select('id, created_at, person:persons(id, name, email, avatar_color)')
+    .eq('subtask_id', subtaskId)
+    .order('created_at', { ascending: true });
+
+  return {
+    ...subtask,
+    volunteers: (volunteers || []).map((v: any) => ({ ...v.person, volunteer_id: v.id, volunteered_at: v.created_at })),
+    volunteer_count: (volunteers || []).length,
+  };
+}
+
+export async function getSubtaskComments(subtaskId: string) {
   const supabase = await createClient();
 
   const { data, error } = await supabase
-    .from('task_comments')
+    .from('subtask_comments')
     .select(`
       *,
       person:persons(id, name, avatar_color)
     `)
-    .eq('task_id', taskId)
+    .eq('subtask_id', subtaskId)
     .order('created_at', { ascending: true });
 
   if (error) {
-    console.error('Error fetching task comments:', error);
+    console.error('Error fetching subtask comments:', error);
     return [];
   }
 
@@ -697,15 +809,15 @@ export async function getDashboardData(personId?: string) {
     .limit(1)
     .single();
 
-  // Get open tasks count for current user
-  let myOpenTasks = 0;
+  // Get active vorhaben count for current user (as coordinator)
+  let myActiveVorhaben = 0;
   if (personId) {
     const { count } = await supabase
-      .from('tasks')
+      .from('vorhaben')
       .select('*', { count: 'exact', head: true })
-      .eq('assigned_to', personId)
+      .eq('coordinator_id', personId)
       .in('status', ['OPEN', 'IN_PROGRESS']);
-    myOpenTasks = count || 0;
+    myActiveVorhaben = count || 0;
   }
 
   return {
@@ -713,7 +825,7 @@ export async function getDashboardData(personId?: string) {
     myRoles,
     nextMeeting,
     circles,
-    myOpenTasks,
+    myActiveVorhaben,
   };
 }
 

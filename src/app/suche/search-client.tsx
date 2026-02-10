@@ -9,7 +9,7 @@ interface SearchResults {
   roles: any[];
   tensions: any[];
   persons: any[];
-  tasks: any[];
+  vorhaben: any[];
 }
 
 const TENSION_STATUS: Record<string, { label: string; class: string }> = {
@@ -19,10 +19,10 @@ const TENSION_STATUS: Record<string, { label: string; class: string }> = {
   ESCALATED: { label: "Eskaliert", class: "badge-escalated" },
 };
 
-const TASK_STATUS: Record<string, { label: string; class: string }> = {
+const VORHABEN_STATUS: Record<string, { label: string; class: string }> = {
   OPEN: { label: "Offen", class: "badge-new" },
-  IN_PROGRESS: { label: "In Bearbeitung", class: "badge-in-progress" },
-  DONE: { label: "Erledigt", class: "badge-resolved" },
+  IN_PROGRESS: { label: "In Umsetzung", class: "badge-in-progress" },
+  DONE: { label: "Abgeschlossen", class: "badge-resolved" },
 };
 
 export function SearchClient() {
@@ -57,7 +57,7 @@ export function SearchClient() {
   }, [query]);
 
   const totalResults = results
-    ? results.circles.length + results.roles.length + results.tensions.length + results.persons.length + results.tasks.length
+    ? results.circles.length + results.roles.length + results.tensions.length + results.persons.length + results.vorhaben.length
     : 0;
 
   return (
@@ -85,7 +85,7 @@ export function SearchClient() {
           type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Kreise, Rollen, Spannungen, Aufgaben, Personen..."
+          placeholder="Kreise, Rollen, Spannungen, Vorhaben, Personen..."
           className="w-full pl-12 pr-4 py-3.5 rounded-2xl border border-border bg-card text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary shadow-card text-sm"
         />
         {query && (
@@ -121,7 +121,7 @@ export function SearchClient() {
             </svg>
           </div>
           <p className="text-sm text-muted-foreground">
-            Durchsuche Kreise, Rollen, Spannungen, Aufgaben und Personen
+            Durchsuche Kreise, Rollen, Spannungen, Vorhaben und Personen
           </p>
         </div>
       )}
@@ -217,26 +217,26 @@ export function SearchClient() {
             </ResultSection>
           )}
 
-          {/* Tasks */}
-          {results.tasks.length > 0 && (
-            <ResultSection title="Aufgaben" count={results.tasks.length}>
-              {results.tasks.map((task: any) => (
+          {/* Vorhaben */}
+          {results.vorhaben.length > 0 && (
+            <ResultSection title="Vorhaben" count={results.vorhaben.length}>
+              {results.vorhaben.map((v: any) => (
                 <Link
-                  key={task.id}
-                  href={`/aufgaben/${task.id}`}
+                  key={v.id}
+                  href={`/vorhaben/${v.id}`}
                   className="flex items-center gap-3 p-3 rounded-xl bg-card border border-border/50 hover:bg-muted/50 transition-colors"
                 >
                   <div className="w-10 h-10 rounded-xl flex items-center justify-center text-lg flex-shrink-0 bg-[var(--np-blue-light)]">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--np-blue)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <polyline points="9 11 12 14 22 4" />
-                      <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
+                      <path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z" />
+                      <path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z" />
                     </svg>
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="font-medium text-sm text-foreground truncate">{task.title}</p>
+                    <p className="font-medium text-sm text-foreground truncate">{v.title}</p>
                     <div className="flex items-center gap-2 mt-0.5">
-                      <span className={`inline-flex text-[10px] px-1.5 py-0.5 rounded-full font-medium ${TASK_STATUS[task.status]?.class || ""}`}>
-                        {TASK_STATUS[task.status]?.label || task.status}
+                      <span className={`inline-flex text-[10px] px-1.5 py-0.5 rounded-full font-medium ${VORHABEN_STATUS[v.status]?.class || ""}`}>
+                        {VORHABEN_STATUS[v.status]?.label || v.status}
                       </span>
                     </div>
                   </div>

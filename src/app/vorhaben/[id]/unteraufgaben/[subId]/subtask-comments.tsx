@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { createTaskComment } from "@/lib/supabase/actions";
+import { createSubtaskComment } from "@/lib/supabase/actions";
 
 interface Comment {
   id: string;
@@ -17,13 +17,13 @@ interface Comment {
   } | null;
 }
 
-interface TaskCommentsProps {
-  taskId: string;
+interface SubtaskCommentsProps {
+  subtaskId: string;
   personId: string;
   initialComments: Comment[];
 }
 
-export function TaskComments({ taskId, personId, initialComments }: TaskCommentsProps) {
+export function SubtaskComments({ subtaskId, personId, initialComments }: SubtaskCommentsProps) {
   const router = useRouter();
   const [content, setContent] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -32,7 +32,7 @@ export function TaskComments({ taskId, personId, initialComments }: TaskComments
     if (!content.trim() || !personId) return;
 
     setIsSubmitting(true);
-    await createTaskComment(taskId, personId, content.trim());
+    await createSubtaskComment(subtaskId, personId, content.trim());
     setContent("");
     router.refresh();
     setIsSubmitting(false);

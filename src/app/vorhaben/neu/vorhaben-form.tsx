@@ -12,35 +12,46 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { createTask } from "@/lib/supabase/actions";
+import { createVorhaben } from "@/lib/supabase/actions";
 
 interface Person {
   id: string;
   name: string;
 }
 
-interface TaskFormProps {
+interface Circle {
+  id: string;
+  name: string;
+  color?: string;
+  icon?: string;
+}
+
+interface VorhabenFormProps {
   personId: string;
+  circles: Circle[];
   persons: Person[];
 }
 
-const PRIORITY_OPTIONS = [
-  { value: "LOW", label: "Niedrig", description: "Kann warten" },
-  { value: "MEDIUM", label: "Mittel", description: "Sollte bald erledigt werden" },
-  { value: "HIGH", label: "Hoch", description: "Dringend!" },
-] as const;
-
-export function TaskForm({ personId, persons }: TaskFormProps) {
+export function VorhabenForm({ personId, circles, persons }: VorhabenFormProps) {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const [title, setTitle] = useState("");
+  const [shortDescription, setShortDescription] = useState("");
   const [description, setDescription] = useState("");
-  const [assignedTo, setAssignedTo] = useState("");
-  const [priority, setPriority] = useState<"LOW" | "MEDIUM" | "HIGH">("MEDIUM");
+  const [coordinatorId, setCoordinatorId] = useState("");
+  const [selectedCircleIds, setSelectedCircleIds] = useState<string[]>([]);
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
+
+  const toggleCircle = (circleId: string) => {
+    setSelectedCircleIds((prev) =>
+      prev.includes(circleId)
+        ? prev.filter((id) => id !== circleId)
+        : [...prev, circleId]
+    );
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -53,12 +64,13 @@ export function TaskForm({ personId, persons }: TaskFormProps) {
 
     setIsSubmitting(true);
 
-    const result = await createTask({
+    const result = await createVorhaben({
       title: title.trim(),
+      shortDescription: shortDescription.trim() || undefined,
       description: description.trim() || undefined,
-      priority,
+      coordinatorId: coordinatorId || undefined,
       createdBy: personId,
-      assignedTo: assignedTo || undefined,
+      circleIds: selectedCircleIds.length > 0 ? selectedCircleIds : undefined,
       startDate: startDate || undefined,
       endDate: endDate || undefined,
     });
@@ -69,7 +81,7 @@ export function TaskForm({ personId, persons }: TaskFormProps) {
       return;
     }
 
-    router.push("/aufgaben");
+    router.push("/vorhaben");
     router.refresh();
   };
 
@@ -82,7 +94,7 @@ export function TaskForm({ personId, persons }: TaskFormProps) {
         </label>
         <Input
           id="title"
-          placeholder="Was muss erledigt werden?"
+          placeholder="Wie heißt das Vorhaben?"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           className="h-12 rounded-xl"
@@ -93,6 +105,24 @@ export function TaskForm({ personId, persons }: TaskFormProps) {
         </p>
       </div>
 
+      {/* Short Description */}
+      <div className="space-y-2">
+        <label htmlFor="shortDescription" className="text-sm font-medium text-foreground">
+          Kurzbeschreibung
+        </label>
+        <Input
+          id="shortDescription"
+          placeholder="Ein Satz, der das Vorhaben zusammenfasst (optional)"
+          value={shortDescription}
+          onChange={(e) => setShortDescription(e.target.value)}
+          className="h-12 rounded-xl"
+          maxLength={300}
+        />
+        <p className="text-xs text-muted-foreground text-right">
+          {shortDescription.length}/300
+        </p>
+      </div>
+
       {/* Description */}
       <div className="space-y-2">
         <label htmlFor="description" className="text-sm font-medium text-foreground">
@@ -100,25 +130,25 @@ export function TaskForm({ personId, persons }: TaskFormProps) {
         </label>
         <Textarea
           id="description"
-          placeholder="Beschreibe die Aufgabe genauer... (optional)"
+          placeholder="Beschreibe das Vorhaben genauer... (optional)"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           className="min-h-[120px] rounded-xl resize-none"
-          maxLength={2000}
+          maxLength={5000}
         />
         <p className="text-xs text-muted-foreground text-right">
-          {description.length}/2000
+          {description.length}/5000
         </p>
       </div>
 
-      {/* Assigned To */}
+      {/* Coordinator */}
       <div className="space-y-2">
         <label className="text-sm font-medium text-foreground">
-          Zugewiesen an
+          Koordinator:in
         </label>
-        <Select value={assignedTo} onValueChange={setAssignedTo}>
+        <Select value={coordinatorId} onValueChange={setCoordinatorId}>
           <SelectTrigger className="h-12 rounded-xl w-full">
-            <SelectValue placeholder="Wer soll die Aufgabe erledigen? (optional)" />
+            <SelectValue placeholder="Wer koordiniert das Vorhaben? (optional)" />
           </SelectTrigger>
           <SelectContent>
             {persons.map((person) => (
@@ -130,46 +160,36 @@ export function TaskForm({ personId, persons }: TaskFormProps) {
         </Select>
       </div>
 
-      {/* Priority Selection */}
+      {/* Circles Multi-Select */}
       <div className="space-y-2">
         <label className="text-sm font-medium text-foreground">
-          Priorität
+          Beteiligte Kreise
         </label>
-        <div className="grid grid-cols-3 gap-2">
-          {PRIORITY_OPTIONS.map((option) => (
-            <button
-              key={option.value}
-              type="button"
-              onClick={() => setPriority(option.value)}
-              className={`p-3 rounded-xl border-2 transition-all text-center ${
-                priority === option.value
-                  ? option.value === "HIGH"
-                    ? "border-[var(--status-escalated)] bg-[var(--status-escalated)]/10"
-                    : option.value === "MEDIUM"
-                    ? "border-[var(--np-yellow)] bg-[var(--np-yellow)]/10"
-                    : "border-[var(--np-blue)] bg-[var(--np-blue)]/10"
-                  : "border-border hover:border-muted-foreground/30"
-              }`}
-            >
-              <span
-                className={`text-sm font-medium ${
-                  priority === option.value
-                    ? option.value === "HIGH"
-                      ? "text-[var(--status-escalated)]"
-                      : option.value === "MEDIUM"
-                      ? "text-[var(--np-yellow-dark)]"
-                      : "text-[var(--np-blue)]"
-                    : "text-foreground"
+        <div className="flex flex-wrap gap-2">
+          {circles.map((circle) => {
+            const isSelected = selectedCircleIds.includes(circle.id);
+            return (
+              <button
+                key={circle.id}
+                type="button"
+                onClick={() => toggleCircle(circle.id)}
+                className={`inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border-2 text-sm font-medium transition-all ${
+                  isSelected
+                    ? 'border-primary bg-primary/10 text-primary'
+                    : 'border-border text-muted-foreground hover:border-muted-foreground/30'
                 }`}
               >
-                {option.label}
-              </span>
-              <p className="text-[10px] text-muted-foreground mt-0.5">
-                {option.description}
-              </p>
-            </button>
-          ))}
+                <span>{circle.icon || ''}</span>
+                {circle.name}
+              </button>
+            );
+          })}
         </div>
+        {selectedCircleIds.length > 0 && (
+          <p className="text-xs text-muted-foreground">
+            {selectedCircleIds.length} Kreis{selectedCircleIds.length > 1 ? 'e' : ''} ausgewählt
+          </p>
+        )}
       </div>
 
       {/* Dates */}
@@ -239,7 +259,7 @@ export function TaskForm({ personId, persons }: TaskFormProps) {
               Wird gespeichert...
             </span>
           ) : (
-            "Aufgabe erstellen"
+            "Vorhaben erstellen"
           )}
         </Button>
       </div>

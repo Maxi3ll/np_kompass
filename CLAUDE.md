@@ -49,10 +49,10 @@ src/
 │   ├── kreise/             # Circles feature (list + [id] detail + admin CRUD + SVG visualization)
 │   ├── rollen/             # Roles feature (list + [id] detail + admin CRUD + assign)
 │   ├── spannungen/         # Tensions feature (list + [id] detail + neu)
-│   ├── aufgaben/           # Tasks feature (list + [id] detail + comments + neu)
+│   ├── vorhaben/           # Vorhaben/Initiatives (list + [id] detail + unteraufgaben + neu)
 │   ├── meetings/           # Termine feature (list + [id] detail + neu)
 │   ├── personen/           # Public person profiles ([id] detail with roles, contact, family)
-│   ├── suche/              # Global search (client-side, searches circles/roles/tensions/tasks/persons → links to detail pages)
+│   ├── suche/              # Global search (client-side, searches circles/roles/tensions/vorhaben/persons → links to detail pages)
 │   ├── profil/             # Profile (edit name/avatar, telegram toggle, data export, delete account) + admin email allowlist
 │   ├── impressum/          # Legal notice page
 │   ├── datenschutz/        # Privacy policy page
@@ -84,8 +84,8 @@ src/
 
 ### Layout Architecture
 All authenticated pages wrap content in `<AppShell>` which provides:
-- **Desktop (lg+)**: Fixed sidebar with navigation (Dashboard, Spannungen, Aufgaben, Kreise, Rollen, Termine, Profil) + action buttons ("Neue Spannung", "Neue Aufgabe", "Neuer Termin")
-- **Mobile**: Bottom navigation (Home, Spannungen, Aufgaben, [FAB], Kreise, Termine) with expandable FAB for creating items
+- **Desktop (lg+)**: Fixed sidebar with navigation (Dashboard, Spannungen, Vorhaben, Kreise, Rollen, Termine, Profil) + action buttons ("Neue Spannung", "Neues Vorhaben", "Neuer Termin")
+- **Mobile**: Bottom navigation (Home, Spannungen, Kreise, Vorhaben, Termine) with expandable FAB for creating items
 - **User Context**: AppShell fetches user data (name, email, avatar color, personId, unread notification count) from DB and provides via React Context to Header and NotificationBell
 
 The Kreise and Rollen pages share a tab bar on mobile (`KreiseRollenTabs`) for switching between the two views. On desktop, Rollen is a sub-item under Kreise in the sidebar.
@@ -108,12 +108,12 @@ Login page and auth callback do NOT use AppShell.
 - **Kreis** (Circle): Organizational unit with purpose and parent hierarchy
 - **Rolle** (Role): Function within a circle with domains and accountabilities (supports multiple holders)
 - **Spannung** (Tension): Issue/improvement opportunity to be resolved
-- **Aufgabe** (Task): Global to-do item with status (OPEN/IN_PROGRESS/DONE), priority, assignee, dates, and comments
+- **Vorhaben** (Initiative): Project/initiative with coordinator, circles, subtasks, volunteers, and comments
 - **Familie** (Family): Member family unit
 - **Person**: Individual member with auth, avatar color, and family relationship. Public profile at `/personen/[id]` shows roles, contact, and family.
 
 ### Database
-PostgreSQL tables with RLS enabled. Key tables: `circles`, `roles`, `role_assignments`, `tensions`, `tasks`, `task_comments`, `persons`, `families`, `allowed_emails`, `notifications`. Two views: `current_role_holders`, `circle_stats`.
+PostgreSQL tables with RLS enabled. Key tables: `circles`, `roles`, `role_assignments`, `tensions`, `vorhaben`, `vorhaben_circles`, `subtasks`, `subtask_volunteers`, `subtask_comments`, `persons`, `families`, `allowed_emails`, `notifications`. Two views: `current_role_holders`, `circle_stats`.
 
 Roles support multiple simultaneous holders. The `role_assignments` table uses a `UNIQUE(role_id, person_id, valid_until)` constraint — the same person can't be assigned twice, but different persons can hold the same role. Role history maintained via `role_assignments` with `valid_from`/`valid_until` dates.
 
@@ -126,7 +126,8 @@ Migrations:
 - `006_replace_circles_roles.sql` - Real Neckarpiraten circles (10) and roles (43)
 - `007_multi_holders.sql` - Allow multiple persons per role (drops old unique constraint)
 - `008_telegram_optout.sql` - Telegram notification opt-out preference per person
-- `009_tasks.sql` - Tasks and task_comments tables with RLS, extend notifications for task types
+- `009_tasks.sql` - (Replaced by 010) Old tasks tables
+- `010_vorhaben.sql` - Vorhaben, subtasks, volunteers, comments tables; replaces old tasks system
 
 ### Auth Flow
 1. User logs in via email + password (Supabase Auth)
@@ -139,7 +140,7 @@ Migrations:
 ### Notifications
 - **In-App**: Notifications stored in `notifications` table, shown via bell icon in header
 - **Telegram**: All notifications also sent to a Telegram group via bot API (`src/lib/telegram.ts`)
-- **Triggers**: Role assigned/unassigned, tension created/assigned/resolved, task created/assigned/completed/commented
+- **Triggers**: Role assigned/unassigned, tension created/assigned/resolved, vorhaben created/volunteer/subtask completed/commented
 - Circle members (persons with active role assignments in a circle) receive tension notifications
 - NotificationBell component lazy-loads full list on dropdown open
 - **Telegram Opt-Out**: Users can disable Telegram notifications in their profile (`telegram_notifications` column on `persons`)
@@ -168,7 +169,7 @@ Migrations:
 - **Profile**: Users can edit name and avatar color (8 predefined colors), toggle Telegram notifications, export personal data (DSGVO), delete account
 - **Circle Visualization**: Interactive SVG with organic circle-packing layout (GlassFrog-style), drill-down navigation, hover tooltips, parent ring navigation
 - **Legal Pages**: Impressum and Datenschutz pages linked from profile/footer
-- **Global Search**: Client-side search across circles, roles, tensions, and persons (`/suche`) — all results link to detail pages
+- **Global Search**: Client-side search across circles, roles, tensions, vorhaben, and persons (`/suche`) — all results link to detail pages
 - **Person Profiles**: Public profile pages (`/personen/[id]`) with avatar, name, family, contact info, and current roles. Linked from search results and role holder lists.
 
 ## Key Files

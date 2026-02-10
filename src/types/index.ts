@@ -147,41 +147,68 @@ export interface ChecklistCompletion {
   notes?: string;
 }
 
-// ============ Tasks ============
+// ============ Vorhaben (Initiatives) ============
 
-export type TaskStatus = 'OPEN' | 'IN_PROGRESS' | 'DONE';
-export type TaskPriority = 'LOW' | 'MEDIUM' | 'HIGH';
+export type VorhabenStatus = 'OPEN' | 'IN_PROGRESS' | 'DONE';
 
-export interface Task {
+export interface Vorhaben {
   id: string;
   title: string;
+  short_description?: string;
   description?: string;
-  status: TaskStatus;
-  priority: TaskPriority;
-  created_by?: string;
-  assigned_to?: string;
+  status: VorhabenStatus;
   start_date?: string;
   end_date?: string;
-  completed_at?: string;
+  coordinator_id?: string;
+  created_by?: string;
   created_at: string;
   updated_at: string;
 }
 
-export interface TaskWithDetails extends Task {
+export interface VorhabenWithDetails extends Vorhaben {
+  coordinator?: Person;
   created_by_person?: Person;
-  assigned_to_person?: Person;
+  circles?: Array<{ id: string; name: string; color?: string; icon?: string }>;
+  subtask_count?: number;
+  subtask_done_count?: number;
 }
 
-export interface TaskComment {
+export interface Subtask {
   id: string;
-  task_id: string;
+  vorhaben_id: string;
+  title: string;
+  description?: string;
+  status: VorhabenStatus;
+  contact_person_id?: string;
+  created_by?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface SubtaskWithDetails extends Subtask {
+  contact_person?: Person;
+  created_by_person?: Person;
+  volunteer_count?: number;
+  volunteers?: Array<{ id: string; name: string; avatar_color?: string }>;
+}
+
+export interface SubtaskVolunteer {
+  id: string;
+  subtask_id: string;
+  person_id: string;
+  created_at: string;
+}
+
+export interface SubtaskComment {
+  id: string;
+  subtask_id: string;
   person_id: string;
   content: string;
   created_at: string;
   updated_at: string;
 }
 
-export interface TaskCommentWithPerson extends TaskComment {
+export interface SubtaskCommentWithPerson extends SubtaskComment {
   person?: Person;
 }
 
@@ -193,10 +220,10 @@ export type NotificationType =
   | 'TENSION_CREATED'
   | 'TENSION_ASSIGNED'
   | 'TENSION_RESOLVED'
-  | 'TASK_CREATED'
-  | 'TASK_ASSIGNED'
-  | 'TASK_COMPLETED'
-  | 'TASK_COMMENTED';
+  | 'VORHABEN_CREATED'
+  | 'VORHABEN_VOLUNTEER'
+  | 'VORHABEN_SUBTASK_COMPLETED'
+  | 'VORHABEN_COMMENTED';
 
 export interface AppNotification {
   id: string;
@@ -206,7 +233,7 @@ export interface AppNotification {
   message: string;
   role_id?: string;
   tension_id?: string;
-  task_id?: string;
+  vorhaben_id?: string;
   circle_id?: string;
   is_read: boolean;
   read_at?: string;
@@ -240,10 +267,10 @@ export const PRIORITY_CONFIG = {
   HIGH: { label: 'Hoch', color: 'text-red-600' },
 } as const;
 
-export const TASK_STATUS_CONFIG = {
+export const VORHABEN_STATUS_CONFIG = {
   OPEN: { label: 'Offen', color: 'bg-[var(--status-new)] text-white' },
-  IN_PROGRESS: { label: 'In Bearbeitung', color: 'bg-[var(--status-in-progress)] text-gray-900' },
-  DONE: { label: 'Erledigt', color: 'bg-[var(--status-resolved)] text-white' },
+  IN_PROGRESS: { label: 'In Umsetzung', color: 'bg-[var(--status-in-progress)] text-gray-900' },
+  DONE: { label: 'Abgeschlossen', color: 'bg-[var(--status-resolved)] text-white' },
 } as const;
 
 export const CIRCLE_ICONS = {
