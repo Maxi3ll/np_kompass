@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Header } from "@/components/navigation/header";
 import { AppShell } from "@/components/layout/app-shell";
-import { getTensionById } from "@/lib/supabase/queries";
+import { getTensionById, getCircles } from "@/lib/supabase/queries";
 import { createClient } from "@/lib/supabase/server";
 import { TensionActions } from "./tension-actions";
 
@@ -42,7 +42,10 @@ export default async function SpannungDetailPage({ params }: PageProps) {
     personId = person?.id || user.id;
   }
 
-  const tension = await getTensionById(id);
+  const [tension, circles] = await Promise.all([
+    getTensionById(id),
+    getCircles(),
+  ]);
 
   if (!tension) {
     notFound();
@@ -203,6 +206,12 @@ export default async function SpannungDetailPage({ params }: PageProps) {
               currentStatus={tension.status}
               currentNextAction={tension.next_action}
               personId={personId || ""}
+              raisedBy={tension.raised_by_person?.id || ""}
+              circles={circles || []}
+              currentTitle={tension.title}
+              currentDescription={tension.description || ""}
+              currentCircleId={tension.circle?.id || ""}
+              currentPriority={tension.priority}
             />
           </div>
         </div>

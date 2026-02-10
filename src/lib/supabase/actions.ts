@@ -377,6 +377,9 @@ export interface UpdateTensionData {
   nextAction?: string | null;
   assignedTo?: string | null;
   resolution?: string | null;
+  title?: string;
+  description?: string | null;
+  circleId?: string;
 }
 
 export async function updateTension(data: UpdateTensionData) {
@@ -401,6 +404,9 @@ export async function updateTension(data: UpdateTensionData) {
   if (data.nextAction !== undefined) updateData.next_action = data.nextAction;
   if (data.assignedTo !== undefined) updateData.assigned_to = data.assignedTo;
   if (data.resolution !== undefined) updateData.resolution = data.resolution;
+  if (data.title !== undefined) updateData.title = data.title;
+  if (data.description !== undefined) updateData.description = data.description;
+  if (data.circleId !== undefined) updateData.circle_id = data.circleId;
 
   const { data: tension, error } = await serviceClient
     .from('tensions')

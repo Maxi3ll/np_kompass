@@ -4,6 +4,7 @@ import { Header } from "@/components/navigation/header";
 import { AppShell } from "@/components/layout/app-shell";
 import { getSubtaskById, getSubtaskComments } from "@/lib/supabase/queries";
 import { createClient } from "@/lib/supabase/server";
+import { getPersonsList } from "@/lib/supabase/actions";
 import { SubtaskActions } from "./subtask-actions";
 import { SubtaskComments } from "./subtask-comments";
 import { VolunteerSection } from "./volunteer-section";
@@ -36,10 +37,13 @@ export default async function SubtaskDetailPage({ params }: PageProps) {
     personId = person?.id || null;
   }
 
-  const [subtask, comments] = await Promise.all([
+  const [subtask, comments, personsResult] = await Promise.all([
     getSubtaskById(subId),
     getSubtaskComments(subId),
+    getPersonsList(),
   ]);
+
+  const persons = personsResult.persons || [];
 
   if (!subtask) {
     notFound();
@@ -120,6 +124,12 @@ export default async function SubtaskDetailPage({ params }: PageProps) {
             <SubtaskActions
               subtaskId={subId}
               currentStatus={subtask.status}
+              personId={personId || ""}
+              createdBy={subtask.created_by || ""}
+              persons={persons}
+              currentTitle={subtask.title}
+              currentDescription={subtask.description || ""}
+              currentContactPersonId={subtask.contact_person?.id || ""}
             />
           </div>
 
