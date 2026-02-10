@@ -103,17 +103,6 @@ export function BottomNav() {
               Termin
             </Link>
             <Link
-              href="/vorhaben/neu"
-              onClick={() => setFabOpen(false)}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-[var(--status-resolved)] text-white font-medium text-sm shadow-lg whitespace-nowrap animate-in fade-in slide-in-from-bottom-2 duration-175"
-            >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z" />
-                <path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z" />
-              </svg>
-              Vorhaben
-            </Link>
-            <Link
               href="/spannungen/neu"
               onClick={() => setFabOpen(false)}
               className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-[var(--np-yellow)] text-[#5a4a00] font-medium text-sm shadow-lg whitespace-nowrap animate-in fade-in slide-in-from-bottom-2 duration-150"
