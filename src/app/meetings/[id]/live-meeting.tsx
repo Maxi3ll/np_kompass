@@ -87,7 +87,6 @@ export function LiveMeeting({ meetingId, facilitatorId, initialData }: LiveMeeti
           meetingId={meetingId}
           agendaItems={state.agendaItems}
           currentAgendaPosition={state.currentAgendaPosition}
-          isFacilitator={isFacilitator}
           personId={personId}
         />
       )}
@@ -107,6 +106,7 @@ export function LiveMeeting({ meetingId, facilitatorId, initialData }: LiveMeeti
           currentPhase={state.currentPhase}
           currentAgendaItemId={currentAgendaItem?.id}
           allItemsProcessed={allItemsProcessed}
+          hasAgendaItems={state.agendaItems.length > 0}
         />
       )}
     </div>

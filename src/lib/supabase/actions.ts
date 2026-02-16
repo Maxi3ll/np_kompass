@@ -703,18 +703,22 @@ export async function advanceMeetingPhase(meetingId: string) {
 
   const updateData: Record<string, any> = { current_phase: nextPhase };
 
-  // When advancing to AGENDA, set position to first item
+  // When advancing to AGENDA, set position to first unprocessed item
   if (nextPhase === 'AGENDA') {
-    const { data: firstItem } = await serviceClient
+    const { data: items } = await serviceClient
       .from('meeting_agenda_items')
       .select('position')
       .eq('meeting_id', meetingId)
       .eq('is_processed', false)
       .order('position')
-      .limit(1)
-      .single();
+      .limit(1);
 
-    updateData.current_agenda_position = firstItem?.position ?? 1;
+    if (items && items.length > 0) {
+      updateData.current_agenda_position = items[0].position;
+    } else {
+      // No agenda items — set position to null (UI will show empty state)
+      updateData.current_agenda_position = null;
+    }
   }
 
   const { error } = await serviceClient

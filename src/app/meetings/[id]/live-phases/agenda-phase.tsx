@@ -1,32 +1,19 @@
 'use client';
 
-import { useTransition } from 'react';
-import { processAgendaItem } from '@/lib/supabase/actions';
 import { AgendaItemLive } from '../components/agenda-item-live';
 
 interface AgendaPhaseProps {
   meetingId: string;
   agendaItems: any[];
   currentAgendaPosition: number | null;
-  isFacilitator: boolean;
   personId: string;
 }
 
 export function AgendaPhase({
-  meetingId,
   agendaItems,
   currentAgendaPosition,
-  isFacilitator,
   personId,
 }: AgendaPhaseProps) {
-  const [isPending, startTransition] = useTransition();
-
-  function handleProcess(agendaItemId: string) {
-    startTransition(async () => {
-      await processAgendaItem(meetingId, agendaItemId);
-    });
-  }
-
   const unprocessedCount = agendaItems.filter(i => !i.is_processed).length;
 
   return (
@@ -46,9 +33,7 @@ export function AgendaPhase({
               key={item.id}
               item={item}
               isCurrent={item.position === currentAgendaPosition && !item.is_processed}
-              isFacilitator={isFacilitator}
               personId={personId}
-              onProcess={() => handleProcess(item.id)}
             />
           ))}
         </div>

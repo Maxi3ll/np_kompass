@@ -9,6 +9,7 @@ interface FacilitatorControlsProps {
   currentPhase: MeetingPhase | null;
   currentAgendaItemId?: string;
   allItemsProcessed: boolean;
+  hasAgendaItems: boolean;
 }
 
 export function FacilitatorControls({
@@ -16,6 +17,7 @@ export function FacilitatorControls({
   currentPhase,
   currentAgendaItemId,
   allItemsProcessed,
+  hasAgendaItems,
 }: FacilitatorControlsProps) {
   const [isPending, startTransition] = useTransition();
 
@@ -60,7 +62,7 @@ export function FacilitatorControls({
                 {isPending ? '...' : 'Punkt abschliessen'}
               </button>
             )}
-            {allItemsProcessed && (
+            {(allItemsProcessed || !hasAgendaItems) && (
               <button
                 onClick={handleAdvance}
                 disabled={isPending}

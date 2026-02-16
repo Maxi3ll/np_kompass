@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useReducer, useCallback } from 'react';
+import { useEffect, useReducer, useCallback, useRef } from 'react';
+import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import type { MeetingPhase, MeetingStatus } from '@/types';
 
@@ -77,14 +78,17 @@ function meetingReducer(state: LiveMeetingState, action: MeetingAction): LiveMee
     case 'INIT':
       return action.payload;
 
-    case 'MEETING_UPDATE':
+    case 'MEETING_UPDATE': {
+      const p = action.payload;
+      // Handle null values explicitly (when COMPLETED, current_phase is set to null)
       return {
         ...state,
-        status: action.payload.status ?? state.status,
-        currentPhase: action.payload.current_phase ?? state.currentPhase,
-        currentAgendaPosition: action.payload.current_agenda_position ?? state.currentAgendaPosition,
-        protocol: action.payload.protocol ?? state.protocol,
+        status: p.status ?? state.status,
+        currentPhase: p.status === 'COMPLETED' ? null : (p.current_phase !== undefined ? p.current_phase : state.currentPhase),
+        currentAgendaPosition: p.status === 'COMPLETED' ? null : (p.current_agenda_position !== undefined ? p.current_agenda_position : state.currentAgendaPosition),
+        protocol: p.protocol !== undefined ? p.protocol : state.protocol,
       };
+    }
 
     case 'ATTENDEE_INSERT': {
       if (state.attendees.some(a => a.id === action.payload.id)) return state;
@@ -103,8 +107,8 @@ function meetingReducer(state: LiveMeetingState, action: MeetingAction): LiveMee
             ? {
                 ...item,
                 is_processed: updated.is_processed ?? item.is_processed,
-                outcome: updated.outcome ?? item.outcome,
-                notes: updated.notes ?? item.notes,
+                outcome: updated.outcome !== undefined ? updated.outcome : item.outcome,
+                notes: updated.notes !== undefined ? updated.notes : item.notes,
                 position: updated.position ?? item.position,
               }
             : item
@@ -114,7 +118,7 @@ function meetingReducer(state: LiveMeetingState, action: MeetingAction): LiveMee
 
     case 'AGENDA_INSERT': {
       if (state.agendaItems.some(i => i.id === action.payload.id)) return state;
-      const items = [...state.agendaItems, { ...action.payload, comments: [] }];
+      const items = [...state.agendaItems, { ...action.payload, comments: action.payload.comments || [] }];
       items.sort((a, b) => a.position - b.position);
       return { ...state, agendaItems: items };
     }
@@ -143,10 +147,11 @@ function meetingReducer(state: LiveMeetingState, action: MeetingAction): LiveMee
 
     case 'COMMENT_INSERT': {
       const comment = action.payload;
+      // Deduplicate: don't add if already present
       return {
         ...state,
         agendaItems: state.agendaItems.map(item =>
-          item.id === comment.agenda_item_id
+          item.id === comment.agenda_item_id && !item.comments.some(c => c.id === comment.id)
             ? { ...item, comments: [...item.comments, comment] }
             : item
         ),
@@ -162,11 +167,28 @@ function meetingReducer(state: LiveMeetingState, action: MeetingAction): LiveMee
 
 export function useMeetingRealtime(meetingId: string, initialData: LiveMeetingState) {
   const [state, dispatch] = useReducer(meetingReducer, initialData);
+  const router = useRouter();
 
-  // Re-init when initialData changes (e.g. page navigation)
+  // Keep a ref of agendaItemIds for the comment subscription (avoids stale closure)
+  const agendaItemIdsRef = useRef<Set<string>>(new Set(initialData.agendaItems.map(i => i.id)));
+  useEffect(() => {
+    agendaItemIdsRef.current = new Set(state.agendaItems.map(i => i.id));
+  }, [state.agendaItems]);
+
+  // Re-init when meetingId changes (page navigation)
   useEffect(() => {
     dispatch({ type: 'INIT', payload: initialData });
   }, [meetingId]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // When status transitions to COMPLETED, reload the page to show protocol from server
+  useEffect(() => {
+    if (state.status === 'COMPLETED') {
+      const timer = setTimeout(() => {
+        router.refresh();
+      }, 1500);
+      return () => clearTimeout(timer);
+    }
+  }, [state.status, router]);
 
   const fetchAttendee = useCallback(async (personId: string) => {
     const supabase = createClient();
@@ -264,9 +286,9 @@ export function useMeetingRealtime(meetingId: string, initialData: LiveMeetingSt
         'postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'meeting_agenda_comments' },
         async (payload) => {
-          // Check if this comment belongs to an agenda item of this meeting
+          // Use ref to avoid stale closure — always has current agenda item IDs
           const agendaItemId = payload.new.agenda_item_id;
-          if (state.agendaItems.some(item => item.id === agendaItemId)) {
+          if (agendaItemIdsRef.current.has(agendaItemId)) {
             const comment = await fetchCommentWithPerson(payload.new.id);
             if (comment) {
               dispatch({ type: 'COMMENT_INSERT', payload: comment });

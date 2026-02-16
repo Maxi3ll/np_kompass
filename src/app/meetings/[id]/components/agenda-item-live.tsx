@@ -23,12 +23,10 @@ interface AgendaItemLiveProps {
     comments: AgendaComment[];
   };
   isCurrent: boolean;
-  isFacilitator: boolean;
   personId: string;
-  onProcess: () => void;
 }
 
-export function AgendaItemLive({ item, isCurrent, isFacilitator, personId, onProcess }: AgendaItemLiveProps) {
+export function AgendaItemLive({ item, isCurrent, personId }: AgendaItemLiveProps) {
   const [outcome, setOutcome] = useState(item.outcome || '');
   const [comment, setComment] = useState('');
   const [isPending, startTransition] = useTransition();
@@ -88,14 +86,6 @@ export function AgendaItemLive({ item, isCurrent, isFacilitator, personId, onPro
               <p className="font-medium text-foreground">{title}</p>
             )}
           </div>
-          {isCurrent && isFacilitator && !item.is_processed && (
-            <button
-              onClick={onProcess}
-              className="flex-shrink-0 px-3 py-1.5 text-xs font-medium rounded-lg bg-[var(--status-resolved)] text-white hover:bg-[var(--status-resolved)]/90 transition-colors"
-            >
-              Abhaken
-            </button>
-          )}
         </div>
 
         {/* Outcome (editable when current) */}
