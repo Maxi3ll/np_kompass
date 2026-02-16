@@ -8,6 +8,44 @@ import { sendTelegramMessage } from '@/lib/telegram';
 import { searchAll } from './queries';
 
 // =====================================================
+// AUTH HELPERS
+// =====================================================
+
+/**
+ * Verify the authenticated user and return their person record.
+ * This MUST be called by every mutating server action to prevent identity spoofing.
+ * Throws if the user is not authenticated.
+ */
+async function requireAuth(): Promise<{ userId: string; email: string; personId: string | null }> {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user?.email) {
+    throw new Error('not_authenticated');
+  }
+  
+  const serviceClient = createServiceClient();
+  const { data: person } = await serviceClient
+    .from('persons')
+    .select('id')
+    .eq('auth_user_id', user.id)
+    .single();
+
+  return { userId: user.id, email: user.email, personId: person?.id ?? null };
+}
+
+/**
+ * Verify the authenticated user IS the given personId.
+ * Use for actions where the client sends a personId that must belong to the caller.
+ */
+async function requireAuthAs(claimedPersonId: string): Promise<{ userId: string; email: string; personId: string }> {
+  const auth = await requireAuth();
+  if (!auth.personId || auth.personId !== claimedPersonId) {
+    throw new Error('identity_mismatch');
+  }
+  return { userId: auth.userId, email: auth.email, personId: auth.personId };
+}
+
+// =====================================================
 // AUTH & EMAIL ALLOWLIST
 // =====================================================
 
@@ -274,13 +312,16 @@ export interface CreateTensionData {
 }
 
 export async function createTension(data: CreateTensionData) {
+  // Verify the caller IS the person they claim to be
+  await requireAuthAs(data.raisedBy);
+
   const serviceClient = createServiceClient();
 
   const { data: tension, error } = await serviceClient
     .from('tensions')
     .insert({
-      title: data.title,
-      description: data.description || null,
+      title: data.title.trim().slice(0, 500),
+      description: data.description?.trim().slice(0, 5000) || null,
       circle_id: data.circleId,
       priority: data.priority,
       raised_by: data.raisedBy,
@@ -383,14 +424,25 @@ export interface UpdateTensionData {
 }
 
 export async function updateTension(data: UpdateTensionData) {
+  const auth = await requireAuth();
   const serviceClient = createServiceClient();
 
-  // Get old tension data BEFORE update (for notifications)
+  // Get old tension data BEFORE update (for notifications + authorization)
   const { data: oldTension } = await serviceClient
     .from('tensions')
     .select('title, assigned_to, raised_by, circle_id')
     .eq('id', data.id)
     .single();
+
+  // Verify caller is creator, assignee, or admin
+  if (oldTension) {
+    const isCreator = oldTension.raised_by === auth.personId;
+    const isAssignee = oldTension.assigned_to === auth.personId;
+    const isAdmin = await isCurrentUserAdmin();
+    if (!isCreator && !isAssignee && !isAdmin) {
+      return { error: 'unauthorized' };
+    }
+  }
 
   const updateData: Record<string, any> = {};
 
@@ -481,6 +533,7 @@ export interface CreateMeetingData {
 }
 
 export async function createMeeting(data: CreateMeetingData) {
+  await requireAuth();
   const serviceClient = createServiceClient();
 
   const { data: meeting, error } = await serviceClient
@@ -511,6 +564,7 @@ export async function createMeeting(data: CreateMeetingData) {
 // =====================================================
 
 export async function addAgendaItem(meetingId: string, data: { notes?: string; tensionId?: string }) {
+  await requireAuth();
   const serviceClient = createServiceClient();
 
   // Get next position
@@ -544,6 +598,7 @@ export async function addAgendaItem(meetingId: string, data: { notes?: string; t
 }
 
 export async function removeAgendaItem(agendaItemId: string, meetingId: string) {
+  await requireAuth();
   const serviceClient = createServiceClient();
 
   const { error } = await serviceClient
@@ -576,14 +631,17 @@ export interface CreateVorhabenData {
 }
 
 export async function createVorhaben(data: CreateVorhabenData) {
+  // Verify the caller IS the createdBy person
+  await requireAuthAs(data.createdBy);
+
   const serviceClient = createServiceClient();
 
   const { data: vorhaben, error } = await serviceClient
     .from('vorhaben')
     .insert({
-      title: data.title,
-      short_description: data.shortDescription || null,
-      description: data.description || null,
+      title: data.title.trim().slice(0, 500),
+      short_description: data.shortDescription?.trim().slice(0, 1000) || null,
+      description: data.description?.trim().slice(0, 10000) || null,
       coordinator_id: data.coordinatorId || null,
       created_by: data.createdBy,
       start_date: data.startDate || null,
@@ -655,7 +713,24 @@ export interface UpdateVorhabenData {
 }
 
 export async function updateVorhaben(data: UpdateVorhabenData) {
+  const auth = await requireAuth();
   const serviceClient = createServiceClient();
+
+  // Verify caller is creator, coordinator, or admin
+  const { data: existing } = await serviceClient
+    .from('vorhaben')
+    .select('created_by, coordinator_id')
+    .eq('id', data.id)
+    .single();
+
+  if (existing) {
+    const isCreator = existing.created_by === auth.personId;
+    const isCoordinator = existing.coordinator_id === auth.personId;
+    const isAdmin = await isCurrentUserAdmin();
+    if (!isCreator && !isCoordinator && !isAdmin) {
+      return { error: 'unauthorized' };
+    }
+  }
 
   const updateData: Record<string, any> = {};
 
@@ -710,14 +785,17 @@ export async function createSubtask(data: {
   contactPersonId?: string;
   createdBy: string;
 }) {
+  // Verify the caller IS the createdBy person
+  await requireAuthAs(data.createdBy);
+
   const serviceClient = createServiceClient();
 
   const { data: subtask, error } = await serviceClient
     .from('subtasks')
     .insert({
       vorhaben_id: data.vorhabenId,
-      title: data.title,
-      description: data.description || null,
+      title: data.title.trim().slice(0, 500),
+      description: data.description?.trim().slice(0, 5000) || null,
       contact_person_id: data.contactPersonId || null,
       created_by: data.createdBy,
       status: 'OPEN',
@@ -741,6 +819,7 @@ export async function updateSubtask(subtaskId: string, data: {
   description?: string | null;
   contactPersonId?: string | null;
 }) {
+  await requireAuth();
   const serviceClient = createServiceClient();
 
   // Get subtask info for notification + revalidation
@@ -792,6 +871,9 @@ export async function updateSubtask(subtaskId: string, data: {
 }
 
 export async function volunteerForSubtask(subtaskId: string, personId: string) {
+  // Verify the caller IS the person volunteering
+  await requireAuthAs(personId);
+
   const serviceClient = createServiceClient();
 
   const { error } = await serviceClient
@@ -840,6 +922,9 @@ export async function volunteerForSubtask(subtaskId: string, personId: string) {
 }
 
 export async function unvolunteerFromSubtask(subtaskId: string, personId: string) {
+  // Verify the caller IS the person unvolunteering
+  await requireAuthAs(personId);
+
   const serviceClient = createServiceClient();
 
   const { error } = await serviceClient
@@ -869,6 +954,12 @@ export async function unvolunteerFromSubtask(subtaskId: string, personId: string
 }
 
 export async function createSubtaskComment(subtaskId: string, personId: string, content: string) {
+  // Verify the caller IS the person commenting
+  await requireAuthAs(personId);
+
+  const trimmedContent = content.trim().slice(0, 5000);
+  if (!trimmedContent) return { error: 'empty_content' };
+
   const serviceClient = createServiceClient();
 
   const { data: comment, error } = await serviceClient
@@ -876,7 +967,7 @@ export async function createSubtaskComment(subtaskId: string, personId: string, 
     .insert({
       subtask_id: subtaskId,
       person_id: personId,
-      content,
+      content: trimmedContent,
     })
     .select()
     .single();
@@ -924,7 +1015,20 @@ export async function createSubtaskComment(subtaskId: string, personId: string, 
 }
 
 export async function deleteSubtaskComment(commentId: string) {
+  const auth = await requireAuth();
   const serviceClient = createServiceClient();
+
+  // Verify caller owns the comment
+  const { data: comment } = await serviceClient
+    .from('subtask_comments')
+    .select('person_id')
+    .eq('id', commentId)
+    .single();
+
+  if (!comment || comment.person_id !== auth.personId) {
+    const isAdmin = await isCurrentUserAdmin();
+    if (!isAdmin) return { error: 'unauthorized' };
+  }
 
   const { error } = await serviceClient
     .from('subtask_comments')
