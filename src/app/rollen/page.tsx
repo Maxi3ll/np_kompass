@@ -34,11 +34,15 @@ export default async function RollenPage({ searchParams }: PageProps) {
     return groups;
   }, {});
 
-  // Sort circle groups by circle name
-  const sortedGroups = Object.entries(groupedRoles).sort(([, a], [, b]) => {
-    const nameA = (a as any[])[0]?.circle?.name || "";
-    const nameB = (b as any[])[0]?.circle?.name || "";
-    return nameA.localeCompare(nameB, "de");
+  // Sort circle groups: anchor circle (Neckarpiraten) first, then alphabetically
+  const sortedGroups = Object.entries(groupedRoles).sort(([idA, a], [idB, b]) => {
+    const circleA = (a as any[])[0]?.circle;
+    const circleB = (b as any[])[0]?.circle;
+    const isAnchorA = circleA?.parent_circle_id === null;
+    const isAnchorB = circleB?.parent_circle_id === null;
+    if (isAnchorA && !isAnchorB) return -1;
+    if (!isAnchorA && isAnchorB) return 1;
+    return (circleA?.name || "").localeCompare(circleB?.name || "", "de");
   });
 
   return (

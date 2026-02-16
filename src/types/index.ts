@@ -96,6 +96,8 @@ export interface TensionWithDetails extends Tension {
 // ============ Meetings ============
 
 export type MeetingType = 'TACTICAL' | 'GOVERNANCE';
+export type MeetingStatus = 'SCHEDULED' | 'ACTIVE' | 'COMPLETED';
+export type MeetingPhase = 'CHECK_IN' | 'AGENDA' | 'CLOSING';
 
 export interface Meeting {
   id: string;
@@ -104,6 +106,12 @@ export interface Meeting {
   date: Date;
   facilitatorId?: string;
   notes?: string;
+  status: MeetingStatus;
+  currentPhase?: MeetingPhase;
+  currentAgendaPosition?: number;
+  protocol?: string;
+  startedAt?: Date;
+  completedAt?: Date;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -114,7 +122,28 @@ export interface MeetingAgendaItem {
   tensionId?: string;
   position: number;
   notes?: string;
+  isProcessed: boolean;
+  outcome?: string;
+  ownerId?: string;
   createdAt: Date;
+}
+
+export interface MeetingRoundEntry {
+  id: string;
+  meetingId: string;
+  personId: string;
+  phase: 'CHECK_IN' | 'CLOSING';
+  content: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface MeetingAgendaComment {
+  id: string;
+  agendaItemId: string;
+  personId: string;
+  content: string;
+  createdAt: string;
 }
 
 export interface MeetingWithDetails extends Meeting {
@@ -123,6 +152,18 @@ export interface MeetingWithDetails extends Meeting {
   attendees?: Person[];
   agendaItems?: (MeetingAgendaItem & { tension?: Tension })[];
 }
+
+export const MEETING_STATUS_CONFIG = {
+  SCHEDULED: { label: 'Geplant', color: 'bg-muted text-muted-foreground' },
+  ACTIVE: { label: 'Aktiv', color: 'bg-[var(--np-yellow)] text-[#5a4a00]' },
+  COMPLETED: { label: 'Abgeschlossen', color: 'bg-[var(--status-resolved)] text-white' },
+} as const;
+
+export const MEETING_PHASE_CONFIG = {
+  CHECK_IN: { label: 'Check-in', icon: '👋', step: 1 },
+  AGENDA: { label: 'Agenda', icon: '📋', step: 2 },
+  CLOSING: { label: 'Abschluss', icon: '✅', step: 3 },
+} as const;
 
 // ============ Checklists ============
 

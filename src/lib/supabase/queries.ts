@@ -539,6 +539,88 @@ export async function getMeetingById(id: string) {
   };
 }
 
+export async function getLiveMeetingData(meetingId: string) {
+  const supabase = await createClient();
+
+  // Get meeting with circle and facilitator
+  const { data: meeting, error: meetingError } = await supabase
+    .from('meetings')
+    .select(`
+      *,
+      circle:circles(id, name, color, icon, purpose),
+      facilitator:persons!meetings_facilitator_id_fkey(id, name, email, avatar_color)
+    `)
+    .eq('id', meetingId)
+    .single();
+
+  if (meetingError) {
+    console.error('Error fetching live meeting:', meetingError);
+    return null;
+  }
+
+  // Fetch attendees, agenda items, round entries, and agenda comments in parallel
+  const [attendeesResult, agendaResult, roundEntriesResult, commentsResult] = await Promise.all([
+    supabase
+      .from('meeting_attendees')
+      .select('person:persons(id, name, email, avatar_color)')
+      .eq('meeting_id', meetingId),
+    supabase
+      .from('meeting_agenda_items')
+      .select(`
+        *,
+        tension:tensions(id, title, status, priority),
+        owner:persons!meeting_agenda_items_owner_id_fkey(id, name)
+      `)
+      .eq('meeting_id', meetingId)
+      .order('position'),
+    supabase
+      .from('meeting_round_entries')
+      .select('*, person:persons(id, name, avatar_color)')
+      .eq('meeting_id', meetingId)
+      .order('created_at'),
+    supabase
+      .from('meeting_agenda_comments')
+      .select('*, person:persons(id, name, avatar_color)')
+      .eq('agenda_item_id', 'placeholder'), // will be re-fetched per item below
+  ]);
+
+  // Fetch all comments for all agenda items of this meeting
+  const agendaItemIds = (agendaResult.data || []).map((item: any) => item.id);
+  let allComments: any[] = [];
+  if (agendaItemIds.length > 0) {
+    const { data: comments } = await supabase
+      .from('meeting_agenda_comments')
+      .select('*, person:persons(id, name, avatar_color)')
+      .in('agenda_item_id', agendaItemIds)
+      .order('created_at');
+    allComments = comments || [];
+  }
+
+  // Group comments by agenda_item_id
+  const commentsByItem = new Map<string, any[]>();
+  for (const comment of allComments) {
+    const existing = commentsByItem.get(comment.agenda_item_id) || [];
+    existing.push(comment);
+    commentsByItem.set(comment.agenda_item_id, existing);
+  }
+
+  // Separate round entries by phase
+  const roundEntries = roundEntriesResult.data || [];
+  const checkIns = roundEntries.filter((e: any) => e.phase === 'CHECK_IN');
+  const closings = roundEntries.filter((e: any) => e.phase === 'CLOSING');
+
+  return {
+    ...meeting,
+    attendees: (attendeesResult.data || []).map((a: any) => a.person).filter(Boolean),
+    agendaItems: (agendaResult.data || []).map((item: any) => ({
+      ...item,
+      comments: commentsByItem.get(item.id) || [],
+    })),
+    checkIns,
+    closings,
+  };
+}
+
 export async function getUpcomingMeetingsForPerson(personId: string, limit = 5) {
   const supabase = await createClient();
 

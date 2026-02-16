@@ -616,6 +616,326 @@ export async function removeAgendaItem(agendaItemId: string, meetingId: string) 
 }
 
 // =====================================================
+// LIVE MEETINGS
+// =====================================================
+
+export async function startMeeting(meetingId: string) {
+  const auth = await requireAuth();
+  const serviceClient = createServiceClient();
+
+  // Get meeting to verify facilitator or admin
+  const { data: meeting } = await serviceClient
+    .from('meetings')
+    .select('facilitator_id, status')
+    .eq('id', meetingId)
+    .single();
+
+  if (!meeting) return { error: 'not_found' };
+  if (meeting.status !== 'SCHEDULED') return { error: 'already_started' };
+
+  const isFacilitator = meeting.facilitator_id === auth.personId;
+  const isAdmin = await isCurrentUserAdmin();
+  if (!isFacilitator && !isAdmin) return { error: 'unauthorized' };
+
+  const { error } = await serviceClient
+    .from('meetings')
+    .update({
+      status: 'ACTIVE',
+      current_phase: 'CHECK_IN',
+      current_agenda_position: null,
+      started_at: new Date().toISOString(),
+    })
+    .eq('id', meetingId);
+
+  if (error) return { error: error.message };
+
+  // Auto-join the facilitator as attendee
+  if (auth.personId) {
+    await serviceClient
+      .from('meeting_attendees')
+      .upsert({ meeting_id: meetingId, person_id: auth.personId }, { onConflict: 'meeting_id,person_id' });
+  }
+
+  revalidatePath(`/meetings/${meetingId}`);
+  revalidatePath('/meetings');
+  return { success: true };
+}
+
+export async function joinMeeting(meetingId: string, personId: string) {
+  await requireAuthAs(personId);
+  const serviceClient = createServiceClient();
+
+  const { error } = await serviceClient
+    .from('meeting_attendees')
+    .upsert({ meeting_id: meetingId, person_id: personId }, { onConflict: 'meeting_id,person_id' });
+
+  if (error) return { error: error.message };
+
+  revalidatePath(`/meetings/${meetingId}`);
+  return { success: true };
+}
+
+export async function advanceMeetingPhase(meetingId: string) {
+  const auth = await requireAuth();
+  const serviceClient = createServiceClient();
+
+  const { data: meeting } = await serviceClient
+    .from('meetings')
+    .select('facilitator_id, status, current_phase')
+    .eq('id', meetingId)
+    .single();
+
+  if (!meeting || meeting.status !== 'ACTIVE') return { error: 'not_active' };
+
+  const isFacilitator = meeting.facilitator_id === auth.personId;
+  const isAdmin = await isCurrentUserAdmin();
+  if (!isFacilitator && !isAdmin) return { error: 'unauthorized' };
+
+  const phaseOrder = ['CHECK_IN', 'AGENDA', 'CLOSING'] as const;
+  const currentIndex = phaseOrder.indexOf(meeting.current_phase as any);
+
+  if (currentIndex < 0 || currentIndex >= phaseOrder.length - 1) {
+    // Already at CLOSING or unknown phase — complete the meeting
+    return completeMeeting(meetingId);
+  }
+
+  const nextPhase = phaseOrder[currentIndex + 1];
+
+  const updateData: Record<string, any> = { current_phase: nextPhase };
+
+  // When advancing to AGENDA, set position to first item
+  if (nextPhase === 'AGENDA') {
+    const { data: firstItem } = await serviceClient
+      .from('meeting_agenda_items')
+      .select('position')
+      .eq('meeting_id', meetingId)
+      .eq('is_processed', false)
+      .order('position')
+      .limit(1)
+      .single();
+
+    updateData.current_agenda_position = firstItem?.position ?? 1;
+  }
+
+  const { error } = await serviceClient
+    .from('meetings')
+    .update(updateData)
+    .eq('id', meetingId);
+
+  if (error) return { error: error.message };
+
+  revalidatePath(`/meetings/${meetingId}`);
+  return { success: true };
+}
+
+export async function processAgendaItem(meetingId: string, agendaItemId: string, outcome?: string) {
+  const auth = await requireAuth();
+  const serviceClient = createServiceClient();
+
+  // Verify facilitator/admin
+  const { data: meeting } = await serviceClient
+    .from('meetings')
+    .select('facilitator_id')
+    .eq('id', meetingId)
+    .single();
+
+  if (!meeting) return { error: 'not_found' };
+  const isFacilitator = meeting.facilitator_id === auth.personId;
+  const isAdmin = await isCurrentUserAdmin();
+  if (!isFacilitator && !isAdmin) return { error: 'unauthorized' };
+
+  // Mark item as processed
+  await serviceClient
+    .from('meeting_agenda_items')
+    .update({
+      is_processed: true,
+      outcome: outcome?.trim() || null,
+    })
+    .eq('id', agendaItemId);
+
+  // Advance to next unprocessed item
+  const { data: nextItem } = await serviceClient
+    .from('meeting_agenda_items')
+    .select('position')
+    .eq('meeting_id', meetingId)
+    .eq('is_processed', false)
+    .order('position')
+    .limit(1)
+    .single();
+
+  if (nextItem) {
+    await serviceClient
+      .from('meetings')
+      .update({ current_agenda_position: nextItem.position })
+      .eq('id', meetingId);
+  }
+
+  revalidatePath(`/meetings/${meetingId}`);
+  return { success: true, allProcessed: !nextItem };
+}
+
+export async function updateAgendaItemOutcome(agendaItemId: string, outcome: string) {
+  await requireAuth();
+  const serviceClient = createServiceClient();
+
+  const { error } = await serviceClient
+    .from('meeting_agenda_items')
+    .update({ outcome: outcome.trim().slice(0, 5000) })
+    .eq('id', agendaItemId);
+
+  if (error) return { error: error.message };
+  return { success: true };
+}
+
+export async function addMeetingAgendaComment(agendaItemId: string, personId: string, content: string) {
+  await requireAuthAs(personId);
+
+  const trimmedContent = content.trim().slice(0, 5000);
+  if (!trimmedContent) return { error: 'empty_content' };
+
+  const serviceClient = createServiceClient();
+
+  const { data: comment, error } = await serviceClient
+    .from('meeting_agenda_comments')
+    .insert({
+      agenda_item_id: agendaItemId,
+      person_id: personId,
+      content: trimmedContent,
+    })
+    .select()
+    .single();
+
+  if (error) return { error: error.message };
+  return { comment };
+}
+
+export async function saveRoundEntry(meetingId: string, personId: string, phase: 'CHECK_IN' | 'CLOSING', content: string) {
+  await requireAuthAs(personId);
+
+  const trimmedContent = content.trim().slice(0, 5000);
+  if (!trimmedContent) return { error: 'empty_content' };
+
+  const serviceClient = createServiceClient();
+
+  const { error } = await serviceClient
+    .from('meeting_round_entries')
+    .upsert({
+      meeting_id: meetingId,
+      person_id: personId,
+      phase,
+      content: trimmedContent,
+      updated_at: new Date().toISOString(),
+    }, { onConflict: 'meeting_id,person_id,phase' });
+
+  if (error) return { error: error.message };
+
+  revalidatePath(`/meetings/${meetingId}`);
+  return { success: true };
+}
+
+async function completeMeeting(meetingId: string) {
+  const serviceClient = createServiceClient();
+
+  // Gather all data for protocol
+  const { data: meeting } = await serviceClient
+    .from('meetings')
+    .select(`
+      *,
+      circle:circles(name),
+      facilitator:persons!meetings_facilitator_id_fkey(name)
+    `)
+    .eq('id', meetingId)
+    .single();
+
+  if (!meeting) return { error: 'not_found' };
+
+  const [attendeesResult, agendaResult, roundEntriesResult] = await Promise.all([
+    serviceClient
+      .from('meeting_attendees')
+      .select('person:persons(name)')
+      .eq('meeting_id', meetingId),
+    serviceClient
+      .from('meeting_agenda_items')
+      .select('*, tension:tensions(title)')
+      .eq('meeting_id', meetingId)
+      .order('position'),
+    serviceClient
+      .from('meeting_round_entries')
+      .select('*, person:persons(name)')
+      .eq('meeting_id', meetingId)
+      .order('created_at'),
+  ]);
+
+  const attendees = (attendeesResult.data || []).map((a: any) => a.person?.name).filter(Boolean);
+  const agendaItems = agendaResult.data || [];
+  const roundEntries = roundEntriesResult.data || [];
+  const checkIns = roundEntries.filter((e: any) => e.phase === 'CHECK_IN');
+  const closings = roundEntries.filter((e: any) => e.phase === 'CLOSING');
+
+  const meetingDate = new Date(meeting.date).toLocaleDateString('de-DE', {
+    weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
+  });
+  const meetingType = meeting.type === 'TACTICAL' ? 'Taktischer Termin' : 'Governance-Termin';
+
+  // Generate protocol
+  let protocol = `# Protokoll: ${meetingType}\n\n`;
+  protocol += `**Kreis:** ${(meeting.circle as any)?.name}\n`;
+  protocol += `**Datum:** ${meetingDate}\n`;
+  protocol += `**Moderation:** ${(meeting.facilitator as any)?.name || 'k.A.'}\n`;
+  protocol += `**Teilnehmer:** ${attendees.join(', ') || 'k.A.'}\n\n`;
+
+  if (checkIns.length > 0) {
+    protocol += `## Check-in Runde\n\n`;
+    for (const entry of checkIns) {
+      protocol += `- **${(entry.person as any)?.name}:** ${entry.content}\n`;
+    }
+    protocol += `\n`;
+  }
+
+  if (agendaItems.length > 0) {
+    protocol += `## Agenda\n\n`;
+    for (const item of agendaItems) {
+      const title = (item.tension as any)?.title || item.notes || 'Unbenannter Punkt';
+      const statusIcon = item.is_processed ? '[x]' : '[ ]';
+      protocol += `### ${statusIcon} ${item.position}. ${title}\n\n`;
+      if (item.outcome) {
+        protocol += `**Ergebnis:** ${item.outcome}\n\n`;
+      }
+    }
+  }
+
+  if (closings.length > 0) {
+    protocol += `## Abschlussrunde\n\n`;
+    for (const entry of closings) {
+      protocol += `- **${(entry.person as any)?.name}:** ${entry.content}\n`;
+    }
+    protocol += `\n`;
+  }
+
+  if (meeting.notes) {
+    protocol += `## Notizen\n\n${meeting.notes}\n`;
+  }
+
+  // Update meeting to COMPLETED
+  const { error } = await serviceClient
+    .from('meetings')
+    .update({
+      status: 'COMPLETED',
+      current_phase: null,
+      current_agenda_position: null,
+      protocol,
+      completed_at: new Date().toISOString(),
+    })
+    .eq('id', meetingId);
+
+  if (error) return { error: error.message };
+
+  revalidatePath(`/meetings/${meetingId}`);
+  revalidatePath('/meetings');
+  return { success: true };
+}
+
+// =====================================================
 // VORHABEN (Initiatives)
 // =====================================================
 

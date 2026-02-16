@@ -152,13 +152,18 @@ export default async function MeetingsPage({ searchParams }: PageProps) {
                         minute: "2-digit",
                       });
 
+                      const isActiveMeeting = meeting.status === 'ACTIVE';
+                      const isCompletedMeeting = meeting.status === 'COMPLETED';
+
                       return (
                         <Link key={meeting.id} href={`/meetings/${meeting.id}`} className="block">
-                          <div className="bg-card rounded-2xl shadow-card border border-border/50 overflow-hidden transition-all card-lift active:scale-[0.98]">
+                          <div className={`bg-card rounded-2xl shadow-card border overflow-hidden transition-all card-lift active:scale-[0.98] ${
+                            isActiveMeeting ? 'border-[var(--np-yellow)] ring-2 ring-[var(--np-yellow)]/20' : 'border-border/50'
+                          }`}>
                             {/* Colored top border */}
                             <div
                               className="h-1"
-                              style={{ backgroundColor: meeting.circle?.color || "#4A90D9" }}
+                              style={{ backgroundColor: isActiveMeeting ? 'var(--np-yellow)' : (meeting.circle?.color || "#4A90D9") }}
                             />
                             <div className="p-4">
                               <div className="flex items-start justify-between gap-3">
@@ -188,12 +193,31 @@ export default async function MeetingsPage({ searchParams }: PageProps) {
                                     )}
                                   </div>
                                 </div>
-                                <span
-                                  className={`flex-shrink-0 px-2.5 py-1 rounded-full text-xs font-medium ${typeConfig.color} ${typeConfig.textColor}`}
-                                >
-                                  {typeConfig.label}
-                                </span>
+                                <div className="flex flex-col items-end gap-1">
+                                  <span
+                                    className={`flex-shrink-0 px-2.5 py-1 rounded-full text-xs font-medium ${typeConfig.color} ${typeConfig.textColor}`}
+                                  >
+                                    {typeConfig.label}
+                                  </span>
+                                  {isActiveMeeting && (
+                                    <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-[var(--np-yellow)] text-[#5a4a00] animate-pulse">
+                                      Live
+                                    </span>
+                                  )}
+                                  {isCompletedMeeting && (
+                                    <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-[var(--status-resolved)] text-white">
+                                      Abgeschlossen
+                                    </span>
+                                  )}
+                                </div>
                               </div>
+                              {isActiveMeeting && (
+                                <div className="mt-3 pt-3 border-t border-border/30">
+                                  <span className="text-xs font-medium text-[var(--np-blue)]">
+                                    Meeting beitreten →
+                                  </span>
+                                </div>
+                              )}
                             </div>
                           </div>
                         </Link>
