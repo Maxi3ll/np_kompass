@@ -23,7 +23,7 @@ ALTER TABLE meeting_agenda_items
 
 -- 3. Neue Tabelle: meeting_round_entries (Check-in / Closing)
 CREATE TABLE meeting_round_entries (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   meeting_id UUID REFERENCES meetings(id) ON DELETE CASCADE NOT NULL,
   person_id UUID REFERENCES persons(id) ON DELETE CASCADE NOT NULL,
   phase TEXT NOT NULL CHECK (phase IN ('CHECK_IN', 'CLOSING')),
@@ -35,7 +35,7 @@ CREATE TABLE meeting_round_entries (
 
 -- 4. Neue Tabelle: meeting_agenda_comments
 CREATE TABLE meeting_agenda_comments (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   agenda_item_id UUID REFERENCES meeting_agenda_items(id) ON DELETE CASCADE NOT NULL,
   person_id UUID REFERENCES persons(id) ON DELETE SET NULL,
   content TEXT NOT NULL,
