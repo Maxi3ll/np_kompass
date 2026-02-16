@@ -533,8 +533,11 @@ export interface CreateMeetingData {
 }
 
 export async function createMeeting(data: CreateMeetingData) {
-  await requireAuth();
+  const auth = await requireAuth();
   const serviceClient = createServiceClient();
+
+  // Default facilitator to the person creating the meeting
+  const facilitatorId = data.facilitatorId || auth.personId || null;
 
   const { data: meeting, error } = await serviceClient
     .from('meetings')
@@ -542,7 +545,7 @@ export async function createMeeting(data: CreateMeetingData) {
       type: data.type,
       circle_id: data.circleId,
       date: data.date,
-      facilitator_id: data.facilitatorId || null,
+      facilitator_id: facilitatorId,
       notes: data.notes || null,
     })
     .select()
