@@ -1,13 +1,15 @@
 # CLAUDE.md
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+Use `/meetings`, `/security`, `/database`, or `/deploy` commands for detailed feature documentation.
 
 ## Project Overview
 
-np-kompass is a governance tool for Neckarpiraten e.V., a Stuttgart-based parent-child initiative (~40 families). It implements a Holacracy-light model with three core modules:
+np-kompass is a governance tool for Neckarpiraten e.V., a Stuttgart-based parent-child initiative (~40 families). It implements a Holacracy-light model with four core modules:
 - **Rollen-Wiki**: Role definitions with domains, accountabilities, and current holders
 - **Spannungs-Log**: Tensions/issues that need resolution within circles
-- **Termin-Board**: Tactical and governance meetings
+- **Vorhaben**: Initiatives/projects with subtasks, volunteers, and comments
+- **Termin-Board**: Meetings with live facilitation (real-time phases: Check-in, Agenda, Closing)
 
 Target users are busy parents with mixed technical expertise - the app must be simple and mobile-friendly.
 
@@ -17,78 +19,66 @@ Target users are busy parents with mixed technical expertise - the app must be s
 npm run dev      # Start dev server (localhost:3000)
 npm run build    # Production build
 npm run lint     # ESLint check
-```
-
-Database migrations are in `supabase/migrations/`. Apply with Supabase CLI:
-```bash
-npx supabase db push
+npx supabase db push  # Apply database migrations
 ```
 
 ## Architecture
 
 ### Tech Stack
 - **Next.js 16** (App Router) with React 19, TypeScript 5
-- **Supabase** for PostgreSQL, auth (email + password), and real-time
+- **Supabase** for PostgreSQL, auth (email + password), real-time subscriptions
 - **Tailwind CSS 4** + **shadcn/ui** components
 - **OKLch color space** for perceptually uniform colors
 
 ### Data Flow Pattern
-Server Components fetch data directly from Supabase using SSR client:
-```
-Page (Server Component) → src/lib/supabase/queries.ts → Supabase (PostgreSQL + RLS)
-```
+Server Components fetch data via `src/lib/supabase/queries.ts`. Mutations use Server Actions in `src/lib/supabase/actions.ts` with `revalidatePath()`. Admin actions use service-role client (bypasses RLS). Pages use ISR (30-60s revalidation).
 
-Mutations use Server Actions in `src/lib/supabase/actions.ts` with `revalidatePath()` for cache invalidation. Admin-only actions use the service-role client (bypasses RLS).
-
-Pages use ISR with revalidation intervals (30-60s). No REST API - all data access via typed query functions.
+### Security
+- **Middleware** (`src/middleware.ts`): Checks auth + email allowlist on every request, redirects unauthorized users
+- **Server Actions**: Use `requireAuth()` and `requireAuthAs(personId)` helpers to verify identity (prevents spoofing)
+- **Security Headers** in `next.config.ts`: X-Frame-Options, HSTS, CSP, Permissions-Policy
+- **RLS**: Row-level security on all tables, tightened in migrations 011+013
+- See `SECURITY_AUDIT.md` for full audit report
 
 ### Directory Structure
 ```
 src/
 ├── app/                    # Next.js App Router pages
-│   ├── kreise/             # Circles feature (list + [id] detail + admin CRUD + SVG visualization)
-│   ├── rollen/             # Roles feature (list + [id] detail + admin CRUD + assign)
-│   ├── spannungen/         # Tensions feature (list + [id] detail + neu)
-│   ├── vorhaben/           # Vorhaben/Initiatives (list + [id] detail + unteraufgaben + neu)
-│   ├── meetings/           # Termine feature (list + [id] detail + neu)
-│   ├── personen/           # Public person profiles ([id] detail with roles, contact, family)
-│   ├── suche/              # Global search (client-side, searches circles/roles/tensions/vorhaben/persons → links to detail pages)
-│   ├── profil/             # Profile (edit name/avatar, telegram toggle, data export, delete account) + admin email allowlist
-│   ├── impressum/          # Legal notice page
-│   ├── datenschutz/        # Privacy policy page
-│   ├── login/              # Auth login page (no AppShell)
+│   ├── kreise/             # Circles (list + [id] detail + admin CRUD + SVG visualization)
+│   ├── rollen/             # Roles (list + [id] detail + admin CRUD + assign)
+│   ├── spannungen/         # Tensions (list + [id] detail + neu)
+│   ├── vorhaben/           # Initiatives (list + [id] + unteraufgaben/[subId] + neu)
+│   ├── meetings/           # Meetings (list + [id] detail + neu + live meeting components)
+│   │   └── [id]/           # Meeting detail with live-meeting.tsx + components/ + live-phases/
+│   ├── personen/           # Person profiles ([id] with roles, contact, family)
+│   ├── suche/              # Global search (client-side, all entities)
+│   ├── profil/             # Profile + admin email allowlist
+│   ├── impressum/          # Legal notice
+│   ├── datenschutz/        # Privacy policy
+│   ├── login/              # Auth login (no AppShell)
 │   └── auth/callback/      # Auth callback (auto-links person record)
 ├── components/
-│   ├── layout/
-│   │   ├── app-shell.tsx   # Layout wrapper (sidebar + bottom-nav + user context)
-│   │   └── user-context.tsx # React Context for user data (name, email, avatar color, personId, unreadNotifications)
-│   ├── navigation/
-│   │   ├── header.tsx      # Sticky header with notification bell + user avatar dropdown
-│   │   ├── sidebar.tsx     # Desktop sidebar (lg:, fixed left, w-64)
-│   │   ├── bottom-nav.tsx  # Mobile bottom nav with FAB (lg:hidden)
-│   │   ├── notification-bell.tsx # Notification bell with unread badge + dropdown
-│   │   └── kreise-rollen-tabs.tsx # Mobile tabs to switch Kreise/Rollen
-│   └── ui/                 # shadcn/ui components (button, card, dialog, select, avatar, sheet, skeleton, etc.)
+│   ├── layout/             # AppShell, UserContext
+│   ├── navigation/         # Header, Sidebar, BottomNav, NotificationBell, KreiseRollenTabs
+│   └── ui/                 # shadcn/ui components
+├── hooks/
+│   └── use-meeting-realtime.ts  # Custom hook: Supabase realtime subscriptions for live meetings
 ├── lib/
 │   ├── supabase/
 │   │   ├── client.ts       # Browser Supabase client
 │   │   ├── server.ts       # Server Supabase client (async cookies)
 │   │   ├── service.ts      # Service-role client (bypasses RLS)
 │   │   ├── queries.ts      # All database query functions
-│   │   └── actions.ts      # Server Actions (CRUD, auth, admin, notifications)
-│   ├── circle-packing.ts   # Circle-packing layout algorithm for GlassFrog-style SVG visualization
+│   │   └── actions.ts      # Server Actions (CRUD, auth, admin, notifications, meetings)
+│   ├── circle-packing.ts   # Circle-packing layout algorithm
 │   ├── telegram.ts         # Telegram bot notification helper
 │   └── utils.ts            # cn() utility (clsx + tailwind-merge)
-└── types/index.ts          # Complete domain types (Person, Circle, Role, Tension, etc.)
+├── middleware.ts            # Auth + email allowlist middleware
+└── types/index.ts           # Domain types (Person, Circle, Role, Tension, Meeting, Vorhaben, etc.)
 ```
 
 ### Layout Architecture
-All authenticated pages wrap content in `<AppShell>` which provides:
-- **Desktop (lg+)**: Fixed sidebar with navigation (Dashboard, Spannungen, Vorhaben, Kreise, Rollen, Termine, Profil) + action buttons ("Neue Spannung", "Neues Vorhaben", "Neuer Termin")
-- **Mobile**: Bottom navigation (Home, Spannungen, Kreise, Vorhaben, Termine) with expandable FAB for creating items
-- **User Context**: AppShell fetches user data (name, email, avatar color, personId, unread notification count) from DB and provides via React Context to Header and NotificationBell
-
-The Kreise and Rollen pages share a tab bar on mobile (`KreiseRollenTabs`) for switching between the two views. On desktop, Rollen is a sub-item under Kreise in the sidebar.
+All authenticated pages wrap content in `<AppShell>` (sidebar + bottom-nav + user context).
 
 Pattern for each page:
 ```tsx
@@ -102,83 +92,70 @@ Pattern for each page:
 </AppShell>
 ```
 
-Login page and auth callback do NOT use AppShell.
+- **Desktop (lg+)**: Fixed sidebar (w-64) with nav + action buttons
+- **Mobile**: Bottom nav with expandable FAB
+- Login page and auth callback do NOT use AppShell
 
 ### Domain Model (German terms)
 - **Kreis** (Circle): Organizational unit with purpose and parent hierarchy
-- **Rolle** (Role): Function within a circle with domains and accountabilities (supports multiple holders)
-- **Spannung** (Tension): Issue/improvement opportunity to be resolved
-- **Vorhaben** (Initiative): Project/initiative with coordinator, circles, subtasks, volunteers, and comments
+- **Rolle** (Role): Function within a circle (supports multiple holders)
+- **Spannung** (Tension): Issue/improvement to be resolved
+- **Vorhaben** (Initiative): Project with coordinator, circles, subtasks, volunteers, comments
+- **Termin** (Meeting): Scheduled or live meeting with phases, agenda, protocol
 - **Familie** (Family): Member family unit
-- **Person**: Individual member with auth, avatar color, and family relationship. Public profile at `/personen/[id]` shows roles, contact, and family.
+- **Person**: Member with auth, avatar color, family link
 
 ### Database
-PostgreSQL tables with RLS enabled. Key tables: `circles`, `roles`, `role_assignments`, `tensions`, `vorhaben`, `vorhaben_circles`, `subtasks`, `subtask_volunteers`, `subtask_comments`, `persons`, `families`, `allowed_emails`, `notifications`. Two views: `current_role_holders`, `circle_stats`.
+PostgreSQL with RLS. Key tables: `circles`, `roles`, `role_assignments`, `tensions`, `vorhaben`, `vorhaben_circles`, `subtasks`, `subtask_volunteers`, `subtask_comments`, `meetings`, `meeting_attendees`, `meeting_agenda_items`, `meeting_round_entries`, `meeting_agenda_comments`, `persons`, `families`, `allowed_emails`, `notifications`. Views: `current_role_holders`, `circle_stats` (SECURITY INVOKER).
 
-Roles support multiple simultaneous holders. The `role_assignments` table uses a `UNIQUE(role_id, person_id, valid_until)` constraint — the same person can't be assigned twice, but different persons can hold the same role. Role history maintained via `role_assignments` with `valid_from`/`valid_until` dates.
-
-Migrations:
-- `001_initial_schema.sql` - Full schema + RLS policies
-- `002_seed_data.sql` - Seed data for circles, roles, families
-- `003_allowed_emails.sql` - Email allowlist table
-- `004_person_avatar_color.sql` - Avatar color column on persons
-- `005_notifications.sql` - Notifications table with RLS
-- `006_replace_circles_roles.sql` - Real Neckarpiraten circles (10) and roles (43)
-- `007_multi_holders.sql` - Allow multiple persons per role (drops old unique constraint)
-- `008_telegram_optout.sql` - Telegram notification opt-out preference per person
-- `009_tasks.sql` - (Replaced by 010) Old tasks tables
-- `010_vorhaben.sql` - Vorhaben, subtasks, volunteers, comments tables; replaces old tasks system
+Migrations 001-013 in `supabase/migrations/`. Use `/database` command for full details.
 
 ### Auth Flow
-1. User logs in via email + password (Supabase Auth)
-2. New users register with email, password, and full name
-3. Auth callback (`/auth/callback`) checks email against allowlist
-4. Auto-links auth user to `persons` record by matching email
-5. Profile page also auto-links on visit (fallback for existing sessions)
-6. "Passwort vergessen?" flow for password reset via email
+1. Login via email + password (min 8 chars, Supabase Auth)
+2. Middleware checks email against allowlist on every request
+3. Auth callback auto-links user to `persons` record
+4. Password reset via "Passwort vergessen?" flow
 
 ### Notifications
-- **In-App**: Notifications stored in `notifications` table, shown via bell icon in header
-- **Telegram**: All notifications also sent to a Telegram group via bot API (`src/lib/telegram.ts`)
-- **Triggers**: Role assigned/unassigned, tension created/assigned/resolved, vorhaben created/volunteer/subtask completed/commented
-- Circle members (persons with active role assignments in a circle) receive tension notifications
-- NotificationBell component lazy-loads full list on dropdown open
-- **Telegram Opt-Out**: Users can disable Telegram notifications in their profile (`telegram_notifications` column on `persons`)
+- **In-App**: Bell icon in header, lazy-loaded dropdown
+- **Telegram**: Group messages via bot API (per-user opt-out)
+- **Triggers**: Role changes, tension events, vorhaben events
+
+### Live Meetings
+Real-time meeting facilitation with GlassFrog-style phases. Use `/meetings` command for full details.
+- **Lifecycle**: SCHEDULED → ACTIVE → COMPLETED
+- **Phases**: CHECK_IN → AGENDA → CLOSING
+- **Real-time**: Supabase subscriptions via `useMeetingRealtime` hook
+- **Facilitator controls**: Phase transitions, agenda management, protocol
 
 ## Admin System
 
-- Admin is determined by the first email in the `ALLOWED_EMAILS` environment variable
-- `isCurrentUserAdmin()` in `src/lib/supabase/actions.ts` checks this
-- Admin actions are rendered inline on existing pages (not a separate admin area)
-- Admin can: manage circles (CRUD), roles (CRUD), role assignments (multiple holders per role), email allowlist
-- Persons are auto-created when an email+name is added to the allowlist
-- Email allowlist stored in `allowed_emails` Supabase table with env-variable fallback
-- All admin write operations use `createServiceClient()` to bypass RLS
+- Admin = first email in `ALLOWED_EMAILS` env variable
+- `isCurrentUserAdmin()` in `src/lib/supabase/actions.ts`
+- Actions rendered inline on pages (not separate admin area)
+- Admin can: manage circles/roles (CRUD), role assignments, email allowlist
+- Persons auto-created when adding email+name to allowlist
+- All admin writes use `createServiceClient()` to bypass RLS
 
 ## UI/Design Conventions
 
-- **Colors**: Neckarpiraten blue (#4A90D9) + yellow (#F5C842), defined as CSS variables
+- **Colors**: Blue (#4A90D9) + Yellow (#F5C842), CSS variables
 - **Fonts**: Space Grotesk (headings), Inter (body)
-- **Responsive**: Mobile bottom-nav + desktop sidebar, `lg:` breakpoint (1024px)
-- **Touch targets**: 48px minimum on mobile
-- **Components**: Use existing shadcn/ui components from `src/components/ui/`
-- **Icons**: Inline SVGs (Lucide-style)
-- **Styling**: Tailwind utilities + `cn()` helper for conditional classes
-- **Forms**: Dialog modals (shadcn/ui Dialog) for create/edit, useState + Server Actions
+- **Responsive**: `lg:` breakpoint (1024px), 48px touch targets on mobile
+- **Components**: shadcn/ui from `src/components/ui/`, Lucide-style inline SVGs
+- **Styling**: Tailwind utilities + `cn()` helper
+- **Forms**: Dialog modals with useState + Server Actions
 - **Language**: German throughout the UI
-- **Profile**: Users can edit name and avatar color (8 predefined colors), toggle Telegram notifications, export personal data (DSGVO), delete account
-- **Circle Visualization**: Interactive SVG with organic circle-packing layout (GlassFrog-style), drill-down navigation, hover tooltips, parent ring navigation
-- **Legal Pages**: Impressum and Datenschutz pages linked from profile/footer
-- **Global Search**: Client-side search across circles, roles, tensions, vorhaben, and persons (`/suche`) — all results link to detail pages
-- **Person Profiles**: Public profile pages (`/personen/[id]`) with avatar, name, family, contact info, and current roles. Linked from search results and role holder lists.
 
 ## Key Files
 
 - `NECKARPIRATEN_GOVERNANCE_TOOL_SPEC.md` - Full product specification
+- `SECURITY_AUDIT.md` - Security audit report with fixes
 - `src/lib/supabase/queries.ts` - All database query functions
-- `src/lib/supabase/actions.ts` - All Server Actions (CRUD, auth, admin)
+- `src/lib/supabase/actions.ts` - All Server Actions
 - `src/types/index.ts` - Complete TypeScript domain types
-- `supabase/migrations/001_initial_schema.sql` - Full database schema
+- `src/middleware.ts` - Auth + allowlist middleware
+- `next.config.ts` - Security headers configuration
 
 ## Environment Variables
 
@@ -188,9 +165,8 @@ NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
 SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
 ALLOWED_EMAILS=admin@example.com,user2@example.com
-TELEGRAM_BOT_TOKEN=your-telegram-bot-token
-TELEGRAM_CHAT_ID=your-telegram-chat-id
+TELEGRAM_BOT_TOKEN=your-telegram-bot-token     # optional
+TELEGRAM_CHAT_ID=your-telegram-chat-id         # optional
 ```
 
-`ALLOWED_EMAILS` is comma-separated. The first email is the admin.
-`TELEGRAM_BOT_TOKEN` and `TELEGRAM_CHAT_ID` are optional - if missing, Telegram notifications are silently skipped.
+`ALLOWED_EMAILS` is comma-separated. First email = admin.
