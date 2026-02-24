@@ -19,10 +19,22 @@ export default function DatenschutzPage() {
             <section className="space-y-2">
               <h2 className="text-base font-semibold text-foreground">1. Verantwortlicher</h2>
               <p>
-                Neckarpiraten e.V.<br />
-                [Stra&szlig;e und Hausnummer]<br />
-                [PLZ] Stuttgart<br />
-                E-Mail: [vorstand@neckarpiraten.de]
+                EKG neckarpiraten e.V. Kindertagesst&auml;tte<br />
+                Der Vorstand<br />
+                Argonnenstra&szlig;e 14<br />
+                70374 Stuttgart<br />
+                Telefon: 0711 505 117 26<br />
+                E-Mail: mail@neckarpiraten.de
+              </p>
+            </section>
+
+            {/* Gültigkeitsbereich */}
+            <section className="space-y-2">
+              <h2 className="text-base font-semibold text-foreground">G&uuml;ltigkeitsbereich</h2>
+              <p>
+                Diese Erkl&auml;rung gilt f&uuml;r Kinder, Kunden, Interessenten, Vereinsmitglieder,
+                ehrenamtlich T&auml;tige, Lieferanten sowie Vertriebs- und Kooperationspartner
+                der neckarpiraten e.V.
               </p>
             </section>
 
@@ -144,7 +156,7 @@ export default function DatenschutzPage() {
                 <li><strong className="text-foreground">Widerruf der Einwilligung</strong> (Art. 7 Abs. 3 DSGVO) &ndash; z.B. Telegram-Benachrichtigungen im Profil deaktivieren</li>
               </ul>
               <p>
-                Zur Aus&uuml;bung deiner Rechte wende dich an: [vorstand@neckarpiraten.de]
+                Zur Aus&uuml;bung deiner Rechte wende dich an: mail@neckarpiraten.de
               </p>
             </section>
 
@@ -171,6 +183,28 @@ export default function DatenschutzPage() {
                 <li>Zugriffskontrolle &uuml;ber Row Level Security (RLS) auf Datenbankebene</li>
                 <li>Zugang nur f&uuml;r freigeschaltete E-Mail-Adressen (Allowlist)</li>
               </ul>
+            </section>
+
+            {/* 12. Automatisierte Entscheidung */}
+            <section className="space-y-2">
+              <h2 className="text-base font-semibold text-foreground">12. Automatisierte Entscheidungsfindung</h2>
+              <p>
+                Es werden keine vollautomatisierten Entscheidungen gem&auml;&szlig; Artikel 22 DSGVO getroffen.
+              </p>
+            </section>
+
+            {/* 13. Widerspruchsrechte */}
+            <section className="space-y-2">
+              <h2 className="text-base font-semibold text-foreground">13. Widerspruchsrechte</h2>
+              <p>
+                Gegen die Verarbeitung gem&auml;&szlig; Art. 6 Abs. 1 lit. e und f DSGVO kann jederzeit
+                widersprochen werden, sofern keine zwingenden schutzw&uuml;rdigen Gr&uuml;nde f&uuml;r die
+                Verarbeitung bestehen oder die Verarbeitung der Geltendmachung von Rechtsanspr&uuml;chen dient.
+              </p>
+              <p>
+                Einwilligungen (z.B. Telegram-Benachrichtigungen) k&ouml;nnen jederzeit &uuml;ber die Profil-Seite
+                oder per E-Mail an mail@neckarpiraten.de widerrufen werden.
+              </p>
             </section>
 
             <div className="pt-4 border-t border-border">

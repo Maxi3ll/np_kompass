@@ -17,26 +17,28 @@ export default function ImpressumPage() {
 
             <section className="space-y-1">
               <h2 className="text-base font-semibold text-foreground">Betreiber</h2>
-              <p className="text-sm text-foreground">Neckarpiraten e.V.</p>
+              <p className="text-sm text-foreground">neckarpiraten e.V.</p>
               <p className="text-sm text-muted-foreground">
-                [Stra&szlig;e und Hausnummer]<br />
-                [PLZ] Stuttgart
+                Eltern-Kind-Gruppe<br />
+                Argonnenstra&szlig;e 14<br />
+                70374 Stuttgart
               </p>
             </section>
 
             <section className="space-y-1">
-              <h2 className="text-base font-semibold text-foreground">Vertreten durch</h2>
+              <h2 className="text-base font-semibold text-foreground">Vertretungsberechtigte</h2>
               <p className="text-sm text-muted-foreground">
-                [Name des/der Vorstandsvorsitzenden]<br />
-                [ggf. weitere Vorstandsmitglieder]
+                Julius Breitling (1. Vorsitzende)<br />
+                Juliane Herrgott (2. Vorsitzende)
               </p>
             </section>
 
             <section className="space-y-1">
               <h2 className="text-base font-semibold text-foreground">Kontakt</h2>
               <p className="text-sm text-muted-foreground">
-                E-Mail: [vorstand@neckarpiraten.de]<br />
-                Telefon: [Telefonnummer]
+                E-Mail: mail@neckarpiraten.de<br />
+                Telefon: 0711 505 117 26<br />
+                <span className="text-xs">(nicht f&uuml;r Platzanfragen)</span>
               </p>
             </section>
 
@@ -45,15 +47,16 @@ export default function ImpressumPage() {
               <p className="text-sm text-muted-foreground">
                 Eingetragen im Vereinsregister.<br />
                 Registergericht: Amtsgericht Stuttgart<br />
-                Registernummer: [VR XXXXX]
+                Registernummer: VR 7163
               </p>
             </section>
 
-            <section className="space-y-1">
-              <h2 className="text-base font-semibold text-foreground">Verantwortlich f&uuml;r den Inhalt gem. &sect; 55 Abs. 2 RStV</h2>
+            <section className="space-y-2">
+              <h2 className="text-base font-semibold text-foreground">Urheberrecht</h2>
               <p className="text-sm text-muted-foreground">
-                [Name]<br />
-                [Adresse]
+                Copyright &copy; neckarpiraten e.V. Alle Inhalte einschlie&szlig;lich Texte, Bilder, Grafiken und Videos
+                sind urheberrechtlich gesch&uuml;tzt und d&uuml;rfen nicht f&uuml;r kommerzielle Zwecke genutzt oder
+                Dritten zug&auml;nglich gemacht werden.
               </p>
             </section>
 
