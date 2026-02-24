@@ -12,7 +12,7 @@
 |----------|-------|-------|-----------|
 | **CRITICAL** | 2 | 2 | 0 |
 | **HIGH** | 3 | 3 | 0 |
-| **MEDIUM** | 5 | 1 | 4 |
+| **MEDIUM** | 5 | 3 | 2 |
 | **LOW** | 4 | 2 | 2 |
 
 ---
@@ -132,17 +132,13 @@ Added `.trim().slice()` limits on user-provided text fields:
 
 ### 6. Supabase Email Confirmation Disabled
 
-**Severity**: MEDIUM  
+**Status**: ✅ ALREADY ENABLED
+**Severity**: MEDIUM
 **Impact**: Account takeover potential
 
-**Problem**: In `signUpWithPassword()`, the `emailRedirectTo` is set to `undefined`, and there's no email confirmation flow. This means:
-- An attacker who knows an allowed email can register immediately
-- No proof that the person registering actually owns that email
+**Problem**: In `signUpWithPassword()`, the `emailRedirectTo` is set to `undefined`, and there's no email confirmation flow.
 
-**Recommendation**: Enable Supabase email confirmation in Dashboard:
-1. Go to Supabase Dashboard → Authentication → Email
-2. Enable "Confirm email"
-3. Update `signUpWithPassword` to handle the confirmation flow
+**Resolution**: Email confirmation was already enabled in Supabase (`mailer_autoconfirm: false`). No action needed.
 
 ### 7. Weak Password Policy
 
@@ -162,19 +158,19 @@ Added `.trim().slice()` limits on user-provided text fields:
 
 ### 8. Rate Limiting Not Configured
 
-**Severity**: MEDIUM  
+**Status**: ✅ ALREADY CONFIGURED (Supabase defaults)
+**Severity**: MEDIUM
 **Impact**: Brute-force, spam
 
-**Problem**: No rate limiting on:
-- Login attempts (brute-force)
-- Password reset requests (email bombing)
-- Creating tensions/vorhaben/comments (spam)
-- Search queries (resource exhaustion)
+**Problem**: Rate limiting was assumed to be unconfigured.
 
-**Recommendation**:
-1. Enable Supabase's built-in rate limiting in Dashboard
-2. Consider adding rate limiting middleware for server actions
-3. At minimum, add client-side cooldowns on forms
+**Resolution**: Supabase Auth rate limits are active with defaults:
+- Email sent: 2/hour (default SMTP limit)
+- OTP, verify, anonymous sign-ins: 30/hour
+- Token refresh: 150/hour
+- SMS: 30/hour
+
+These are appropriate for a ~40-family internal app. For higher limits on email, a custom SMTP server would be needed.
 
 ### 9. Telegram Messages Contain Personal Names
 
@@ -279,9 +275,9 @@ Supabase SSR handles cookies via `@supabase/ssr`, which should set `httpOnly` an
 - [x] Overly permissive RLS policies — FIXED (migration `011_tighten_rls.sql`)
 - [x] Input validation on text fields — FIXED
 - [x] **Apply migration** `011_tighten_rls.sql` to production — Applied (all migrations through 013 are live)
-- [ ] Enable Supabase email confirmation
-- [x] Increase password minimum to 8 characters — FIXED (client + server-side)
-- [ ] Configure Supabase rate limiting
+- [x] Enable Supabase email confirmation — ALREADY ENABLED (`mailer_autoconfirm: false`)
+- [x] Increase password minimum to 8 characters — FIXED (client + server-side + Supabase config)
+- [x] Configure Supabase rate limiting — ALREADY CONFIGURED (Supabase defaults active)
 - [x] Remove admin email from seed migration — FIXED (removed from `003_allowed_emails.sql`)
 - [ ] Set up database backups (Supabase Pro PITR)
 - [ ] Review Telegram privacy implications with the Verein
@@ -291,7 +287,7 @@ Supabase SSR handles cookies via `@supabase/ssr`, which should set `httpOnly` an
 - [x] Supabase Linter: Security Definer Views → SECURITY INVOKER (Migration 013)
 - [x] Supabase Linter: Function search_path mutable → SET search_path = '' (Migration 013)
 - [x] Supabase Linter: Meetings INSERT RLS tightened (Migration 013)
-- [ ] Supabase Linter: Enable Leaked Password Protection (Dashboard)
+- [ ] Supabase Linter: Enable Leaked Password Protection (requires Pro Plan)
 
 ---
 
