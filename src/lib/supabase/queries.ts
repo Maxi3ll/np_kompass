@@ -169,7 +169,7 @@ export async function getAllRoles() {
     .from('roles')
     .select(`
       *,
-      circle:circles(id, name, color, icon)
+      circle:circles(id, name, color, icon, parent_circle_id)
     `)
     .order('name');
 
