@@ -36,6 +36,5 @@ CREATE POLICY "Admin can delete allowed emails"
 -- Index for fast email lookups
 CREATE INDEX idx_allowed_emails_email ON allowed_emails(email);
 
--- Seed: Admin-E-Mail
-INSERT INTO allowed_emails (email, added_by)
-VALUES ('hello@max-blum.com', 'migration');
+-- Admin email is seeded via ALLOWED_EMAILS env variable at runtime.
+-- Do not hardcode emails in migrations.

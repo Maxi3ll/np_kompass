@@ -12,8 +12,8 @@
 |----------|-------|-------|-----------|
 | **CRITICAL** | 2 | 2 | 0 |
 | **HIGH** | 3 | 3 | 0 |
-| **MEDIUM** | 5 | 0 | 5 |
-| **LOW** | 4 | 0 | 4 |
+| **MEDIUM** | 5 | 1 | 4 |
+| **LOW** | 4 | 2 | 2 |
 
 ---
 
@@ -146,23 +146,19 @@ Added `.trim().slice()` limits on user-provided text fields:
 
 ### 7. Weak Password Policy
 
-**Severity**: MEDIUM  
+**Status**: ✅ FIXED
+**Severity**: MEDIUM
 **Impact**: Brute-force vulnerability
 
-**Problem**: The only password validation is `password.length < 6` (client-side only, not enforced server-side). For an app storing private family data:
+**Problem**: The only password validation was `password.length < 6` (client-side only, not enforced server-side). For an app storing private family data:
 - 6 characters is too weak
 - No complexity requirements
 - No server-side enforcement
 
-**Recommendation**:
-1. Increase minimum to 8 characters
-2. Add server-side validation in `signUpWithPassword`:
-```typescript
-if (!password || password.length < 8) {
-  return { error: 'password_too_short' };
-}
-```
-3. Configure Supabase Auth password strength in Dashboard
+**Fix**:
+1. Increased minimum to 8 characters (client-side in `login-form.tsx`)
+2. Added server-side validation in `signUpWithPassword` in `actions.ts`
+3. Remaining: Configure Supabase Auth password strength in Dashboard
 
 ### 8. Rate Limiting Not Configured
 
@@ -238,12 +234,13 @@ const q = `%${escaped}%`;
 
 ### 13. Admin Email Seed in Migration
 
-**Severity**: LOW  
+**Status**: ✅ FIXED
+**Severity**: LOW
 **Location**: `supabase/migrations/003_allowed_emails.sql`
 
-**Problem**: The admin email `hello@max-blum.com` is hardcoded in the migration file. If this repository becomes public, the admin identity is exposed.
+**Problem**: The admin email `hello@max-blum.com` was hardcoded in the migration file. If this repository becomes public, the admin identity is exposed.
 
-**Recommendation**: Remove the seed data from the migration, or replace with a placeholder.
+**Fix**: Removed hardcoded email from migration. Admin email is now only configured via `ALLOWED_EMAILS` env variable at runtime.
 
 ### 14. Missing `httpOnly` / `secure` Cookie Flags Documentation
 
@@ -281,16 +278,20 @@ Supabase SSR handles cookies via `@supabase/ssr`, which should set `httpOnly` an
 - [x] Security headers — FIXED
 - [x] Overly permissive RLS policies — FIXED (migration `011_tighten_rls.sql`)
 - [x] Input validation on text fields — FIXED
-- [ ] **Apply migration** `011_tighten_rls.sql` to production: `npx supabase db push`
+- [x] **Apply migration** `011_tighten_rls.sql` to production — Applied (all migrations through 013 are live)
 - [ ] Enable Supabase email confirmation
-- [ ] Increase password minimum to 8 characters
+- [x] Increase password minimum to 8 characters — FIXED (client + server-side)
 - [ ] Configure Supabase rate limiting
-- [ ] Remove admin email from seed migration (or make repo private)
+- [x] Remove admin email from seed migration — FIXED (removed from `003_allowed_emails.sql`)
 - [ ] Set up database backups (Supabase Pro PITR)
 - [ ] Review Telegram privacy implications with the Verein
 - [ ] Verify HSTS and cookie flags in production
-- [ ] Fill in placeholder addresses in Datenschutz + Impressum pages
+- [x] Fill in placeholder addresses in Datenschutz + Impressum pages — FIXED (real data from neckarpiraten.de)
 - [ ] Sign DPA/AVV with Supabase and Vercel (links in their dashboards)
+- [x] Supabase Linter: Security Definer Views → SECURITY INVOKER (Migration 013)
+- [x] Supabase Linter: Function search_path mutable → SET search_path = '' (Migration 013)
+- [x] Supabase Linter: Meetings INSERT RLS tightened (Migration 013)
+- [ ] Supabase Linter: Enable Leaked Password Protection (Dashboard)
 
 ---
 
@@ -298,7 +299,10 @@ Supabase SSR handles cookies via `@supabase/ssr`, which should set `httpOnly` an
 
 | File | Changes |
 |------|---------|
-| `src/lib/supabase/actions.ts` | Added `requireAuth()` + `requireAuthAs()` helpers; auth verification on 12 server actions; input length validation |
+| `src/lib/supabase/actions.ts` | Added `requireAuth()` + `requireAuthAs()` helpers; auth verification on 12 server actions; input length validation; server-side password min 8 chars |
 | `src/app/auth/callback/route.ts` | Fixed open redirect via `next` parameter validation |
+| `src/app/login/login-form.tsx` | Increased password minimum from 6 to 8 characters; handle `password_too_short` error |
 | `next.config.ts` | Added 6 security headers |
+| `supabase/migrations/003_allowed_emails.sql` | Removed hardcoded admin email |
 | `supabase/migrations/011_tighten_rls.sql` | New migration tightening 15 RLS policies |
+| `supabase/migrations/013_security_audit_fixes.sql` | Views → SECURITY INVOKER, functions search_path fixed, meetings INSERT RLS tightened |

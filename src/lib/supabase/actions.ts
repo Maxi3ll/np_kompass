@@ -220,6 +220,10 @@ export async function signInWithPassword(email: string, password: string) {
 }
 
 export async function signUpWithPassword(email: string, password: string) {
+  if (!password || password.length < 8) {
+    return { error: 'password_too_short' };
+  }
+
   const allowed = await isEmailAllowed(email);
   if (!allowed) {
     return { error: 'access_denied' };

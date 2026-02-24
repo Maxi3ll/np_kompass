@@ -135,8 +135,8 @@ export function LoginForm() {
       return;
     }
 
-    if (password.length < 6) {
-      setError("Passwort muss mindestens 6 Zeichen lang sein.");
+    if (password.length < 8) {
+      setError("Passwort muss mindestens 8 Zeichen lang sein.");
       setIsLoading(false);
       return;
     }
@@ -148,6 +148,12 @@ export function LoginForm() {
     }
 
     const result = await signUpWithPassword(email.trim(), password);
+
+    if (result.error === "password_too_short") {
+      setError("Passwort muss mindestens 8 Zeichen lang sein.");
+      setIsLoading(false);
+      return;
+    }
 
     if (result.error === "access_denied") {
       setError(
