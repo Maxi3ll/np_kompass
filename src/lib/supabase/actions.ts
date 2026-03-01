@@ -1416,10 +1416,17 @@ export async function createTensionComment(tensionId: string, personId: string, 
 
   if (tension) {
     const notifMessage = `${commenter?.name || 'Jemand'} hat die Spannung "${tension.title}" kommentiert.`;
-    const notifyIds = new Set<string>();
 
-    if (tension.raised_by && tension.raised_by !== personId) notifyIds.add(tension.raised_by);
-    if (tension.assigned_to && tension.assigned_to !== personId) notifyIds.add(tension.assigned_to);
+    // Notify all circle members (except commenter)
+    const circleMembers = await getCircleMemberIds(tension.circle_id);
+    const notifyIds = new Set<string>(circleMembers);
+
+    // Also include creator and assignee (even if not currently in circle)
+    if (tension.raised_by) notifyIds.add(tension.raised_by);
+    if (tension.assigned_to) notifyIds.add(tension.assigned_to);
+
+    // Remove commenter
+    notifyIds.delete(personId);
 
     for (const recipientId of notifyIds) {
       await createNotification({

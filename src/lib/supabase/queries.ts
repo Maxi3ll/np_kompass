@@ -317,6 +317,25 @@ export async function getTensions(filters?: {
     return [];
   }
 
+  // Fetch comment counts for all tensions
+  if (data && data.length > 0) {
+    const tensionIds = data.map((t: any) => t.id);
+    const { data: commentCounts } = await supabase
+      .from('tension_comments')
+      .select('tension_id')
+      .in('tension_id', tensionIds);
+
+    const countMap = new Map<string, number>();
+    for (const c of (commentCounts || [])) {
+      countMap.set(c.tension_id, (countMap.get(c.tension_id) || 0) + 1);
+    }
+
+    return data.map((t: any) => ({
+      ...t,
+      comment_count: countMap.get(t.id) || 0,
+    }));
+  }
+
   return data;
 }
 
