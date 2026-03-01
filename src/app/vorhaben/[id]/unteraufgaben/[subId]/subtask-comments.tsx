@@ -4,10 +4,11 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { createSubtaskComment } from "@/lib/supabase/actions";
+import { createSubtaskComment, updateSubtaskComment, deleteSubtaskComment } from "@/lib/supabase/actions";
 
 interface Comment {
   id: string;
+  person_id: string | null;
   content: string;
   created_at: string;
   person?: {
@@ -27,6 +28,10 @@ export function SubtaskComments({ subtaskId, personId, initialComments }: Subtas
   const router = useRouter();
   const [content, setContent] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editContent, setEditContent] = useState("");
+  const [isSavingEdit, setIsSavingEdit] = useState(false);
 
   const handleSubmit = async () => {
     if (!content.trim() || !personId) return;
@@ -36,6 +41,34 @@ export function SubtaskComments({ subtaskId, personId, initialComments }: Subtas
     setContent("");
     router.refresh();
     setIsSubmitting(false);
+  };
+
+  const handleDelete = async (commentId: string) => {
+    setDeletingId(commentId);
+    await deleteSubtaskComment(commentId);
+    router.refresh();
+    setDeletingId(null);
+  };
+
+  const handleStartEdit = (comment: Comment) => {
+    setEditingId(comment.id);
+    setEditContent(comment.content);
+  };
+
+  const handleCancelEdit = () => {
+    setEditingId(null);
+    setEditContent("");
+  };
+
+  const handleSaveEdit = async () => {
+    if (!editingId || !editContent.trim()) return;
+
+    setIsSavingEdit(true);
+    await updateSubtaskComment(editingId, editContent.trim());
+    setEditingId(null);
+    setEditContent("");
+    router.refresh();
+    setIsSavingEdit(false);
   };
 
   return (
@@ -68,7 +101,55 @@ export function SubtaskComments({ subtaskId, personId, initialComments }: Subtas
                   })}
                 </span>
               </div>
-              <p className="text-sm text-foreground whitespace-pre-wrap">{comment.content}</p>
+
+              {editingId === comment.id ? (
+                <div className="space-y-2">
+                  <Textarea
+                    value={editContent}
+                    onChange={(e) => setEditContent(e.target.value)}
+                    className="min-h-[60px] rounded-xl resize-none text-sm"
+                    maxLength={2000}
+                  />
+                  <div className="flex gap-2 justify-end">
+                    <button
+                      onClick={handleCancelEdit}
+                      disabled={isSavingEdit}
+                      className="text-xs text-muted-foreground hover:text-foreground transition-colors px-2 py-1"
+                    >
+                      Abbrechen
+                    </button>
+                    <Button
+                      onClick={handleSaveEdit}
+                      disabled={isSavingEdit || !editContent.trim()}
+                      size="sm"
+                      className="h-7 rounded-lg text-xs"
+                    >
+                      {isSavingEdit ? "Speichern..." : "Speichern"}
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <p className="text-sm text-foreground whitespace-pre-wrap">{comment.content}</p>
+                  {comment.person_id === personId && (
+                    <div className="mt-2 flex justify-end gap-3">
+                      <button
+                        onClick={() => handleStartEdit(comment)}
+                        className="text-xs text-muted-foreground hover:text-primary transition-colors"
+                      >
+                        Bearbeiten
+                      </button>
+                      <button
+                        onClick={() => handleDelete(comment.id)}
+                        disabled={deletingId === comment.id}
+                        className="text-xs text-muted-foreground hover:text-red-500 transition-colors"
+                      >
+                        {deletingId === comment.id ? 'Wird gelöscht...' : 'Löschen'}
+                      </button>
+                    </div>
+                  )}
+                </>
+              )}
             </div>
           ))}
         </div>

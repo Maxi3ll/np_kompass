@@ -1345,6 +1345,37 @@ export async function createSubtaskComment(subtaskId: string, personId: string, 
   return { comment };
 }
 
+export async function updateSubtaskComment(commentId: string, content: string) {
+  const auth = await requireAuth();
+  const serviceClient = createServiceClient();
+
+  const trimmedContent = content.trim().slice(0, 5000);
+  if (!trimmedContent) return { error: 'empty_content' };
+
+  // Verify caller owns the comment
+  const { data: comment } = await serviceClient
+    .from('subtask_comments')
+    .select('person_id, subtask_id')
+    .eq('id', commentId)
+    .single();
+
+  if (!comment || comment.person_id !== auth.personId) {
+    return { error: 'unauthorized' };
+  }
+
+  const { error } = await serviceClient
+    .from('subtask_comments')
+    .update({ content: trimmedContent })
+    .eq('id', commentId);
+
+  if (error) {
+    console.error('Error updating subtask comment:', error);
+    return { error: error.message };
+  }
+
+  return { success: true };
+}
+
 export async function deleteSubtaskComment(commentId: string) {
   const auth = await requireAuth();
   const serviceClient = createServiceClient();
