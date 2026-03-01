@@ -1445,6 +1445,38 @@ export async function createTensionComment(tensionId: string, personId: string, 
   return { comment };
 }
 
+export async function updateTensionComment(commentId: string, content: string) {
+  const auth = await requireAuth();
+  const serviceClient = createServiceClient();
+
+  const trimmedContent = content.trim().slice(0, 5000);
+  if (!trimmedContent) return { error: 'empty_content' };
+
+  // Verify caller owns the comment
+  const { data: comment } = await serviceClient
+    .from('tension_comments')
+    .select('person_id, tension_id')
+    .eq('id', commentId)
+    .single();
+
+  if (!comment || comment.person_id !== auth.personId) {
+    return { error: 'unauthorized' };
+  }
+
+  const { error } = await serviceClient
+    .from('tension_comments')
+    .update({ content: trimmedContent })
+    .eq('id', commentId);
+
+  if (error) {
+    console.error('Error updating tension comment:', error);
+    return { error: error.message };
+  }
+
+  revalidatePath(`/spannungen/${comment.tension_id}`);
+  return { success: true };
+}
+
 export async function deleteTensionComment(commentId: string) {
   const auth = await requireAuth();
   const serviceClient = createServiceClient();
