@@ -3,16 +3,83 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { updateVorhaben } from "@/lib/supabase/actions";
+
+interface Person {
+  id: string;
+  name: string;
+}
+
+interface Circle {
+  id: string;
+  name: string;
+  color?: string;
+  icon?: string;
+}
 
 interface VorhabenActionsProps {
   vorhabenId: string;
   currentStatus: string;
+  personId?: string | null;
+  createdBy?: string | null;
+  coordinatorId?: string | null;
+  currentTitle?: string;
+  currentShortDescription?: string | null;
+  currentDescription?: string | null;
+  currentCoordinatorId?: string | null;
+  currentCircleIds?: string[];
+  currentStartDate?: string | null;
+  currentEndDate?: string | null;
+  circles?: Circle[];
+  persons?: Person[];
 }
 
-export function VorhabenActions({ vorhabenId, currentStatus }: VorhabenActionsProps) {
+export function VorhabenActions({
+  vorhabenId,
+  currentStatus,
+  personId,
+  createdBy,
+  coordinatorId,
+  currentTitle,
+  currentShortDescription,
+  currentDescription,
+  currentCoordinatorId,
+  currentCircleIds,
+  currentStartDate,
+  currentEndDate,
+  circles = [],
+  persons = [],
+}: VorhabenActionsProps) {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
+  const [editError, setEditError] = useState<string | null>(null);
+
+  // Edit form state
+  const [title, setTitle] = useState(currentTitle || "");
+  const [shortDescription, setShortDescription] = useState(currentShortDescription || "");
+  const [description, setDescription] = useState(currentDescription || "");
+  const [editCoordinatorId, setEditCoordinatorId] = useState(currentCoordinatorId || "");
+  const [selectedCircleIds, setSelectedCircleIds] = useState<string[]>(currentCircleIds || []);
+  const [startDate, setStartDate] = useState(currentStartDate || "");
+  const [endDate, setEndDate] = useState(currentEndDate || "");
+
+  const isCreatorOrCoordinator = personId && (personId === createdBy || personId === coordinatorId);
 
   const handleAction = async (status: 'OPEN' | 'IN_PROGRESS' | 'DONE') => {
     setIsSubmitting(true);
@@ -21,50 +88,291 @@ export function VorhabenActions({ vorhabenId, currentStatus }: VorhabenActionsPr
     setIsSubmitting(false);
   };
 
-  if (currentStatus === "DONE") {
-    return (
-      <Button
-        variant="outline"
-        onClick={() => handleAction('OPEN')}
-        disabled={isSubmitting}
-        className="w-full h-10 rounded-xl text-sm"
-      >
-        Wieder aufmachen
-      </Button>
+  const handleOpenEdit = () => {
+    setTitle(currentTitle || "");
+    setShortDescription(currentShortDescription || "");
+    setDescription(currentDescription || "");
+    setEditCoordinatorId(currentCoordinatorId || "");
+    setSelectedCircleIds(currentCircleIds || []);
+    setStartDate(currentStartDate || "");
+    setEndDate(currentEndDate || "");
+    setEditError(null);
+    setEditOpen(true);
+  };
+
+  const toggleCircle = (circleId: string) => {
+    setSelectedCircleIds((prev) =>
+      prev.includes(circleId)
+        ? prev.filter((id) => id !== circleId)
+        : [...prev, circleId]
     );
-  }
+  };
+
+  const handleEditSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setEditError(null);
+
+    if (!title.trim()) {
+      setEditError("Bitte gib einen Titel ein");
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    const result = await updateVorhaben({
+      id: vorhabenId,
+      title: title.trim(),
+      shortDescription: shortDescription.trim() || null,
+      description: description.trim() || null,
+      coordinatorId: editCoordinatorId || null,
+      circleIds: selectedCircleIds,
+      startDate: startDate || null,
+      endDate: endDate || null,
+    });
+
+    if (result.error) {
+      setEditError(result.error);
+      setIsSubmitting(false);
+      return;
+    }
+
+    setEditOpen(false);
+    router.refresh();
+    setIsSubmitting(false);
+  };
 
   return (
-    <div className="flex gap-3">
-      {currentStatus === "OPEN" && (
+    <>
+      {/* Edit Button */}
+      {isCreatorOrCoordinator && (
         <Button
-          variant="default"
-          onClick={() => handleAction('IN_PROGRESS')}
-          disabled={isSubmitting}
-          className="flex-1 h-12 rounded-xl"
+          variant="outline"
+          onClick={handleOpenEdit}
+          className="w-full h-10 rounded-xl text-sm mb-3"
         >
-          {isSubmitting ? "Wird gespeichert..." : "Umsetzen starten"}
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2">
+            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+          </svg>
+          Bearbeiten
         </Button>
       )}
 
-      {currentStatus === "IN_PROGRESS" && (
+      {/* Status Buttons */}
+      {currentStatus === "DONE" ? (
         <Button
-          variant="default"
+          variant="outline"
           onClick={() => handleAction('OPEN')}
           disabled={isSubmitting}
-          className="flex-1 h-12 rounded-xl"
+          className="w-full h-10 rounded-xl text-sm"
         >
-          Zurück auf Offen
+          Wieder aufmachen
         </Button>
+      ) : (
+        <div className="flex gap-3">
+          {currentStatus === "OPEN" && (
+            <Button
+              variant="default"
+              onClick={() => handleAction('IN_PROGRESS')}
+              disabled={isSubmitting}
+              className="flex-1 h-12 rounded-xl"
+            >
+              {isSubmitting ? "Wird gespeichert..." : "Umsetzen starten"}
+            </Button>
+          )}
+
+          {currentStatus === "IN_PROGRESS" && (
+            <Button
+              variant="default"
+              onClick={() => handleAction('OPEN')}
+              disabled={isSubmitting}
+              className="flex-1 h-12 rounded-xl"
+            >
+              Zurück auf Offen
+            </Button>
+          )}
+
+          <Button
+            onClick={() => handleAction('DONE')}
+            disabled={isSubmitting}
+            className="flex-1 h-12 rounded-xl bg-[var(--status-resolved)] hover:bg-[var(--status-resolved)]/90 text-white"
+          >
+            {isSubmitting ? "Wird gespeichert..." : "Abgeschlossen"}
+          </Button>
+        </div>
       )}
 
-      <Button
-        onClick={() => handleAction('DONE')}
-        disabled={isSubmitting}
-        className="flex-1 h-12 rounded-xl bg-[var(--status-resolved)] hover:bg-[var(--status-resolved)]/90 text-white"
-      >
-        {isSubmitting ? "Wird gespeichert..." : "Abgeschlossen"}
-      </Button>
-    </div>
+      {/* Edit Dialog */}
+      <Dialog open={editOpen} onOpenChange={setEditOpen}>
+        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Vorhaben bearbeiten</DialogTitle>
+          </DialogHeader>
+
+          <form onSubmit={handleEditSubmit} className="space-y-5 pt-2">
+            {/* Title */}
+            <div className="space-y-2">
+              <label htmlFor="edit-title" className="text-sm font-medium text-foreground">
+                Titel <span className="text-destructive">*</span>
+              </label>
+              <Input
+                id="edit-title"
+                placeholder="Wie heißt das Vorhaben?"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                className="h-12 rounded-xl"
+                maxLength={200}
+              />
+              <p className="text-xs text-muted-foreground text-right">
+                {title.length}/200
+              </p>
+            </div>
+
+            {/* Short Description */}
+            <div className="space-y-2">
+              <label htmlFor="edit-shortDescription" className="text-sm font-medium text-foreground">
+                Kurzbeschreibung
+              </label>
+              <Input
+                id="edit-shortDescription"
+                placeholder="Ein Satz, der das Vorhaben zusammenfasst (optional)"
+                value={shortDescription}
+                onChange={(e) => setShortDescription(e.target.value)}
+                className="h-12 rounded-xl"
+                maxLength={300}
+              />
+              <p className="text-xs text-muted-foreground text-right">
+                {shortDescription.length}/300
+              </p>
+            </div>
+
+            {/* Description */}
+            <div className="space-y-2">
+              <label htmlFor="edit-description" className="text-sm font-medium text-foreground">
+                Beschreibung
+              </label>
+              <Textarea
+                id="edit-description"
+                placeholder="Beschreibe das Vorhaben genauer... (optional)"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                className="min-h-[120px] rounded-xl resize-none"
+                maxLength={5000}
+              />
+              <p className="text-xs text-muted-foreground text-right">
+                {description.length}/5000
+              </p>
+            </div>
+
+            {/* Coordinator */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-foreground">
+                Koordinator:in
+              </label>
+              <Select value={editCoordinatorId} onValueChange={setEditCoordinatorId}>
+                <SelectTrigger className="h-12 rounded-xl w-full">
+                  <SelectValue placeholder="Wer koordiniert das Vorhaben? (optional)" />
+                </SelectTrigger>
+                <SelectContent>
+                  {persons.map((person) => (
+                    <SelectItem key={person.id} value={person.id}>
+                      {person.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Circles Multi-Select */}
+            {circles.length > 0 && (
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-foreground">
+                  Beteiligte Kreise
+                </label>
+                <div className="flex flex-wrap gap-2">
+                  {circles.map((circle) => {
+                    const isSelected = selectedCircleIds.includes(circle.id);
+                    return (
+                      <button
+                        key={circle.id}
+                        type="button"
+                        onClick={() => toggleCircle(circle.id)}
+                        className={`inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border-2 text-sm font-medium transition-all ${
+                          isSelected
+                            ? 'border-primary bg-primary/10 text-primary'
+                            : 'border-border text-muted-foreground hover:border-muted-foreground/30'
+                        }`}
+                      >
+                        <span>{circle.icon || ''}</span>
+                        {circle.name}
+                      </button>
+                    );
+                  })}
+                </div>
+                {selectedCircleIds.length > 0 && (
+                  <p className="text-xs text-muted-foreground">
+                    {selectedCircleIds.length} Kreis{selectedCircleIds.length > 1 ? 'e' : ''} ausgewählt
+                  </p>
+                )}
+              </div>
+            )}
+
+            {/* Dates */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label htmlFor="edit-startDate" className="text-sm font-medium text-foreground">
+                  Startdatum
+                </label>
+                <Input
+                  id="edit-startDate"
+                  type="date"
+                  value={startDate}
+                  onChange={(e) => setStartDate(e.target.value)}
+                  className="h-12 rounded-xl"
+                />
+              </div>
+              <div className="space-y-2">
+                <label htmlFor="edit-endDate" className="text-sm font-medium text-foreground">
+                  Enddatum
+                </label>
+                <Input
+                  id="edit-endDate"
+                  type="date"
+                  value={endDate}
+                  onChange={(e) => setEndDate(e.target.value)}
+                  className="h-12 rounded-xl"
+                />
+              </div>
+            </div>
+
+            {/* Error Message */}
+            {editError && (
+              <div className="p-3 rounded-xl bg-destructive/10 border border-destructive/20">
+                <p className="text-sm text-destructive">{editError}</p>
+              </div>
+            )}
+
+            {/* Submit */}
+            <div className="flex gap-3 pt-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setEditOpen(false)}
+                className="flex-1 h-12 rounded-xl"
+              >
+                Abbrechen
+              </Button>
+              <Button
+                type="submit"
+                disabled={isSubmitting}
+                className="flex-1 h-12 rounded-xl"
+              >
+                {isSubmitting ? "Wird gespeichert..." : "Speichern"}
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }

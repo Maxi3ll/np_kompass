@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Header } from "@/components/navigation/header";
 import { AppShell } from "@/components/layout/app-shell";
-import { getVorhabenById } from "@/lib/supabase/queries";
+import { getVorhabenById, getCircles } from "@/lib/supabase/queries";
 import { getPersonsList } from "@/lib/supabase/actions";
 import { createClient } from "@/lib/supabase/server";
 import { VorhabenActions } from "./vorhaben-actions";
@@ -42,9 +42,10 @@ export default async function VorhabenDetailPage({ params }: PageProps) {
     personId = person?.id || null;
   }
 
-  const [vorhaben, personsResult] = await Promise.all([
+  const [vorhaben, personsResult, allCircles] = await Promise.all([
     getVorhabenById(id),
     getPersonsList(),
+    getCircles(),
   ]);
 
   if (!vorhaben) {
@@ -53,6 +54,7 @@ export default async function VorhabenDetailPage({ params }: PageProps) {
 
   const status = STATUS_CONFIG[vorhaben.status as keyof typeof STATUS_CONFIG] || STATUS_CONFIG.OPEN;
   const persons = personsResult.persons || [];
+  const displayCircles = allCircles.filter((c: any) => c.parent_circle_id !== null);
 
   const subtaskProgress = vorhaben.subtask_count > 0
     ? Math.round((vorhaben.subtask_done_count / vorhaben.subtask_count) * 100)
@@ -187,6 +189,18 @@ export default async function VorhabenDetailPage({ params }: PageProps) {
             <VorhabenActions
               vorhabenId={vorhaben.id}
               currentStatus={vorhaben.status}
+              personId={personId}
+              createdBy={vorhaben.created_by}
+              coordinatorId={vorhaben.coordinator_id}
+              currentTitle={vorhaben.title}
+              currentShortDescription={vorhaben.short_description}
+              currentDescription={vorhaben.description}
+              currentCoordinatorId={vorhaben.coordinator_id}
+              currentCircleIds={vorhaben.circles?.map((c: any) => c.id) || []}
+              currentStartDate={vorhaben.start_date}
+              currentEndDate={vorhaben.end_date}
+              circles={displayCircles}
+              persons={persons}
             />
           </div>
 

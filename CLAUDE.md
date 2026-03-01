@@ -7,7 +7,7 @@ Use `/meetings`, `/security`, `/database`, or `/deploy` commands for detailed fe
 
 np-kompass is a governance tool for Neckarpiraten e.V., a Stuttgart-based parent-child initiative (~40 families). It implements a Holacracy-light model with four core modules:
 - **Rollen-Wiki**: Role definitions with domains, accountabilities, and current holders
-- **Spannungs-Log**: Tensions/issues that need resolution within circles
+- **Spannungs-Log**: Tensions/issues that need resolution within circles, with comments
 - **Vorhaben**: Initiatives/projects with subtasks, volunteers, and comments
 - **Termin-Board**: Meetings with live facilitation (real-time phases: Check-in, Agenda, Closing)
 
@@ -106,9 +106,9 @@ Pattern for each page:
 - **Person**: Member with auth, avatar color, family link
 
 ### Database
-PostgreSQL with RLS. Key tables: `circles`, `roles`, `role_assignments`, `tensions`, `vorhaben`, `vorhaben_circles`, `subtasks`, `subtask_volunteers`, `subtask_comments`, `meetings`, `meeting_attendees`, `meeting_agenda_items`, `meeting_round_entries`, `meeting_agenda_comments`, `persons`, `families`, `allowed_emails`, `notifications`. Views: `current_role_holders`, `circle_stats` (SECURITY INVOKER).
+PostgreSQL with RLS. Key tables: `circles`, `roles`, `role_assignments`, `tensions`, `tension_comments`, `vorhaben`, `vorhaben_circles`, `subtasks`, `subtask_volunteers`, `subtask_comments`, `meetings`, `meeting_attendees`, `meeting_agenda_items`, `meeting_round_entries`, `meeting_agenda_comments`, `persons`, `families`, `allowed_emails`, `notifications`. Views: `current_role_holders`, `circle_stats` (SECURITY INVOKER).
 
-Migrations 001-013 in `supabase/migrations/`. Use `/database` command for full details.
+Migrations 001-014 in `supabase/migrations/`. Use `/database` command for full details.
 
 ### Auth Flow
 1. Login via email + password (min 8 chars, Supabase Auth)
@@ -119,7 +119,7 @@ Migrations 001-013 in `supabase/migrations/`. Use `/database` command for full d
 ### Notifications
 - **In-App**: Bell icon in header, lazy-loaded dropdown
 - **Telegram**: Group messages via bot API (per-user opt-out)
-- **Triggers**: Role changes, tension events, vorhaben events
+- **Triggers**: Role changes, tension events (incl. comments → all circle members), vorhaben events
 
 ### Live Meetings
 Real-time meeting facilitation with GlassFrog-style phases. Use `/meetings` command for full details.
