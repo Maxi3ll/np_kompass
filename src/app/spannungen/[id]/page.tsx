@@ -2,9 +2,10 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Header } from "@/components/navigation/header";
 import { AppShell } from "@/components/layout/app-shell";
-import { getTensionById, getCircles } from "@/lib/supabase/queries";
+import { getTensionById, getCircles, getTensionComments } from "@/lib/supabase/queries";
 import { createClient } from "@/lib/supabase/server";
 import { TensionActions } from "./tension-actions";
+import { TensionComments } from "./tension-comments";
 
 export const revalidate = 30;
 
@@ -42,9 +43,10 @@ export default async function SpannungDetailPage({ params }: PageProps) {
     personId = person?.id || user.id;
   }
 
-  const [tension, circles] = await Promise.all([
+  const [tension, circles, comments] = await Promise.all([
     getTensionById(id),
     getCircles(),
+    getTensionComments(id),
   ]);
 
   if (!tension) {
@@ -212,6 +214,15 @@ export default async function SpannungDetailPage({ params }: PageProps) {
               currentDescription={tension.description || ""}
               currentCircleId={tension.circle?.id || ""}
               currentPriority={tension.priority}
+            />
+          </div>
+
+          {/* Comments */}
+          <div className="bg-card rounded-2xl shadow-card border border-border/50 p-5">
+            <TensionComments
+              tensionId={tension.id}
+              personId={personId || ""}
+              initialComments={comments}
             />
           </div>
         </div>

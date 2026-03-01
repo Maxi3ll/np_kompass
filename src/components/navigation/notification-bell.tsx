@@ -46,6 +46,7 @@ function getNotificationIcon(type: string): string {
     case "TENSION_CREATED":
     case "TENSION_ASSIGNED":
     case "TENSION_RESOLVED":
+    case "TENSION_COMMENTED":
       return "M12 9v4m0 4h.01M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0z";
     case "VORHABEN_CREATED":
     case "VORHABEN_VOLUNTEER":

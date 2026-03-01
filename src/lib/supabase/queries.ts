@@ -8,7 +8,8 @@ export async function searchAll(query: string) {
   if (!query || query.length < 2) return { circles: [], roles: [], tensions: [], persons: [], vorhaben: [] };
 
   const supabase = await createClient();
-  const q = `%${query}%`;
+  const escaped = query.replace(/[%_\\]/g, '\\$&');
+  const q = `%${escaped}%`;
 
   const [circlesResult, rolesResult, tensionsResult, personsResult, vorhabenResult] = await Promise.all([
     supabase
@@ -845,6 +846,30 @@ export async function getSubtaskComments(subtaskId: string) {
 
   if (error) {
     console.error('Error fetching subtask comments:', error);
+    return [];
+  }
+
+  return data;
+}
+
+// =====================================================
+// TENSION COMMENTS
+// =====================================================
+
+export async function getTensionComments(tensionId: string) {
+  const supabase = await createClient();
+
+  const { data, error } = await supabase
+    .from('tension_comments')
+    .select(`
+      *,
+      person:persons(id, name, avatar_color)
+    `)
+    .eq('tension_id', tensionId)
+    .order('created_at', { ascending: true });
+
+  if (error) {
+    console.error('Error fetching tension comments:', error);
     return [];
   }
 

@@ -253,6 +253,21 @@ export interface SubtaskCommentWithPerson extends SubtaskComment {
   person?: Person;
 }
 
+// ============ Tension Comments ============
+
+export interface TensionComment {
+  id: string;
+  tension_id: string;
+  person_id: string;
+  content: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface TensionCommentWithPerson extends TensionComment {
+  person?: Person;
+}
+
 // ============ Notifications ============
 
 export type NotificationType =
@@ -261,6 +276,7 @@ export type NotificationType =
   | 'TENSION_CREATED'
   | 'TENSION_ASSIGNED'
   | 'TENSION_RESOLVED'
+  | 'TENSION_COMMENTED'
   | 'VORHABEN_CREATED'
   | 'VORHABEN_VOLUNTEER'
   | 'VORHABEN_SUBTASK_COMPLETED'

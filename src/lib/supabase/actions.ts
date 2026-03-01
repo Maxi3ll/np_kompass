@@ -1375,6 +1375,103 @@ export async function deleteSubtaskComment(commentId: string) {
 }
 
 // =====================================================
+// TENSION COMMENTS
+// =====================================================
+
+export async function createTensionComment(tensionId: string, personId: string, content: string) {
+  await requireAuthAs(personId);
+
+  const trimmedContent = content.trim().slice(0, 5000);
+  if (!trimmedContent) return { error: 'empty_content' };
+
+  const serviceClient = createServiceClient();
+
+  const { data: comment, error } = await serviceClient
+    .from('tension_comments')
+    .insert({
+      tension_id: tensionId,
+      person_id: personId,
+      content: trimmedContent,
+    })
+    .select()
+    .single();
+
+  if (error) {
+    console.error('Error creating tension comment:', error);
+    return { error: error.message };
+  }
+
+  // Fetch tension info for notifications
+  const { data: tension } = await serviceClient
+    .from('tensions')
+    .select('title, raised_by, assigned_to, circle_id')
+    .eq('id', tensionId)
+    .single();
+
+  const { data: commenter } = await serviceClient
+    .from('persons')
+    .select('name')
+    .eq('id', personId)
+    .single();
+
+  if (tension) {
+    const notifMessage = `${commenter?.name || 'Jemand'} hat die Spannung "${tension.title}" kommentiert.`;
+    const notifyIds = new Set<string>();
+
+    if (tension.raised_by && tension.raised_by !== personId) notifyIds.add(tension.raised_by);
+    if (tension.assigned_to && tension.assigned_to !== personId) notifyIds.add(tension.assigned_to);
+
+    for (const recipientId of notifyIds) {
+      await createNotification({
+        personId: recipientId,
+        type: 'TENSION_COMMENTED',
+        title: 'Neuer Kommentar',
+        message: notifMessage,
+        tensionId,
+        circleId: tension.circle_id,
+      });
+    }
+  }
+
+  revalidatePath(`/spannungen/${tensionId}`);
+
+  return { comment };
+}
+
+export async function deleteTensionComment(commentId: string) {
+  const auth = await requireAuth();
+  const serviceClient = createServiceClient();
+
+  // Verify caller owns the comment or is admin
+  const { data: comment } = await serviceClient
+    .from('tension_comments')
+    .select('person_id, tension_id')
+    .eq('id', commentId)
+    .single();
+
+  if (!comment || comment.person_id !== auth.personId) {
+    const isAdmin = await isCurrentUserAdmin();
+    if (!isAdmin) return { error: 'unauthorized' };
+  }
+
+  const { error } = await serviceClient
+    .from('tension_comments')
+    .delete()
+    .eq('id', commentId);
+
+  if (error) {
+    console.error('Error deleting tension comment:', error);
+    return { error: error.message };
+  }
+
+  if (comment) {
+    revalidatePath(`/spannungen/${comment.tension_id}`);
+  }
+
+  return { success: true };
+}
+
+// =====================================================
 // CIRCLES
 // =====================================================
 
@@ -1701,6 +1798,7 @@ const TELEGRAM_ICONS: Record<string, string> = {
   TENSION_CREATED: '⚡',
   TENSION_ASSIGNED: '📌',
   TENSION_RESOLVED: '✅',
+  TENSION_COMMENTED: '💬',
   VORHABEN_CREATED: '🚀',
   VORHABEN_VOLUNTEER: '🙋',
   VORHABEN_SUBTASK_COMPLETED: '✅',
@@ -1885,6 +1983,12 @@ export async function deleteAccount() {
     // Remove volunteer entries
     await serviceClient
       .from('subtask_volunteers')
+      .delete()
+      .eq('person_id', person.id);
+
+    // Delete tension comments
+    await serviceClient
+      .from('tension_comments')
       .delete()
       .eq('person_id', person.id);
 
