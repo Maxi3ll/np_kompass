@@ -102,17 +102,7 @@ export function Sidebar() {
       {/* Brand Header */}
       <div className="flex items-center gap-3 px-6 h-16 border-b border-sidebar-border">
         <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[var(--np-blue)] to-[var(--np-blue-dark)] flex items-center justify-center shadow-sm">
-          <svg
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill="none"
-            className="text-white"
-          >
-            <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="2" />
-            <circle cx="12" cy="12" r="3" fill="currentColor" />
-            <path d="M12 3v4M12 17v4M3 12h4M17 12h4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-          </svg>
+          <span className="text-lg leading-none">🧭</span>
         </div>
         <div>
           <h1 className="text-base font-semibold text-sidebar-foreground tracking-tight">

@@ -212,7 +212,7 @@ export function RightPanel({ myRoles, recentNotifications, nextMeeting, openTens
       {/* Piraten-Tipp */}
       <div className="bg-gradient-to-br from-[var(--np-blue-pale)] to-[var(--np-yellow-pale)] rounded-2xl border border-border/50 p-4">
         <h3 className="text-sm font-semibold text-foreground mb-2 flex items-center gap-2">
-          <span className="text-base">⛵</span>
+          <span className="text-base">🦜</span>
           Piraten-Tipp
         </h3>
         <div className="flex items-start gap-2">
