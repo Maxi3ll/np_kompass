@@ -996,3 +996,21 @@ export async function getUnreadNotificationCount(personId: string): Promise<numb
 
   return count || 0;
 }
+
+export async function getRecentNotifications(personId: string, limit = 5) {
+  const supabase = await createClient();
+
+  const { data, error } = await supabase
+    .from('notifications')
+    .select('id, type, title, message, is_read, created_at')
+    .eq('person_id', personId)
+    .order('created_at', { ascending: false })
+    .limit(limit);
+
+  if (error) {
+    console.error('Error fetching recent notifications:', error);
+    return [];
+  }
+
+  return data || [];
+}

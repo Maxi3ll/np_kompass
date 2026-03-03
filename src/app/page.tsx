@@ -1,8 +1,9 @@
 import Link from "next/link";
 import { Header } from "@/components/navigation/header";
 import { AppShell } from "@/components/layout/app-shell";
-import { getDashboardData } from "@/lib/supabase/queries";
+import { getDashboardData, getRecentNotifications } from "@/lib/supabase/queries";
 import { createClient } from "@/lib/supabase/server";
+import { RightPanel } from "@/components/dashboard/right-panel";
 
 export const revalidate = 60; // Revalidate every 60 seconds
 
@@ -27,7 +28,10 @@ export default async function Home() {
     }
   }
 
-  const dashboardData = await getDashboardData(personId);
+  const [dashboardData, recentNotifications] = await Promise.all([
+    getDashboardData(personId),
+    personId ? getRecentNotifications(personId, 5) : Promise.resolve([]),
+  ]);
   const { myRoles, openTensions, nextMeeting, myActiveProjekte, myVolunteerCount } = dashboardData;
 
   // User display info
@@ -43,7 +47,7 @@ export default async function Home() {
           <div className="absolute inset-0 bg-gradient-to-br from-[var(--np-blue-pale)] via-background to-[var(--np-yellow-pale)] opacity-60" />
           <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-background to-transparent" />
 
-          <div className="relative px-5 pt-6 pb-8 max-w-2xl mx-auto lg:max-w-4xl">
+          <div className="relative px-5 pt-6 pb-8 max-w-2xl mx-auto lg:max-w-4xl xl:max-w-6xl">
             <p className="text-muted-foreground text-sm font-medium">Willkommen zurück</p>
             <h2 className="text-2xl font-bold mt-1 text-foreground">
               Ahoi, {userName.split(" ")[0]}!
@@ -54,7 +58,8 @@ export default async function Home() {
           </div>
         </div>
 
-        <div className="px-5 max-w-2xl mx-auto lg:max-w-4xl space-y-6 -mt-2">
+        <div className="px-5 max-w-2xl mx-auto lg:max-w-4xl xl:max-w-6xl xl:grid xl:grid-cols-[1fr_288px] xl:gap-6 -mt-2">
+        <div className="space-y-6">
           {/* Stats Row */}
           <div className="grid grid-cols-3 gap-3 stagger-fade-in">
             {/* My Roles Card */}
@@ -278,6 +283,14 @@ export default async function Home() {
               ))}
             </div>
           </div>
+        </div>
+
+        <RightPanel
+          myRoles={myRoles}
+          recentNotifications={recentNotifications}
+          nextMeeting={nextMeeting}
+          openTensions={openTensions}
+        />
         </div>
       </main>
 
