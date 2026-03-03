@@ -34,7 +34,7 @@ npx supabase db push  # Apply database migrations
 Server Components fetch data via `src/lib/supabase/queries.ts`. Mutations use Server Actions in `src/lib/supabase/actions.ts` with `revalidatePath()`. Admin actions use service-role client (bypasses RLS). Pages use ISR (30-60s revalidation).
 
 ### Security
-- **Middleware** (`src/middleware.ts`): Checks auth + email allowlist on every request, redirects unauthorized users
+- **Proxy** (`src/proxy.ts`): Checks auth + email allowlist on every request, redirects unauthorized users
 - **Server Actions**: Use `requireAuth()` and `requireAuthAs(personId)` helpers to verify identity (prevents spoofing)
 - **Security Headers** in `next.config.ts`: X-Frame-Options, HSTS, CSP, Permissions-Policy
 - **RLS**: Row-level security on all tables, tightened in migrations 011+013
@@ -71,9 +71,8 @@ src/
 │   │   ├── queries.ts      # All database query functions
 │   │   └── actions.ts      # Server Actions (CRUD, auth, admin, notifications, meetings)
 │   ├── circle-packing.ts   # Circle-packing layout algorithm
-│   ├── telegram.ts         # Telegram bot notification helper
 │   └── utils.ts            # cn() utility (clsx + tailwind-merge)
-├── middleware.ts            # Auth + email allowlist middleware
+├── proxy.ts                # Auth + email allowlist proxy
 └── types/index.ts           # Domain types (Person, Circle, Role, Tension, Meeting, Projekt, etc.)
 ```
 
@@ -108,17 +107,16 @@ Pattern for each page:
 ### Database
 PostgreSQL with RLS. Key tables: `circles`, `roles`, `role_assignments`, `tensions`, `tension_comments`, `projekte`, `projekte_circles`, `subtasks`, `subtask_volunteers`, `subtask_comments`, `meetings`, `meeting_attendees`, `meeting_agenda_items`, `meeting_round_entries`, `meeting_agenda_comments`, `persons`, `families`, `allowed_emails`, `notifications`. Views: `current_role_holders`, `circle_stats` (SECURITY INVOKER).
 
-Migrations 001-015 in `supabase/migrations/`. Use `/database` command for full details.
+Migrations 001-016 in `supabase/migrations/`. Use `/database` command for full details.
 
 ### Auth Flow
 1. Login via email + password (min 8 chars, Supabase Auth)
-2. Middleware checks email against allowlist on every request
+2. Proxy checks email against allowlist on every request
 3. Auth callback auto-links user to `persons` record
 4. Password reset via "Passwort vergessen?" flow
 
 ### Notifications
 - **In-App**: Bell icon in header, lazy-loaded dropdown
-- **Telegram**: Group messages via bot API (per-user opt-out)
 - **Triggers**: Role changes, tension events (incl. comments → all circle members), projekt events
 
 ### Live Meetings
@@ -154,7 +152,7 @@ Real-time meeting facilitation with GlassFrog-style phases. Use `/meetings` comm
 - `src/lib/supabase/queries.ts` - All database query functions
 - `src/lib/supabase/actions.ts` - All Server Actions
 - `src/types/index.ts` - Complete TypeScript domain types
-- `src/middleware.ts` - Auth + allowlist middleware
+- `src/proxy.ts` - Auth + allowlist proxy
 - `next.config.ts` - Security headers configuration
 
 ## Environment Variables
@@ -165,8 +163,6 @@ NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
 SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
 ALLOWED_EMAILS=admin@example.com,user2@example.com
-TELEGRAM_BOT_TOKEN=your-telegram-bot-token     # optional
-TELEGRAM_CHAT_ID=your-telegram-chat-id         # optional
 ```
 
 `ALLOWED_EMAILS` is comma-separated. First email = admin.

@@ -3,7 +3,7 @@ import { createClient } from '@supabase/supabase-js';
 /**
  * Service-role Supabase client that bypasses RLS.
  * Use only in server-side contexts where the user is not yet authenticated
- * (e.g., auth callback, middleware email checks).
+ * (e.g., auth callback, proxy email checks).
  */
 export function createServiceClient() {
   return createClient(

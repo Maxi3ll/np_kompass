@@ -7,8 +7,8 @@ This document covers the security architecture and patterns for development.
 
 ## Security Layers
 
-### 1. Middleware (`src/middleware.ts`)
-Every request passes through middleware that:
+### 1. Proxy (`src/proxy.ts`)
+Every request passes through the proxy that:
 - Refreshes Supabase session if expired
 - Redirects unauthenticated users to `/login`
 - Checks email against allowlist on **every request** (not just login)
