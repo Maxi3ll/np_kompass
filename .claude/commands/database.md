@@ -18,10 +18,12 @@ Migrations in `supabase/migrations/`. Apply with `npx supabase db push`.
 | 007 | `007_multi_holders.sql` | Allow multiple persons per role (drops old unique constraint) |
 | 008 | `008_telegram_optout.sql` | `telegram_notifications` boolean on persons |
 | 009 | `009_tasks.sql` | Old tasks tables (replaced by 010) |
-| 010 | `010_vorhaben.sql` | Vorhaben, subtasks, volunteers, comments tables; drops old tasks |
+| 010 | `010_vorhaben.sql` | Vorhaben (now projekte), subtasks, volunteers, comments tables; drops old tasks |
 | 011 | `011_tighten_rls.sql` | Security: tightens 15 RLS policies (creator/owner enforcement) |
 | 012 | `012_live_meetings.sql` | Live meetings: status, phases, round entries, agenda comments, realtime |
 | 013 | `013_security_audit_fixes.sql` | Views → SECURITY INVOKER, function search_path fixes, meetings INSERT RLS |
+| 014 | `014_tension_comments.sql` | Tension comments table |
+| 015 | `015_rename_vorhaben_to_projekte.sql` | Rename vorhaben → projekte (tables, columns, FK constraints, RLS, notification types) |
 
 ## Tables
 
@@ -33,12 +35,12 @@ Migrations in `supabase/migrations/`. Apply with `npx supabase db push`.
 | `role_assignments` | id, role_id, person_id, valid_from, valid_until | UNIQUE(role_id, person_id, valid_until), supports multiple holders |
 | `tensions` | id, title, description, status, priority, circle_id, raised_by, assigned_to | Status: NEW, IN_PROGRESS, RESOLVED |
 
-### Vorhaben (Initiatives)
+### Projekte (Projects)
 | Table | Key Columns | Notes |
 |-------|-------------|-------|
-| `vorhaben` | id, title, description, status, coordinator_id, created_by | Status: OPEN, IN_PROGRESS, DONE |
-| `vorhaben_circles` | vorhaben_id, circle_id | Many-to-many link |
-| `subtasks` | id, vorhaben_id, title, status, contact_person_id, created_by | Status: OPEN, IN_PROGRESS, DONE |
+| `projekte` | id, title, description, status, coordinator_id, created_by | Status: OPEN, IN_PROGRESS, DONE |
+| `projekte_circles` | projekt_id, circle_id | Many-to-many link |
+| `subtasks` | id, projekt_id, title, status, contact_person_id, created_by | Status: OPEN, IN_PROGRESS, DONE |
 | `subtask_volunteers` | id, subtask_id, person_id | "Ich helfe mit!" feature |
 | `subtask_comments` | id, subtask_id, person_id, content | Comments on subtasks |
 
@@ -99,5 +101,5 @@ Exceptions:
 ```
 ROLE_ASSIGNED, ROLE_UNASSIGNED,
 TENSION_CREATED, TENSION_ASSIGNED, TENSION_RESOLVED,
-VORHABEN_CREATED, VORHABEN_VOLUNTEER, VORHABEN_SUBTASK_COMPLETED, VORHABEN_COMMENTED
+PROJEKT_CREATED, PROJEKT_VOLUNTEER, PROJEKT_SUBTASK_COMPLETED, PROJEKT_COMMENTED
 ```

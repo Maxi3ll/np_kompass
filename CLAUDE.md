@@ -8,7 +8,7 @@ Use `/meetings`, `/security`, `/database`, or `/deploy` commands for detailed fe
 np-kompass is a governance tool for Neckarpiraten e.V., a Stuttgart-based parent-child initiative (~40 families). It implements a Holacracy-light model with four core modules:
 - **Rollen-Wiki**: Role definitions with domains, accountabilities, and current holders
 - **Spannungs-Log**: Tensions/issues that need resolution within circles, with comments
-- **Vorhaben**: Initiatives/projects with subtasks, volunteers, and comments
+- **Projekte**: Projects with subtasks, volunteers, and comments
 - **Termin-Board**: Meetings with live facilitation (real-time phases: Check-in, Agenda, Closing)
 
 Target users are busy parents with mixed technical expertise - the app must be simple and mobile-friendly.
@@ -47,7 +47,7 @@ src/
 │   ├── kreise/             # Circles (list + [id] detail + admin CRUD + SVG visualization)
 │   ├── rollen/             # Roles (list + [id] detail + admin CRUD + assign)
 │   ├── spannungen/         # Tensions (list + [id] detail + neu)
-│   ├── vorhaben/           # Initiatives (list + [id] + unteraufgaben/[subId] + neu)
+│   ├── projekte/           # Projects (list + [id] + unteraufgaben/[subId] + neu)
 │   ├── meetings/           # Meetings (list + [id] detail + neu + live meeting components)
 │   │   └── [id]/           # Meeting detail with live-meeting.tsx + components/ + live-phases/
 │   ├── personen/           # Person profiles ([id] with roles, contact, family)
@@ -74,7 +74,7 @@ src/
 │   ├── telegram.ts         # Telegram bot notification helper
 │   └── utils.ts            # cn() utility (clsx + tailwind-merge)
 ├── middleware.ts            # Auth + email allowlist middleware
-└── types/index.ts           # Domain types (Person, Circle, Role, Tension, Meeting, Vorhaben, etc.)
+└── types/index.ts           # Domain types (Person, Circle, Role, Tension, Meeting, Projekt, etc.)
 ```
 
 ### Layout Architecture
@@ -100,15 +100,15 @@ Pattern for each page:
 - **Kreis** (Circle): Organizational unit with purpose and parent hierarchy
 - **Rolle** (Role): Function within a circle (supports multiple holders)
 - **Spannung** (Tension): Issue/improvement to be resolved
-- **Vorhaben** (Initiative): Project with coordinator, circles, subtasks, volunteers, comments
+- **Projekt** (Project): Project with coordinator, circles, subtasks, volunteers, comments
 - **Termin** (Meeting): Scheduled or live meeting with phases, agenda, protocol
 - **Familie** (Family): Member family unit
 - **Person**: Member with auth, avatar color, family link
 
 ### Database
-PostgreSQL with RLS. Key tables: `circles`, `roles`, `role_assignments`, `tensions`, `tension_comments`, `vorhaben`, `vorhaben_circles`, `subtasks`, `subtask_volunteers`, `subtask_comments`, `meetings`, `meeting_attendees`, `meeting_agenda_items`, `meeting_round_entries`, `meeting_agenda_comments`, `persons`, `families`, `allowed_emails`, `notifications`. Views: `current_role_holders`, `circle_stats` (SECURITY INVOKER).
+PostgreSQL with RLS. Key tables: `circles`, `roles`, `role_assignments`, `tensions`, `tension_comments`, `projekte`, `projekte_circles`, `subtasks`, `subtask_volunteers`, `subtask_comments`, `meetings`, `meeting_attendees`, `meeting_agenda_items`, `meeting_round_entries`, `meeting_agenda_comments`, `persons`, `families`, `allowed_emails`, `notifications`. Views: `current_role_holders`, `circle_stats` (SECURITY INVOKER).
 
-Migrations 001-014 in `supabase/migrations/`. Use `/database` command for full details.
+Migrations 001-015 in `supabase/migrations/`. Use `/database` command for full details.
 
 ### Auth Flow
 1. Login via email + password (min 8 chars, Supabase Auth)
@@ -119,7 +119,7 @@ Migrations 001-014 in `supabase/migrations/`. Use `/database` command for full d
 ### Notifications
 - **In-App**: Bell icon in header, lazy-loaded dropdown
 - **Telegram**: Group messages via bot API (per-user opt-out)
-- **Triggers**: Role changes, tension events (incl. comments → all circle members), vorhaben events
+- **Triggers**: Role changes, tension events (incl. comments → all circle members), projekt events
 
 ### Live Meetings
 Real-time meeting facilitation with GlassFrog-style phases. Use `/meetings` command for full details.

@@ -2,18 +2,18 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Header } from "@/components/navigation/header";
 import { AppShell } from "@/components/layout/app-shell";
-import { getVorhabenById, getCircles } from "@/lib/supabase/queries";
+import { getProjektById, getCircles } from "@/lib/supabase/queries";
 import { getPersonsList } from "@/lib/supabase/actions";
 import { createClient } from "@/lib/supabase/server";
-import { VorhabenActions } from "./vorhaben-actions";
+import { ProjektActions } from "./projekt-actions";
 import { SubtaskCreateDialog } from "./subtask-create-dialog";
 
 export const revalidate = 30;
 
 const STATUS_CONFIG = {
-  OPEN: { label: 'Offen', color: 'bg-[var(--status-new)]', textColor: 'text-white', description: 'Dieses Vorhaben wurde noch nicht begonnen.' },
-  IN_PROGRESS: { label: 'In Umsetzung', color: 'bg-[var(--status-in-progress)]', textColor: 'text-[#5a4a00]', description: 'An diesem Vorhaben wird gearbeitet.' },
-  DONE: { label: 'Abgeschlossen', color: 'bg-[var(--status-resolved)]', textColor: 'text-white', description: 'Dieses Vorhaben wurde abgeschlossen.' },
+  OPEN: { label: 'Offen', color: 'bg-[var(--status-new)]', textColor: 'text-white', description: 'Dieses Projekt wurde noch nicht begonnen.' },
+  IN_PROGRESS: { label: 'In Umsetzung', color: 'bg-[var(--status-in-progress)]', textColor: 'text-[#5a4a00]', description: 'An diesem Projekt wird gearbeitet.' },
+  DONE: { label: 'Abgeschlossen', color: 'bg-[var(--status-resolved)]', textColor: 'text-white', description: 'Dieses Projekt wurde abgeschlossen.' },
 };
 
 const SUBTASK_STATUS = {
@@ -26,7 +26,7 @@ interface PageProps {
   params: Promise<{ id: string }>;
 }
 
-export default async function VorhabenDetailPage({ params }: PageProps) {
+export default async function ProjektDetailPage({ params }: PageProps) {
   const { id } = await params;
 
   const supabase = await createClient();
@@ -42,27 +42,27 @@ export default async function VorhabenDetailPage({ params }: PageProps) {
     personId = person?.id || null;
   }
 
-  const [vorhaben, personsResult, allCircles] = await Promise.all([
-    getVorhabenById(id),
+  const [projekt, personsResult, allCircles] = await Promise.all([
+    getProjektById(id),
     getPersonsList(),
     getCircles(),
   ]);
 
-  if (!vorhaben) {
+  if (!projekt) {
     notFound();
   }
 
-  const status = STATUS_CONFIG[vorhaben.status as keyof typeof STATUS_CONFIG] || STATUS_CONFIG.OPEN;
+  const status = STATUS_CONFIG[projekt.status as keyof typeof STATUS_CONFIG] || STATUS_CONFIG.OPEN;
   const persons = personsResult.persons || [];
   const displayCircles = allCircles.filter((c: any) => c.parent_circle_id !== null);
 
-  const subtaskProgress = vorhaben.subtask_count > 0
-    ? Math.round((vorhaben.subtask_done_count / vorhaben.subtask_count) * 100)
+  const subtaskProgress = projekt.subtask_count > 0
+    ? Math.round((projekt.subtask_done_count / projekt.subtask_count) * 100)
     : 0;
 
   return (
     <AppShell>
-      <Header title="Vorhaben" showBack backHref="/vorhaben" />
+      <Header title="Projekte" showBack backHref="/projekte" />
 
       <main className="flex-1 pb-24 lg:pb-8 page-enter">
         {/* Status Header */}
@@ -78,25 +78,25 @@ export default async function VorhabenDetailPage({ params }: PageProps) {
         <div className="px-5 max-w-2xl mx-auto lg:max-w-4xl mt-4 space-y-4">
           {/* Title & Description */}
           <div className="bg-card rounded-2xl shadow-card border border-border/50 p-5">
-            <h1 className="text-xl font-bold text-foreground">{vorhaben.title}</h1>
-            {vorhaben.short_description && (
+            <h1 className="text-xl font-bold text-foreground">{projekt.title}</h1>
+            {projekt.short_description && (
               <p className="text-sm text-primary font-medium mt-2">
-                {vorhaben.short_description}
+                {projekt.short_description}
               </p>
             )}
-            {vorhaben.description && (
+            {projekt.description && (
               <p className="text-muted-foreground mt-3 leading-relaxed whitespace-pre-wrap">
-                {vorhaben.description}
+                {projekt.description}
               </p>
             )}
           </div>
 
           {/* Circle Badges */}
-          {vorhaben.circles && vorhaben.circles.length > 0 && (
+          {projekt.circles && projekt.circles.length > 0 && (
             <div className="bg-card rounded-2xl shadow-card border border-border/50 p-4">
               <p className="text-xs text-muted-foreground mb-2">Beteiligte Kreise</p>
               <div className="flex flex-wrap gap-2">
-                {vorhaben.circles.map((circle: any) => (
+                {projekt.circles.map((circle: any) => (
                   <Link
                     key={circle.id}
                     href={`/kreise/${circle.id}`}
@@ -114,21 +114,21 @@ export default async function VorhabenDetailPage({ params }: PageProps) {
           )}
 
           {/* Coordinator */}
-          {vorhaben.coordinator && (
-            <Link href={`/personen/${vorhaben.coordinator.id}`}>
+          {projekt.coordinator && (
+            <Link href={`/personen/${projekt.coordinator.id}`}>
               <div className="bg-card rounded-2xl shadow-card border border-border/50 p-4 transition-all card-lift active:scale-[0.98]">
                 <p className="text-xs text-muted-foreground mb-2">Koordinator:in</p>
                 <div className="flex items-center gap-3">
                   <div
                     className="w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-medium"
-                    style={{ backgroundColor: vorhaben.coordinator.avatar_color || '#4A90D9' }}
+                    style={{ backgroundColor: projekt.coordinator.avatar_color || '#4A90D9' }}
                   >
-                    {vorhaben.coordinator.name?.split(' ').map((n: string) => n[0]).join('').slice(0, 2) || '?'}
+                    {projekt.coordinator.name?.split(' ').map((n: string) => n[0]).join('').slice(0, 2) || '?'}
                   </div>
                   <div className="flex-1">
-                    <p className="font-medium text-foreground">{vorhaben.coordinator.name}</p>
-                    {vorhaben.coordinator.email && (
-                      <p className="text-xs text-muted-foreground">{vorhaben.coordinator.email}</p>
+                    <p className="font-medium text-foreground">{projekt.coordinator.name}</p>
+                    {projekt.coordinator.email && (
+                      <p className="text-xs text-muted-foreground">{projekt.coordinator.email}</p>
                     )}
                   </div>
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-muted-foreground">
@@ -140,11 +140,11 @@ export default async function VorhabenDetailPage({ params }: PageProps) {
           )}
 
           {/* Dates */}
-          {(vorhaben.start_date || vorhaben.end_date) && (
+          {(projekt.start_date || projekt.end_date) && (
             <div className="bg-card rounded-2xl shadow-card border border-border/50 p-4">
               <p className="text-xs text-muted-foreground mb-3">Zeitraum</p>
               <div className="flex gap-4">
-                {vorhaben.start_date && (
+                {projekt.start_date && (
                   <div className="flex items-center gap-2">
                     <div className="w-8 h-8 rounded-lg bg-[var(--np-blue-light)] flex items-center justify-center">
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--np-blue)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -157,12 +157,12 @@ export default async function VorhabenDetailPage({ params }: PageProps) {
                     <div>
                       <p className="text-[10px] text-muted-foreground">Start</p>
                       <p className="text-sm font-medium text-foreground">
-                        {new Date(vorhaben.start_date).toLocaleDateString('de-DE', { day: 'numeric', month: 'short', year: 'numeric' })}
+                        {new Date(projekt.start_date).toLocaleDateString('de-DE', { day: 'numeric', month: 'short', year: 'numeric' })}
                       </p>
                     </div>
                   </div>
                 )}
-                {vorhaben.end_date && (
+                {projekt.end_date && (
                   <div className="flex items-center gap-2">
                     <div className="w-8 h-8 rounded-lg bg-[var(--np-yellow-light)] flex items-center justify-center">
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--np-yellow-dark)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -175,7 +175,7 @@ export default async function VorhabenDetailPage({ params }: PageProps) {
                     <div>
                       <p className="text-[10px] text-muted-foreground">Ende</p>
                       <p className="text-sm font-medium text-foreground">
-                        {new Date(vorhaben.end_date).toLocaleDateString('de-DE', { day: 'numeric', month: 'short', year: 'numeric' })}
+                        {new Date(projekt.end_date).toLocaleDateString('de-DE', { day: 'numeric', month: 'short', year: 'numeric' })}
                       </p>
                     </div>
                   </div>
@@ -186,19 +186,19 @@ export default async function VorhabenDetailPage({ params }: PageProps) {
 
           {/* Action Buttons */}
           <div className="pt-2">
-            <VorhabenActions
-              vorhabenId={vorhaben.id}
-              currentStatus={vorhaben.status}
+            <ProjektActions
+              projektId={projekt.id}
+              currentStatus={projekt.status}
               personId={personId}
-              createdBy={vorhaben.created_by}
-              coordinatorId={vorhaben.coordinator_id}
-              currentTitle={vorhaben.title}
-              currentShortDescription={vorhaben.short_description}
-              currentDescription={vorhaben.description}
-              currentCoordinatorId={vorhaben.coordinator_id}
-              currentCircleIds={vorhaben.circles?.map((c: any) => c.id) || []}
-              currentStartDate={vorhaben.start_date}
-              currentEndDate={vorhaben.end_date}
+              createdBy={projekt.created_by}
+              coordinatorId={projekt.coordinator_id}
+              currentTitle={projekt.title}
+              currentShortDescription={projekt.short_description}
+              currentDescription={projekt.description}
+              currentCoordinatorId={projekt.coordinator_id}
+              currentCircleIds={projekt.circles?.map((c: any) => c.id) || []}
+              currentStartDate={projekt.start_date}
+              currentEndDate={projekt.end_date}
               circles={displayCircles}
               persons={persons}
             />
@@ -208,9 +208,9 @@ export default async function VorhabenDetailPage({ params }: PageProps) {
           <div className="pt-2">
             <div className="flex items-center justify-between mb-3">
               <h3 className="text-sm font-semibold text-foreground">
-                Unteraufgaben ({vorhaben.subtask_count || 0})
+                Unteraufgaben ({projekt.subtask_count || 0})
               </h3>
-              {vorhaben.subtask_count > 0 && (
+              {projekt.subtask_count > 0 && (
                 <span className="text-xs text-muted-foreground">
                   {subtaskProgress}% erledigt
                 </span>
@@ -218,7 +218,7 @@ export default async function VorhabenDetailPage({ params }: PageProps) {
             </div>
 
             {/* Progress Bar */}
-            {vorhaben.subtask_count > 0 && (
+            {projekt.subtask_count > 0 && (
               <div className="w-full h-2 bg-muted rounded-full mb-4 overflow-hidden">
                 <div
                   className="h-full bg-[var(--status-resolved)] rounded-full transition-all duration-500"
@@ -229,12 +229,12 @@ export default async function VorhabenDetailPage({ params }: PageProps) {
 
             {/* Subtask List */}
             <div className="space-y-2">
-              {(vorhaben.subtasks || []).map((subtask: any) => {
+              {(projekt.subtasks || []).map((subtask: any) => {
                 const st = SUBTASK_STATUS[subtask.status as keyof typeof SUBTASK_STATUS] || SUBTASK_STATUS.OPEN;
                 return (
                   <Link
                     key={subtask.id}
-                    href={`/vorhaben/${vorhaben.id}/unteraufgaben/${subtask.id}`}
+                    href={`/projekte/${projekt.id}/unteraufgaben/${subtask.id}`}
                     className="block"
                   >
                     <div className="bg-card rounded-xl border border-border/50 p-3 transition-all hover:bg-muted/30 active:scale-[0.98]">
@@ -273,7 +273,7 @@ export default async function VorhabenDetailPage({ params }: PageProps) {
             {personId && (
               <div className="mt-3">
                 <SubtaskCreateDialog
-                  vorhabenId={vorhaben.id}
+                  projektId={projekt.id}
                   personId={personId}
                   persons={persons}
                 />

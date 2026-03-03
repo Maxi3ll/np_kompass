@@ -9,7 +9,7 @@ interface SearchResults {
   roles: any[];
   tensions: any[];
   persons: any[];
-  vorhaben: any[];
+  projekte: any[];
 }
 
 const TENSION_STATUS: Record<string, { label: string; class: string }> = {
@@ -19,7 +19,7 @@ const TENSION_STATUS: Record<string, { label: string; class: string }> = {
   ESCALATED: { label: "Eskaliert", class: "badge-escalated" },
 };
 
-const VORHABEN_STATUS: Record<string, { label: string; class: string }> = {
+const PROJEKT_STATUS: Record<string, { label: string; class: string }> = {
   OPEN: { label: "Offen", class: "badge-new" },
   IN_PROGRESS: { label: "In Umsetzung", class: "badge-in-progress" },
   DONE: { label: "Abgeschlossen", class: "badge-resolved" },
@@ -57,7 +57,7 @@ export function SearchClient() {
   }, [query]);
 
   const totalResults = results
-    ? results.circles.length + results.roles.length + results.tensions.length + results.persons.length + results.vorhaben.length
+    ? results.circles.length + results.roles.length + results.tensions.length + results.persons.length + results.projekte.length
     : 0;
 
   return (
@@ -85,7 +85,7 @@ export function SearchClient() {
           type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Kreise, Rollen, Spannungen, Vorhaben, Personen..."
+          placeholder="Kreise, Rollen, Spannungen, Projekte, Personen..."
           className="w-full pl-12 pr-4 py-3.5 rounded-2xl border border-border bg-card text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary shadow-card text-sm"
         />
         {query && (
@@ -121,7 +121,7 @@ export function SearchClient() {
             </svg>
           </div>
           <p className="text-sm text-muted-foreground">
-            Durchsuche Kreise, Rollen, Spannungen, Vorhaben und Personen
+            Durchsuche Kreise, Rollen, Spannungen, Projekte und Personen
           </p>
         </div>
       )}
@@ -217,13 +217,13 @@ export function SearchClient() {
             </ResultSection>
           )}
 
-          {/* Vorhaben */}
-          {results.vorhaben.length > 0 && (
-            <ResultSection title="Vorhaben" count={results.vorhaben.length}>
-              {results.vorhaben.map((v: any) => (
+          {/* Projekte */}
+          {results.projekte.length > 0 && (
+            <ResultSection title="Projekte" count={results.projekte.length}>
+              {results.projekte.map((v: any) => (
                 <Link
                   key={v.id}
-                  href={`/vorhaben/${v.id}`}
+                  href={`/projekte/${v.id}`}
                   className="flex items-center gap-3 p-3 rounded-xl bg-card border border-border/50 hover:bg-muted/50 transition-colors"
                 >
                   <div className="w-10 h-10 rounded-xl flex items-center justify-center text-lg flex-shrink-0 bg-[var(--np-blue-light)]">
@@ -235,8 +235,8 @@ export function SearchClient() {
                   <div className="flex-1 min-w-0">
                     <p className="font-medium text-sm text-foreground truncate">{v.title}</p>
                     <div className="flex items-center gap-2 mt-0.5">
-                      <span className={`inline-flex text-[10px] px-1.5 py-0.5 rounded-full font-medium ${VORHABEN_STATUS[v.status]?.class || ""}`}>
-                        {VORHABEN_STATUS[v.status]?.label || v.status}
+                      <span className={`inline-flex text-[10px] px-1.5 py-0.5 rounded-full font-medium ${PROJEKT_STATUS[v.status]?.class || ""}`}>
+                        {PROJEKT_STATUS[v.status]?.label || v.status}
                       </span>
                     </div>
                   </div>

@@ -27,12 +27,12 @@ interface Person {
 }
 
 interface SubtaskCreateDialogProps {
-  vorhabenId: string;
+  projektId: string;
   personId: string;
   persons: Person[];
 }
 
-export function SubtaskCreateDialog({ vorhabenId, personId, persons }: SubtaskCreateDialogProps) {
+export function SubtaskCreateDialog({ projektId, personId, persons }: SubtaskCreateDialogProps) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -54,7 +54,7 @@ export function SubtaskCreateDialog({ vorhabenId, personId, persons }: SubtaskCr
     setIsSubmitting(true);
 
     const result = await createSubtask({
-      vorhabenId,
+      projektId,
       title: title.trim(),
       description: description.trim() || undefined,
       contactPersonId: contactPersonId || undefined,

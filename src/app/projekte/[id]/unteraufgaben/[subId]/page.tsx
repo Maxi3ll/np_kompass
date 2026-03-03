@@ -58,7 +58,7 @@ export default async function SubtaskDetailPage({ params }: PageProps) {
 
   return (
     <AppShell>
-      <Header title="Unteraufgabe" showBack backHref={`/vorhaben/${id}`} />
+      <Header title="Unteraufgabe" showBack backHref={`/projekte/${id}`} />
 
       <main className="flex-1 pb-24 lg:pb-8 page-enter">
         {/* Status Header */}
@@ -74,8 +74,8 @@ export default async function SubtaskDetailPage({ params }: PageProps) {
         <div className="px-5 max-w-2xl mx-auto lg:max-w-4xl mt-4 space-y-4">
           {/* Breadcrumb */}
           <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-            <Link href={`/vorhaben/${id}`} className="hover:text-foreground transition-colors">
-              {(subtask.vorhaben as any)?.title || 'Vorhaben'}
+            <Link href={`/projekte/${id}`} className="hover:text-foreground transition-colors">
+              {(subtask.projekt as any)?.title || 'Projekt'}
             </Link>
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <polyline points="9 18 15 12 9 6" />

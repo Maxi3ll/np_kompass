@@ -18,7 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { updateVorhaben } from "@/lib/supabase/actions";
+import { updateProjekt } from "@/lib/supabase/actions";
 
 interface Person {
   id: string;
@@ -32,8 +32,8 @@ interface Circle {
   icon?: string;
 }
 
-interface VorhabenActionsProps {
-  vorhabenId: string;
+interface ProjektActionsProps {
+  projektId: string;
   currentStatus: string;
   personId?: string | null;
   createdBy?: string | null;
@@ -49,8 +49,8 @@ interface VorhabenActionsProps {
   persons?: Person[];
 }
 
-export function VorhabenActions({
-  vorhabenId,
+export function ProjektActions({
+  projektId,
   currentStatus,
   personId,
   createdBy,
@@ -64,7 +64,7 @@ export function VorhabenActions({
   currentEndDate,
   circles = [],
   persons = [],
-}: VorhabenActionsProps) {
+}: ProjektActionsProps) {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
@@ -83,7 +83,7 @@ export function VorhabenActions({
 
   const handleAction = async (status: 'OPEN' | 'IN_PROGRESS' | 'DONE') => {
     setIsSubmitting(true);
-    await updateVorhaben({ id: vorhabenId, status });
+    await updateProjekt({ id: projektId, status });
     router.refresh();
     setIsSubmitting(false);
   };
@@ -119,8 +119,8 @@ export function VorhabenActions({
 
     setIsSubmitting(true);
 
-    const result = await updateVorhaben({
-      id: vorhabenId,
+    const result = await updateProjekt({
+      id: projektId,
       title: title.trim(),
       shortDescription: shortDescription.trim() || null,
       description: description.trim() || null,
@@ -206,7 +206,7 @@ export function VorhabenActions({
       <Dialog open={editOpen} onOpenChange={setEditOpen}>
         <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Vorhaben bearbeiten</DialogTitle>
+            <DialogTitle>Projekt bearbeiten</DialogTitle>
           </DialogHeader>
 
           <form onSubmit={handleEditSubmit} className="space-y-5 pt-2">
@@ -217,7 +217,7 @@ export function VorhabenActions({
               </label>
               <Input
                 id="edit-title"
-                placeholder="Wie heißt das Vorhaben?"
+                placeholder="Wie heißt das Projekt?"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 className="h-12 rounded-xl"
@@ -235,7 +235,7 @@ export function VorhabenActions({
               </label>
               <Input
                 id="edit-shortDescription"
-                placeholder="Ein Satz, der das Vorhaben zusammenfasst (optional)"
+                placeholder="Ein Satz, der das Projekt zusammenfasst (optional)"
                 value={shortDescription}
                 onChange={(e) => setShortDescription(e.target.value)}
                 className="h-12 rounded-xl"
@@ -253,7 +253,7 @@ export function VorhabenActions({
               </label>
               <Textarea
                 id="edit-description"
-                placeholder="Beschreibe das Vorhaben genauer... (optional)"
+                placeholder="Beschreibe das Projekt genauer... (optional)"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 className="min-h-[120px] rounded-xl resize-none"
@@ -271,7 +271,7 @@ export function VorhabenActions({
               </label>
               <Select value={editCoordinatorId} onValueChange={setEditCoordinatorId}>
                 <SelectTrigger className="h-12 rounded-xl w-full">
-                  <SelectValue placeholder="Wer koordiniert das Vorhaben? (optional)" />
+                  <SelectValue placeholder="Wer koordiniert das Projekt? (optional)" />
                 </SelectTrigger>
                 <SelectContent>
                   {persons.map((person) => (

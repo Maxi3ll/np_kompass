@@ -7,10 +7,10 @@ Governance-Tool for **Neckarpiraten e.V.**, a Stuttgart-based parent-child initi
 - **Kreise** (Circles) - Organizational units with interactive SVG circle-packing visualization (GlassFrog-style), drill-down navigation, and stats
 - **Rollen** (Roles) - Role definitions with domains, accountabilities, and multiple holders per role
 - **Spannungen** (Tensions) - Issue tracking with status, priority, and circle assignment
-- **Vorhaben** (Initiatives) - Projects with coordinator, linked circles, subtasks, volunteers ("Ich helfe mit!"), and comments
+- **Projekte** (Projects) - Projects with coordinator, linked circles, subtasks, volunteers ("Ich helfe mit!"), and comments
 - **Termine** (Meetings) - Meeting planning with live facilitation: real-time phases (Check-in, Agenda, Closing), facilitator controls, and auto-generated protocols
 - **Personen-Profile** - Public person profiles with avatar, roles, contact info, and family
-- **Suche** - Global search across circles, roles, tensions, vorhaben, and persons
+- **Suche** - Global search across circles, roles, tensions, projekte, and persons
 - **Benachrichtigungen** - In-app notifications + Telegram group messages (with per-user opt-out)
 - **Profil** - User profile with editable name, avatar color, Telegram toggle, data export (DSGVO), and account deletion
 - **Admin** - Inline admin actions for managing circles, roles, assignments, and email allowlist
@@ -68,7 +68,7 @@ npm run lint     # Run ESLint
 
 ```
 src/
-├── app/            # Pages (kreise, rollen, spannungen, vorhaben, meetings, personen, suche, profil, login)
+├── app/            # Pages (kreise, rollen, spannungen, projekte, meetings, personen, suche, profil, login)
 ├── components/
 │   ├── layout/     # AppShell, UserContext
 │   ├── navigation/ # Header, Sidebar, BottomNav, NotificationBell
@@ -84,7 +84,7 @@ src/
 
 ## Database
 
-13 migrations in `supabase/migrations/`. Key tables: `circles`, `roles`, `role_assignments`, `tensions`, `vorhaben`, `subtasks`, `meetings`, `meeting_attendees`, `meeting_agenda_items`, `meeting_round_entries`, `persons`, `families`, `allowed_emails`, `notifications`.
+15 migrations in `supabase/migrations/`. Key tables: `circles`, `roles`, `role_assignments`, `tensions`, `projekte`, `subtasks`, `meetings`, `meeting_attendees`, `meeting_agenda_items`, `meeting_round_entries`, `persons`, `families`, `allowed_emails`, `notifications`.
 
 The database contains the real Neckarpiraten organizational structure: 10 circles and 43 roles. Roles support multiple simultaneous holders. Meetings support real-time live facilitation with phase-based workflows.
 

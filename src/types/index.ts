@@ -188,16 +188,16 @@ export interface ChecklistCompletion {
   notes?: string;
 }
 
-// ============ Vorhaben (Initiatives) ============
+// ============ Projekte (Initiatives) ============
 
-export type VorhabenStatus = 'OPEN' | 'IN_PROGRESS' | 'DONE';
+export type ProjektStatus = 'OPEN' | 'IN_PROGRESS' | 'DONE';
 
-export interface Vorhaben {
+export interface Projekt {
   id: string;
   title: string;
   short_description?: string;
   description?: string;
-  status: VorhabenStatus;
+  status: ProjektStatus;
   start_date?: string;
   end_date?: string;
   coordinator_id?: string;
@@ -206,7 +206,7 @@ export interface Vorhaben {
   updated_at: string;
 }
 
-export interface VorhabenWithDetails extends Vorhaben {
+export interface ProjektWithDetails extends Projekt {
   coordinator?: Person;
   created_by_person?: Person;
   circles?: Array<{ id: string; name: string; color?: string; icon?: string }>;
@@ -216,10 +216,10 @@ export interface VorhabenWithDetails extends Vorhaben {
 
 export interface Subtask {
   id: string;
-  vorhaben_id: string;
+  projekt_id: string;
   title: string;
   description?: string;
-  status: VorhabenStatus;
+  status: ProjektStatus;
   contact_person_id?: string;
   created_by?: string;
   created_at: string;
@@ -277,10 +277,10 @@ export type NotificationType =
   | 'TENSION_ASSIGNED'
   | 'TENSION_RESOLVED'
   | 'TENSION_COMMENTED'
-  | 'VORHABEN_CREATED'
-  | 'VORHABEN_VOLUNTEER'
-  | 'VORHABEN_SUBTASK_COMPLETED'
-  | 'VORHABEN_COMMENTED';
+  | 'PROJEKT_CREATED'
+  | 'PROJEKT_VOLUNTEER'
+  | 'PROJEKT_SUBTASK_COMPLETED'
+  | 'PROJEKT_COMMENTED';
 
 export interface AppNotification {
   id: string;
@@ -290,7 +290,7 @@ export interface AppNotification {
   message: string;
   role_id?: string;
   tension_id?: string;
-  vorhaben_id?: string;
+  projekt_id?: string;
   circle_id?: string;
   is_read: boolean;
   read_at?: string;
@@ -324,7 +324,7 @@ export const PRIORITY_CONFIG = {
   HIGH: { label: 'Hoch', color: 'text-red-600' },
 } as const;
 
-export const VORHABEN_STATUS_CONFIG = {
+export const PROJEKT_STATUS_CONFIG = {
   OPEN: { label: 'Offen', color: 'bg-[var(--status-new)] text-white' },
   IN_PROGRESS: { label: 'In Umsetzung', color: 'bg-[var(--status-in-progress)] text-gray-900' },
   DONE: { label: 'Abgeschlossen', color: 'bg-[var(--status-resolved)] text-white' },

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Header } from "@/components/navigation/header";
 import { AppShell } from "@/components/layout/app-shell";
-import { getVorhaben } from "@/lib/supabase/queries";
+import { getProjekte } from "@/lib/supabase/queries";
 
 export const revalidate = 30;
 
@@ -15,48 +15,48 @@ interface PageProps {
   searchParams: Promise<{ status?: string }>;
 }
 
-export default async function VorhabenPage({ searchParams }: PageProps) {
+export default async function ProjektePage({ searchParams }: PageProps) {
   const params = await searchParams;
-  const allVorhaben = await getVorhaben();
+  const allProjekte = await getProjekte();
 
   // Status counts
   const statusCounts = {
-    all: allVorhaben.length,
-    OPEN: allVorhaben.filter((v: any) => v.status === 'OPEN').length,
-    IN_PROGRESS: allVorhaben.filter((v: any) => v.status === 'IN_PROGRESS').length,
-    DONE: allVorhaben.filter((v: any) => v.status === 'DONE').length,
+    all: allProjekte.length,
+    OPEN: allProjekte.filter((v: any) => v.status === 'OPEN').length,
+    IN_PROGRESS: allProjekte.filter((v: any) => v.status === 'IN_PROGRESS').length,
+    DONE: allProjekte.filter((v: any) => v.status === 'DONE').length,
   };
 
-  const vorhaben = params.status
-    ? allVorhaben.filter((v: any) => v.status === params.status)
-    : allVorhaben;
+  const projekte = params.status
+    ? allProjekte.filter((v: any) => v.status === params.status)
+    : allProjekte;
 
   const buildHref = (status?: string) => {
-    return `/vorhaben${status ? `?status=${status}` : ''}`;
+    return `/projekte${status ? `?status=${status}` : ''}`;
   };
 
   return (
     <AppShell>
-      <Header title="Vorhaben" showBack backHref="/" />
+      <Header title="Projekte" showBack backHref="/" />
 
       <main className="flex-1 pb-24 lg:pb-8 page-enter">
         {/* Hero Section */}
         <div className="px-5 pt-6 pb-6 max-w-2xl mx-auto lg:max-w-4xl">
           <h1 className="text-2xl lg:text-3xl font-bold font-display text-foreground">
-            Vorhaben
+            Projekte
           </h1>
           <p className="text-sm text-muted-foreground mt-2">
-            Vorhaben sind zeitlich begrenzte Themen, die mehrere Aufgaben betreffen und gemeinsam umgesetzt werden.
+            Projekte sind zeitlich begrenzte Themen, die mehrere Aufgaben betreffen und gemeinsam umgesetzt werden.
           </p>
           <Link
-            href="/vorhaben/neu"
+            href="/projekte/neu"
             className="mt-4 inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-primary text-primary-foreground font-semibold text-sm transition-all hover:bg-primary/90 active:scale-[0.98] shadow-sm"
           >
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <line x1="12" y1="5" x2="12" y2="19" />
               <line x1="5" y1="12" x2="19" y2="12" />
             </svg>
-            Neues Vorhaben
+            Neues Projekt
           </Link>
         </div>
 
@@ -111,17 +111,17 @@ export default async function VorhabenPage({ searchParams }: PageProps) {
           </div>
         </div>
 
-        {/* Vorhaben List */}
+        {/* Projekte List */}
         <div className="px-5 max-w-2xl mx-auto lg:max-w-4xl">
           <div className="space-y-3 stagger-fade-in">
-            {vorhaben.map((v: any) => {
+            {projekte.map((v: any) => {
               const status = STATUS_CONFIG[v.status as keyof typeof STATUS_CONFIG] || STATUS_CONFIG.OPEN;
               const subtaskProgress = v.subtask_count > 0
                 ? `${v.subtask_done_count}/${v.subtask_count}`
                 : null;
 
               return (
-                <Link key={v.id} href={`/vorhaben/${v.id}`} className="block">
+                <Link key={v.id} href={`/projekte/${v.id}`} className="block">
                   <div className="bg-card rounded-2xl shadow-card border border-border/50 p-4 transition-all card-lift active:scale-[0.98]">
                     {/* Header Row */}
                     <div className="flex items-start justify-between gap-3">
@@ -221,7 +221,7 @@ export default async function VorhabenPage({ searchParams }: PageProps) {
               );
             })}
 
-            {vorhaben.length === 0 && (
+            {projekte.length === 0 && (
               <div className="text-center py-12">
                 <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
                   <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-primary">
@@ -231,9 +231,9 @@ export default async function VorhabenPage({ searchParams }: PageProps) {
                     <path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5" />
                   </svg>
                 </div>
-                <p className="font-medium text-foreground">Keine Vorhaben</p>
+                <p className="font-medium text-foreground">Keine Projekte</p>
                 <p className="text-sm text-muted-foreground mt-1">
-                  {params.status ? 'Keine Vorhaben mit diesem Status.' : 'Noch keine Vorhaben erstellt.'}
+                  {params.status ? 'Keine Projekte mit diesem Status.' : 'Noch keine Projekte erstellt.'}
                 </p>
               </div>
             )}

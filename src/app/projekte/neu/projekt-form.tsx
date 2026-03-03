@@ -12,7 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { createVorhaben } from "@/lib/supabase/actions";
+import { createProjekt } from "@/lib/supabase/actions";
 
 interface Person {
   id: string;
@@ -26,13 +26,13 @@ interface Circle {
   icon?: string;
 }
 
-interface VorhabenFormProps {
+interface ProjektFormProps {
   personId: string;
   circles: Circle[];
   persons: Person[];
 }
 
-export function VorhabenForm({ personId, circles, persons }: VorhabenFormProps) {
+export function ProjektForm({ personId, circles, persons }: ProjektFormProps) {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -64,7 +64,7 @@ export function VorhabenForm({ personId, circles, persons }: VorhabenFormProps) 
 
     setIsSubmitting(true);
 
-    const result = await createVorhaben({
+    const result = await createProjekt({
       title: title.trim(),
       shortDescription: shortDescription.trim() || undefined,
       description: description.trim() || undefined,
@@ -81,7 +81,7 @@ export function VorhabenForm({ personId, circles, persons }: VorhabenFormProps) 
       return;
     }
 
-    router.push("/vorhaben");
+    router.push("/projekte");
     router.refresh();
   };
 
@@ -94,7 +94,7 @@ export function VorhabenForm({ personId, circles, persons }: VorhabenFormProps) 
         </label>
         <Input
           id="title"
-          placeholder="Wie heißt das Vorhaben?"
+          placeholder="Wie heißt das Projekt?"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           className="h-12 rounded-xl"
@@ -112,7 +112,7 @@ export function VorhabenForm({ personId, circles, persons }: VorhabenFormProps) 
         </label>
         <Input
           id="shortDescription"
-          placeholder="Ein Satz, der das Vorhaben zusammenfasst (optional)"
+          placeholder="Ein Satz, der das Projekt zusammenfasst (optional)"
           value={shortDescription}
           onChange={(e) => setShortDescription(e.target.value)}
           className="h-12 rounded-xl"
@@ -130,7 +130,7 @@ export function VorhabenForm({ personId, circles, persons }: VorhabenFormProps) 
         </label>
         <Textarea
           id="description"
-          placeholder="Beschreibe das Vorhaben genauer... (optional)"
+          placeholder="Beschreibe das Projekt genauer... (optional)"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           className="min-h-[120px] rounded-xl resize-none"
@@ -148,7 +148,7 @@ export function VorhabenForm({ personId, circles, persons }: VorhabenFormProps) 
         </label>
         <Select value={coordinatorId} onValueChange={setCoordinatorId}>
           <SelectTrigger className="h-12 rounded-xl w-full">
-            <SelectValue placeholder="Wer koordiniert das Vorhaben? (optional)" />
+            <SelectValue placeholder="Wer koordiniert das Projekt? (optional)" />
           </SelectTrigger>
           <SelectContent>
             {persons.map((person) => (
@@ -259,7 +259,7 @@ export function VorhabenForm({ personId, circles, persons }: VorhabenFormProps) 
               Wird gespeichert...
             </span>
           ) : (
-            "Vorhaben erstellen"
+            "Projekt erstellen"
           )}
         </Button>
       </div>

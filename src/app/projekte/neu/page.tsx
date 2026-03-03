@@ -4,9 +4,9 @@ import { AppShell } from "@/components/layout/app-shell";
 import { getCircles } from "@/lib/supabase/queries";
 import { getPersonsList } from "@/lib/supabase/actions";
 import { createClient } from "@/lib/supabase/server";
-import { VorhabenForm } from "./vorhaben-form";
+import { ProjektForm } from "./projekt-form";
 
-export default async function NeuesVorhabenPage() {
+export default async function NeuesProjektePage() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
@@ -32,18 +32,18 @@ export default async function NeuesVorhabenPage() {
 
   return (
     <AppShell>
-      <Header title="Neues Vorhaben" showBack backHref="/vorhaben" />
+      <Header title="Neues Projekt" showBack backHref="/projekte" />
 
       <main className="flex-1 pb-24 lg:pb-8 page-enter">
         <div className="px-5 py-6 max-w-2xl mx-auto lg:max-w-4xl">
           <div className="mb-6">
-            <h1 className="text-xl font-bold text-foreground">Vorhaben erstellen</h1>
+            <h1 className="text-xl font-bold text-foreground">Projekt erstellen</h1>
             <p className="text-sm text-muted-foreground mt-1">
-              Starte eine neue Initiative oder ein Projekt
+              Starte ein neues Projekt oder eine Initiative
             </p>
           </div>
 
-          <VorhabenForm
+          <ProjektForm
             personId={personId}
             circles={displayCircles}
             persons={persons}

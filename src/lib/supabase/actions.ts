@@ -947,10 +947,10 @@ async function completeMeeting(meetingId: string) {
 }
 
 // =====================================================
-// VORHABEN (Initiatives)
+// PROJEKTE (Initiatives)
 // =====================================================
 
-export interface CreateVorhabenData {
+export interface CreateProjektData {
   title: string;
   shortDescription?: string;
   description?: string;
@@ -961,14 +961,14 @@ export interface CreateVorhabenData {
   endDate?: string;
 }
 
-export async function createVorhaben(data: CreateVorhabenData) {
+export async function createProjekt(data: CreateProjektData) {
   // Verify the caller IS the createdBy person
   await requireAuthAs(data.createdBy);
 
   const serviceClient = createServiceClient();
 
-  const { data: vorhaben, error } = await serviceClient
-    .from('vorhaben')
+  const { data: projekt, error } = await serviceClient
+    .from('projekte')
     .insert({
       title: data.title.trim().slice(0, 500),
       short_description: data.shortDescription?.trim().slice(0, 1000) || null,
@@ -983,16 +983,16 @@ export async function createVorhaben(data: CreateVorhabenData) {
     .single();
 
   if (error) {
-    console.error('Error creating vorhaben:', error);
+    console.error('Error creating projekt:', error);
     return { error: error.message };
   }
 
   // Insert circle associations
   if (data.circleIds && data.circleIds.length > 0) {
     await serviceClient
-      .from('vorhaben_circles')
+      .from('projekte_circles')
       .insert(data.circleIds.map(circleId => ({
-        vorhaben_id: vorhaben.id,
+        projekt_id: projekt.id,
         circle_id: circleId,
       })));
   }
@@ -1008,10 +1008,10 @@ export async function createVorhaben(data: CreateVorhabenData) {
   if (data.coordinatorId && data.coordinatorId !== data.createdBy) {
     await createNotification({
       personId: data.coordinatorId,
-      type: 'VORHABEN_CREATED',
-      title: 'Neues Vorhaben',
-      message: `${creator?.name || 'Jemand'} hat das Vorhaben "${data.title}" erstellt und dich als Koordinator:in eingetragen.`,
-      vorhabenId: vorhaben.id,
+      type: 'PROJEKT_CREATED',
+      title: 'Neues Projekt',
+      message: `${creator?.name || 'Jemand'} hat das Projekt "${data.title}" erstellt und dich als Koordinator:in eingetragen.`,
+      projektId: projekt.id,
     });
   }
 
@@ -1022,16 +1022,16 @@ export async function createVorhaben(data: CreateVorhabenData) {
     .eq('id', data.createdBy)
     .single();
   if (creatorTgPref?.telegram_notifications !== false) {
-    await sendTelegramMessage(`🚀 <b>Neues Vorhaben</b>\n${creator?.name || 'Jemand'} hat "${data.title}" erstellt.`);
+    await sendTelegramMessage(`🚀 <b>Neues Projekt</b>\n${creator?.name || 'Jemand'} hat "${data.title}" erstellt.`);
   }
 
-  revalidatePath('/vorhaben');
+  revalidatePath('/projekte');
   revalidatePath('/');
 
-  return { vorhaben };
+  return { projekt };
 }
 
-export interface UpdateVorhabenData {
+export interface UpdateProjektData {
   id: string;
   status?: 'OPEN' | 'IN_PROGRESS' | 'DONE';
   title?: string;
@@ -1043,13 +1043,13 @@ export interface UpdateVorhabenData {
   endDate?: string | null;
 }
 
-export async function updateVorhaben(data: UpdateVorhabenData) {
+export async function updateProjekt(data: UpdateProjektData) {
   const auth = await requireAuth();
   const serviceClient = createServiceClient();
 
   // Verify caller is creator, coordinator, or admin
   const { data: existing } = await serviceClient
-    .from('vorhaben')
+    .from('projekte')
     .select('created_by, coordinator_id')
     .eq('id', data.id)
     .single();
@@ -1073,44 +1073,44 @@ export async function updateVorhaben(data: UpdateVorhabenData) {
   if (data.startDate !== undefined) updateData.start_date = data.startDate;
   if (data.endDate !== undefined) updateData.end_date = data.endDate;
 
-  const { data: vorhaben, error } = await serviceClient
-    .from('vorhaben')
+  const { data: projekt, error } = await serviceClient
+    .from('projekte')
     .update(updateData)
     .eq('id', data.id)
     .select()
     .single();
 
   if (error) {
-    console.error('Error updating vorhaben:', error);
+    console.error('Error updating projekt:', error);
     return { error: error.message };
   }
 
   // Update circle associations if provided
   if (data.circleIds !== undefined) {
     await serviceClient
-      .from('vorhaben_circles')
+      .from('projekte_circles')
       .delete()
-      .eq('vorhaben_id', data.id);
+      .eq('projekt_id', data.id);
 
     if (data.circleIds.length > 0) {
       await serviceClient
-        .from('vorhaben_circles')
+        .from('projekte_circles')
         .insert(data.circleIds.map(circleId => ({
-          vorhaben_id: data.id,
+          projekt_id: data.id,
           circle_id: circleId,
         })));
     }
   }
 
-  revalidatePath(`/vorhaben/${data.id}`);
-  revalidatePath('/vorhaben');
+  revalidatePath(`/projekte/${data.id}`);
+  revalidatePath('/projekte');
   revalidatePath('/');
 
-  return { vorhaben };
+  return { projekt };
 }
 
 export async function createSubtask(data: {
-  vorhabenId: string;
+  projektId: string;
   title: string;
   description?: string;
   contactPersonId?: string;
@@ -1124,7 +1124,7 @@ export async function createSubtask(data: {
   const { data: subtask, error } = await serviceClient
     .from('subtasks')
     .insert({
-      vorhaben_id: data.vorhabenId,
+      projekt_id: data.projektId,
       title: data.title.trim().slice(0, 500),
       description: data.description?.trim().slice(0, 5000) || null,
       contact_person_id: data.contactPersonId || null,
@@ -1139,7 +1139,7 @@ export async function createSubtask(data: {
     return { error: error.message };
   }
 
-  revalidatePath(`/vorhaben/${data.vorhabenId}`);
+  revalidatePath(`/projekte/${data.projektId}`);
 
   return { subtask };
 }
@@ -1156,7 +1156,7 @@ export async function updateSubtask(subtaskId: string, data: {
   // Get subtask info for notification + revalidation
   const { data: oldSubtask } = await serviceClient
     .from('subtasks')
-    .select('title, vorhaben_id, vorhaben:vorhaben!subtasks_vorhaben_id_fkey(coordinator_id, title)')
+    .select('title, projekt_id, projekt:projekte!subtasks_projekt_id_fkey(coordinator_id, title)')
     .eq('id', subtaskId)
     .single();
 
@@ -1180,23 +1180,23 @@ export async function updateSubtask(subtaskId: string, data: {
 
   // Notify coordinator when subtask completed
   if (oldSubtask && data.status === 'DONE') {
-    const coordinatorId = (oldSubtask.vorhaben as any)?.coordinator_id;
+    const coordinatorId = (oldSubtask.projekt as any)?.coordinator_id;
     if (coordinatorId) {
       await createNotification({
         personId: coordinatorId,
-        type: 'VORHABEN_SUBTASK_COMPLETED',
+        type: 'PROJEKT_SUBTASK_COMPLETED',
         title: 'Unteraufgabe erledigt',
-        message: `Die Unteraufgabe "${oldSubtask.title}" im Vorhaben "${(oldSubtask.vorhaben as any)?.title}" wurde abgeschlossen.`,
-        vorhabenId: oldSubtask.vorhaben_id,
+        message: `Die Unteraufgabe "${oldSubtask.title}" im Projekt "${(oldSubtask.projekt as any)?.title}" wurde abgeschlossen.`,
+        projektId: oldSubtask.projekt_id,
       });
     }
   }
 
   if (oldSubtask) {
-    revalidatePath(`/vorhaben/${oldSubtask.vorhaben_id}`);
-    revalidatePath(`/vorhaben/${oldSubtask.vorhaben_id}/unteraufgaben/${subtaskId}`);
+    revalidatePath(`/projekte/${oldSubtask.projekt_id}`);
+    revalidatePath(`/projekte/${oldSubtask.projekt_id}/unteraufgaben/${subtaskId}`);
   }
-  revalidatePath('/vorhaben');
+  revalidatePath('/projekte');
 
   return { subtask };
 }
@@ -1220,10 +1220,10 @@ export async function volunteerForSubtask(subtaskId: string, personId: string) {
     return { error: error.message };
   }
 
-  // Get subtask + vorhaben info for notification
+  // Get subtask + projekt info for notification
   const { data: subtask } = await serviceClient
     .from('subtasks')
-    .select('title, vorhaben_id, vorhaben:vorhaben!subtasks_vorhaben_id_fkey(coordinator_id, title)')
+    .select('title, projekt_id, projekt:projekte!subtasks_projekt_id_fkey(coordinator_id, title)')
     .eq('id', subtaskId)
     .single();
 
@@ -1234,19 +1234,19 @@ export async function volunteerForSubtask(subtaskId: string, personId: string) {
     .single();
 
   if (subtask) {
-    const coordinatorId = (subtask.vorhaben as any)?.coordinator_id;
+    const coordinatorId = (subtask.projekt as any)?.coordinator_id;
     if (coordinatorId && coordinatorId !== personId) {
       await createNotification({
         personId: coordinatorId,
-        type: 'VORHABEN_VOLUNTEER',
+        type: 'PROJEKT_VOLUNTEER',
         title: 'Neue:r Helfer:in',
-        message: `${volunteer?.name || 'Jemand'} hilft bei "${subtask.title}" im Vorhaben "${(subtask.vorhaben as any)?.title}".`,
-        vorhabenId: subtask.vorhaben_id,
+        message: `${volunteer?.name || 'Jemand'} hilft bei "${subtask.title}" im Projekt "${(subtask.projekt as any)?.title}".`,
+        projektId: subtask.projekt_id,
       });
     }
 
-    revalidatePath(`/vorhaben/${subtask.vorhaben_id}/unteraufgaben/${subtaskId}`);
-    revalidatePath(`/vorhaben/${subtask.vorhaben_id}`);
+    revalidatePath(`/projekte/${subtask.projekt_id}/unteraufgaben/${subtaskId}`);
+    revalidatePath(`/projekte/${subtask.projekt_id}`);
   }
 
   return { success: true };
@@ -1269,16 +1269,16 @@ export async function unvolunteerFromSubtask(subtaskId: string, personId: string
     return { error: error.message };
   }
 
-  // Get vorhaben_id for revalidation
+  // Get projekt_id for revalidation
   const { data: subtask } = await serviceClient
     .from('subtasks')
-    .select('vorhaben_id')
+    .select('projekt_id')
     .eq('id', subtaskId)
     .single();
 
   if (subtask) {
-    revalidatePath(`/vorhaben/${subtask.vorhaben_id}/unteraufgaben/${subtaskId}`);
-    revalidatePath(`/vorhaben/${subtask.vorhaben_id}`);
+    revalidatePath(`/projekte/${subtask.projekt_id}/unteraufgaben/${subtaskId}`);
+    revalidatePath(`/projekte/${subtask.projekt_id}`);
   }
 
   return { success: true };
@@ -1308,10 +1308,10 @@ export async function createSubtaskComment(subtaskId: string, personId: string, 
     return { error: error.message };
   }
 
-  // Fetch subtask + vorhaben info for notifications
+  // Fetch subtask + projekt info for notifications
   const { data: subtask } = await serviceClient
     .from('subtasks')
-    .select('title, vorhaben_id, contact_person_id, vorhaben:vorhaben!subtasks_vorhaben_id_fkey(coordinator_id, title)')
+    .select('title, projekt_id, contact_person_id, projekt:projekte!subtasks_projekt_id_fkey(coordinator_id, title)')
     .eq('id', subtaskId)
     .single();
 
@@ -1322,24 +1322,24 @@ export async function createSubtaskComment(subtaskId: string, personId: string, 
     .single();
 
   if (subtask) {
-    const notifMessage = `${commenter?.name || 'Jemand'} hat eine Unteraufgabe in "${(subtask.vorhaben as any)?.title}" kommentiert.`;
+    const notifMessage = `${commenter?.name || 'Jemand'} hat eine Unteraufgabe in "${(subtask.projekt as any)?.title}" kommentiert.`;
     const notifyIds = new Set<string>();
 
-    const coordinatorId = (subtask.vorhaben as any)?.coordinator_id;
+    const coordinatorId = (subtask.projekt as any)?.coordinator_id;
     if (coordinatorId && coordinatorId !== personId) notifyIds.add(coordinatorId);
     if (subtask.contact_person_id && subtask.contact_person_id !== personId) notifyIds.add(subtask.contact_person_id);
 
     for (const recipientId of notifyIds) {
       await createNotification({
         personId: recipientId,
-        type: 'VORHABEN_COMMENTED',
+        type: 'PROJEKT_COMMENTED',
         title: 'Neuer Kommentar',
         message: notifMessage,
-        vorhabenId: subtask.vorhaben_id,
+        projektId: subtask.projekt_id,
       });
     }
 
-    revalidatePath(`/vorhaben/${subtask.vorhaben_id}/unteraufgaben/${subtaskId}`);
+    revalidatePath(`/projekte/${subtask.projekt_id}/unteraufgaben/${subtaskId}`);
   }
 
   return { comment };
@@ -1869,10 +1869,10 @@ const TELEGRAM_ICONS: Record<string, string> = {
   TENSION_ASSIGNED: '📌',
   TENSION_RESOLVED: '✅',
   TENSION_COMMENTED: '💬',
-  VORHABEN_CREATED: '🚀',
-  VORHABEN_VOLUNTEER: '🙋',
-  VORHABEN_SUBTASK_COMPLETED: '✅',
-  VORHABEN_COMMENTED: '💬',
+  PROJEKT_CREATED: '🚀',
+  PROJEKT_VOLUNTEER: '🙋',
+  PROJEKT_SUBTASK_COMPLETED: '✅',
+  PROJEKT_COMMENTED: '💬',
 };
 
 async function createNotification(data: {
@@ -1882,7 +1882,7 @@ async function createNotification(data: {
   message: string;
   roleId?: string;
   tensionId?: string;
-  vorhabenId?: string;
+  projektId?: string;
   circleId?: string;
 }) {
   const serviceClient = createServiceClient();
@@ -1893,7 +1893,7 @@ async function createNotification(data: {
     message: data.message,
     role_id: data.roleId || null,
     tension_id: data.tensionId || null,
-    vorhaben_id: data.vorhabenId || null,
+    projekt_id: data.projektId || null,
     circle_id: data.circleId || null,
   });
 
@@ -2030,13 +2030,13 @@ export async function deleteAccount() {
       .update({ assigned_to: null })
       .eq('assigned_to', person.id);
 
-    // Anonymize vorhaben
+    // Anonymize projekte
     await serviceClient
-      .from('vorhaben')
+      .from('projekte')
       .update({ created_by: null })
       .eq('created_by', person.id);
     await serviceClient
-      .from('vorhaben')
+      .from('projekte')
       .update({ coordinator_id: null })
       .eq('coordinator_id', person.id);
 
@@ -2123,22 +2123,22 @@ export async function exportUserData() {
     .select('title, status, priority, circle:circles(name)')
     .eq('assigned_to', person.id);
 
-  // Get vorhaben created
-  const { data: vorhabenCreated } = await serviceClient
-    .from('vorhaben')
+  // Get projekte created
+  const { data: projekteCreated } = await serviceClient
+    .from('projekte')
     .select('title, short_description, status, start_date, end_date, created_at')
     .eq('created_by', person.id);
 
-  // Get vorhaben coordinated
-  const { data: vorhabenCoordinated } = await serviceClient
-    .from('vorhaben')
+  // Get projekte coordinated
+  const { data: projekteCoordinated } = await serviceClient
+    .from('projekte')
     .select('title, status')
     .eq('coordinator_id', person.id);
 
   // Get subtask volunteering
   const { data: volunteering } = await serviceClient
     .from('subtask_volunteers')
-    .select('subtask:subtasks(title, vorhaben:vorhaben(title))')
+    .select('subtask:subtasks(title, projekt:projekte(title))')
     .eq('person_id', person.id);
 
   // Get notifications
@@ -2184,7 +2184,7 @@ export async function exportUserData() {
       prioritaet: t.priority,
       kreis: t.circle?.name,
     })),
-    vorhaben_erstellt: (vorhabenCreated || []).map((v: any) => ({
+    projekte_erstellt: (projekteCreated || []).map((v: any) => ({
       titel: v.title,
       kurzbeschreibung: v.short_description,
       status: v.status,
@@ -2192,13 +2192,13 @@ export async function exportUserData() {
       enddatum: v.end_date,
       erstellt_am: v.created_at,
     })),
-    vorhaben_koordiniert: (vorhabenCoordinated || []).map((v: any) => ({
+    projekte_koordiniert: (projekteCoordinated || []).map((v: any) => ({
       titel: v.title,
       status: v.status,
     })),
     helfer_bei: (volunteering || []).map((v: any) => ({
       unteraufgabe: v.subtask?.title,
-      vorhaben: v.subtask?.vorhaben?.title,
+      projekt: v.subtask?.projekt?.title,
     })),
     benachrichtigungen: (notifications || []).map((n: any) => ({
       typ: n.type,

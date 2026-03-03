@@ -32,7 +32,7 @@ function formatRelativeTime(dateStr: string): string {
 }
 
 function getNotificationHref(n: AppNotification): string {
-  if (n.vorhaben_id) return `/vorhaben/${n.vorhaben_id}`;
+  if (n.projekt_id) return `/projekte/${n.projekt_id}`;
   if (n.tension_id) return `/spannungen/${n.tension_id}`;
   if (n.role_id) return `/rollen/${n.role_id}`;
   return "/";
@@ -48,10 +48,10 @@ function getNotificationIcon(type: string): string {
     case "TENSION_RESOLVED":
     case "TENSION_COMMENTED":
       return "M12 9v4m0 4h.01M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0z";
-    case "VORHABEN_CREATED":
-    case "VORHABEN_VOLUNTEER":
-    case "VORHABEN_SUBTASK_COMPLETED":
-    case "VORHABEN_COMMENTED":
+    case "PROJEKT_CREATED":
+    case "PROJEKT_VOLUNTEER":
+    case "PROJEKT_SUBTASK_COMPLETED":
+    case "PROJEKT_COMMENTED":
       return "M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2M12 15l-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z";
     default:
       return "M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9";

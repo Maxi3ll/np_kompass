@@ -28,7 +28,7 @@ export default async function Home() {
   }
 
   const dashboardData = await getDashboardData(personId);
-  const { myRoles, openTensions, nextMeeting, myActiveVorhaben, myVolunteerCount } = dashboardData;
+  const { myRoles, openTensions, nextMeeting, myActiveProjekte, myVolunteerCount } = dashboardData;
 
   // User display info
   const userName = personData?.name || user?.user_metadata?.full_name || user?.email?.split("@")[0] || "Benutzer";
@@ -94,8 +94,8 @@ export default async function Home() {
               </div>
             </Link>
 
-            {/* My Vorhaben Card */}
-            <Link href="/vorhaben" className="block h-full">
+            {/* My Projekte Card */}
+            <Link href="/projekte" className="block h-full">
               <div className="relative overflow-hidden bg-card rounded-2xl p-4 shadow-card card-lift border border-border/50 h-full">
                 <div className="absolute -right-4 -top-4 w-16 h-16 rounded-full bg-[var(--status-resolved)]/10" />
                 <div className="relative">
@@ -107,8 +107,8 @@ export default async function Home() {
                       </svg>
                     </div>
                   </div>
-                  <p className="text-2xl font-bold text-foreground">{myActiveVorhaben}</p>
-                  <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">Vorhaben</span>
+                  <p className="text-2xl font-bold text-foreground">{myActiveProjekte}</p>
+                  <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">Projekte</span>
                   {myVolunteerCount > 0 && (
                     <div className="flex items-center gap-1 mt-1">
                       <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="var(--status-resolved)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
