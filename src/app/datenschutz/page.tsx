@@ -67,7 +67,7 @@ export default function DatenschutzPage() {
               <ul className="list-disc pl-5 space-y-1">
                 <li><strong className="text-foreground">Art. 6 Abs. 1 lit. b DSGVO</strong> &ndash; Erf&uuml;llung des Mitgliedschaftsverh&auml;ltnisses (Vereinssatzung)</li>
                 <li><strong className="text-foreground">Art. 6 Abs. 1 lit. f DSGVO</strong> &ndash; Berechtigtes Interesse an der Organisation der Vereinsarbeit</li>
-                <li><strong className="text-foreground">Art. 6 Abs. 1 lit. a DSGVO</strong> &ndash; Einwilligung (z.B. f&uuml;r Telegram-Benachrichtigungen)</li>
+                <li><strong className="text-foreground">Art. 6 Abs. 1 lit. a DSGVO</strong> &ndash; Einwilligung</li>
               </ul>
             </section>
 
@@ -78,7 +78,7 @@ export default function DatenschutzPage() {
                 <li>Verwaltung der Vereinsorganisation (Kreise, Rollen, Zust&auml;ndigkeiten)</li>
                 <li>Erfassung und Nachverfolgung von Spannungen und Verbesserungsvorschl&auml;gen</li>
                 <li>Planung und Dokumentation von Terminen</li>
-                <li>Benachrichtigung &uuml;ber relevante &Auml;nderungen (In-App und optional per Telegram)</li>
+                <li>Benachrichtigung &uuml;ber relevante &Auml;nderungen (In-App)</li>
                 <li>Authentifizierung und Zugangssteuerung</li>
               </ul>
             </section>
@@ -103,15 +103,6 @@ export default function DatenschutzPage() {
                 </p>
               </div>
 
-              <div>
-                <h3 className="font-semibold text-foreground">Telegram (optional)</h3>
-                <p>
-                  Bei aktivierter Telegram-Benachrichtigung werden Name und Aktivit&auml;tsinformationen
-                  (z.B. &bdquo;Max hat eine Spannung erstellt&ldquo;) an die Telegram-Gruppe des Vereins gesendet.
-                  Telegram-Server k&ouml;nnen sich au&szlig;erhalb der EU befinden.
-                  Diese Funktion ist optional und kann im Profil deaktiviert werden.
-                </p>
-              </div>
             </section>
 
             {/* 7. Speicherdauer */}
@@ -153,7 +144,7 @@ export default function DatenschutzPage() {
                 <li><strong className="text-foreground">Daten&uuml;bertragbarkeit</strong> (Art. 20 DSGVO) &ndash; &Uuml;ber &bdquo;Meine Daten exportieren&ldquo; im Profil</li>
                 <li><strong className="text-foreground">Einschr&auml;nkung der Verarbeitung</strong> (Art. 18 DSGVO)</li>
                 <li><strong className="text-foreground">Widerspruch</strong> (Art. 21 DSGVO)</li>
-                <li><strong className="text-foreground">Widerruf der Einwilligung</strong> (Art. 7 Abs. 3 DSGVO) &ndash; z.B. Telegram-Benachrichtigungen im Profil deaktivieren</li>
+                <li><strong className="text-foreground">Widerruf der Einwilligung</strong> (Art. 7 Abs. 3 DSGVO)</li>
               </ul>
               <p>
                 Zur Aus&uuml;bung deiner Rechte wende dich an: mail@neckarpiraten.de
@@ -202,8 +193,7 @@ export default function DatenschutzPage() {
                 Verarbeitung bestehen oder die Verarbeitung der Geltendmachung von Rechtsanspr&uuml;chen dient.
               </p>
               <p>
-                Einwilligungen (z.B. Telegram-Benachrichtigungen) k&ouml;nnen jederzeit &uuml;ber die Profil-Seite
-                oder per E-Mail an mail@neckarpiraten.de widerrufen werden.
+                Einwilligungen k&ouml;nnen jederzeit per E-Mail an mail@neckarpiraten.de widerrufen werden.
               </p>
             </section>
 

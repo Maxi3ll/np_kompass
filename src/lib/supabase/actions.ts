@@ -4,7 +4,6 @@ import { createClient } from './server';
 import { createServiceClient } from './service';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
-import { sendTelegramMessage } from '@/lib/telegram';
 import { searchAll } from './queries';
 
 // =====================================================
@@ -353,16 +352,6 @@ export async function createTension(data: CreateTensionData) {
     .single();
 
   const notifMessage = `${creator?.name || 'Jemand'} hat "${data.title}" im Kreis "${circle?.name}" erfasst.`;
-
-  // Send Telegram notification (if creator hasn't opted out)
-  const { data: creatorTgPref } = await serviceClient
-    .from('persons')
-    .select('telegram_notifications')
-    .eq('id', data.raisedBy)
-    .single();
-  if (creatorTgPref?.telegram_notifications !== false) {
-    await sendTelegramMessage(`⚡ <b>Neue Spannung</b>\n${notifMessage}`);
-  }
 
   // Notify circle members (except creator) via in-app notification
   const circleMembers = await getCircleMemberIds(data.circleId);
@@ -1013,16 +1002,6 @@ export async function createProjekt(data: CreateProjektData) {
       message: `${creator?.name || 'Jemand'} hat das Projekt "${data.title}" erstellt und dich als Koordinator:in eingetragen.`,
       projektId: projekt.id,
     });
-  }
-
-  // Send Telegram notification
-  const { data: creatorTgPref } = await serviceClient
-    .from('persons')
-    .select('telegram_notifications')
-    .eq('id', data.createdBy)
-    .single();
-  if (creatorTgPref?.telegram_notifications !== false) {
-    await sendTelegramMessage(`🚀 <b>Neues Projekt</b>\n${creator?.name || 'Jemand'} hat "${data.title}" erstellt.`);
   }
 
   revalidatePath('/projekte');
@@ -1862,19 +1841,6 @@ export async function unassignRole(roleId: string, personId: string) {
 // NOTIFICATIONS
 // =====================================================
 
-const TELEGRAM_ICONS: Record<string, string> = {
-  ROLE_ASSIGNED: '👤',
-  ROLE_UNASSIGNED: '👋',
-  TENSION_CREATED: '⚡',
-  TENSION_ASSIGNED: '📌',
-  TENSION_RESOLVED: '✅',
-  TENSION_COMMENTED: '💬',
-  PROJEKT_CREATED: '🚀',
-  PROJEKT_VOLUNTEER: '🙋',
-  PROJEKT_SUBTASK_COMPLETED: '✅',
-  PROJEKT_COMMENTED: '💬',
-};
-
 async function createNotification(data: {
   personId: string;
   type: string;
@@ -1896,21 +1862,6 @@ async function createNotification(data: {
     projekt_id: data.projektId || null,
     circle_id: data.circleId || null,
   });
-
-  // Send Telegram notification (except TENSION_CREATED which is handled separately)
-  if (data.type !== 'TENSION_CREATED') {
-    // Check if the person has Telegram notifications enabled
-    const { data: personPref } = await serviceClient
-      .from('persons')
-      .select('telegram_notifications')
-      .eq('id', data.personId)
-      .single();
-
-    if (personPref?.telegram_notifications !== false) {
-      const icon = TELEGRAM_ICONS[data.type] || '🔔';
-      await sendTelegramMessage(`${icon} <b>${data.title}</b>\n${data.message}`);
-    }
-  }
 }
 
 async function getCircleMemberIds(circleId: string): Promise<string[]> {
@@ -2210,39 +2161,6 @@ export async function exportUserData() {
   };
 
   return { data: exportData };
-}
-
-// =====================================================
-// TELEGRAM OPT-OUT
-// =====================================================
-
-export async function toggleTelegramNotifications(personId: string, enabled: boolean) {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return { error: 'not authenticated' };
-
-  const serviceClient = createServiceClient();
-
-  // Verify ownership
-  const { data: person } = await serviceClient
-    .from('persons')
-    .select('auth_user_id')
-    .eq('id', personId)
-    .single();
-
-  if (!person || person.auth_user_id !== user.id) {
-    return { error: 'unauthorized' };
-  }
-
-  const { error } = await serviceClient
-    .from('persons')
-    .update({ telegram_notifications: enabled })
-    .eq('id', personId);
-
-  if (error) return { error: error.message };
-
-  revalidatePath('/profil');
-  return { success: true };
 }
 
 export async function markAllNotificationsAsRead() {

@@ -16,7 +16,7 @@ Migrations in `supabase/migrations/`. Apply with `npx supabase db push`.
 | 005 | `005_notifications.sql` | `notifications` table with RLS |
 | 006 | `006_replace_circles_roles.sql` | Real Neckarpiraten structure: 10 circles, 43 roles |
 | 007 | `007_multi_holders.sql` | Allow multiple persons per role (drops old unique constraint) |
-| 008 | `008_telegram_optout.sql` | `telegram_notifications` boolean on persons |
+| 008 | `008_telegram_optout.sql` | `telegram_notifications` boolean on persons (removed in 016) |
 | 009 | `009_tasks.sql` | Old tasks tables (replaced by 010) |
 | 010 | `010_vorhaben.sql` | Vorhaben (now projekte), subtasks, volunteers, comments tables; drops old tasks |
 | 011 | `011_tighten_rls.sql` | Security: tightens 15 RLS policies (creator/owner enforcement) |
@@ -24,6 +24,7 @@ Migrations in `supabase/migrations/`. Apply with `npx supabase db push`.
 | 013 | `013_security_audit_fixes.sql` | Views → SECURITY INVOKER, function search_path fixes, meetings INSERT RLS |
 | 014 | `014_tension_comments.sql` | Tension comments table |
 | 015 | `015_rename_vorhaben_to_projekte.sql` | Rename vorhaben → projekte (tables, columns, FK constraints, RLS, notification types) |
+| 016 | `016_remove_telegram.sql` | Drop `telegram_notifications` column from persons (DSGVO: remove third-party dependency) |
 
 ## Tables
 
@@ -56,7 +57,7 @@ Migrations in `supabase/migrations/`. Apply with `npx supabase db push`.
 ### People & Auth
 | Table | Key Columns | Notes |
 |-------|-------------|-------|
-| `persons` | id, name, email, phone, auth_user_id, avatar_color, telegram_notifications, family_id | Links to Supabase Auth |
+| `persons` | id, name, email, phone, auth_user_id, avatar_color, family_id | Links to Supabase Auth |
 | `families` | id, name | Family groupings |
 | `allowed_emails` | id, email, name | Allowlist for registration |
 | `notifications` | id, person_id, type, title, message, link, is_read | In-app notifications |

@@ -8,7 +8,6 @@ import { isCurrentUserAdmin, getAllowedEmails } from "@/lib/supabase/actions";
 import { LogoutButton } from "./logout-button";
 import { DeleteAccountButton } from "./delete-account-button";
 import { ExportDataButton } from "./export-data-button";
-import { TelegramToggle } from "./telegram-toggle";
 import { AdminEmails } from "./admin-emails";
 import { ProfileEditDialog } from "./profile-edit-dialog";
 import Link from "next/link";
@@ -192,14 +191,6 @@ export default async function ProfilPage() {
                       minute: "2-digit",
                     })}
                   </span>
-                </div>
-              )}
-              {person && (
-                <div className="border-t border-border pt-2">
-                  <TelegramToggle
-                    personId={person.id}
-                    initialEnabled={person.telegram_notifications !== false}
-                  />
                 </div>
               )}
             </div>
