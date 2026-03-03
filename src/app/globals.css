@@ -92,7 +92,7 @@
   --chart-5: var(--np-yellow-light);
 
   /* Sidebar */
-  --sidebar: oklch(1 0 0);
+  --sidebar: oklch(0.99 0.005 85);
   --sidebar-foreground: oklch(0.20 0.02 240);
   --sidebar-primary: oklch(0.60 0.15 240);
   --sidebar-primary-foreground: oklch(0.99 0 0);

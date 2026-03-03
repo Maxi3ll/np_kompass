@@ -1,8 +1,7 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 
 interface NavItem {
@@ -95,71 +94,6 @@ const navItems: NavItem[] = [
   },
 ];
 
-const SEARCH_EXAMPLES = [
-  "Küchendienst",
-  "Betriebskreis",
-  "Anna Müller",
-  "Sommerfest",
-  "Finanzen",
-  "Elternabend",
-  "Gebäude",
-];
-
-function AnimatedSearchField() {
-  const router = useRouter();
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [visible, setVisible] = useState(true);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setVisible(false);
-      setTimeout(() => {
-        setCurrentIndex((i) => (i + 1) % SEARCH_EXAMPLES.length);
-        setVisible(true);
-      }, 400);
-    }, 3000);
-    return () => clearInterval(interval);
-  }, []);
-
-  const handleClick = useCallback(() => {
-    router.push("/suche");
-  }, [router]);
-
-  return (
-    <div className="px-3 pb-2">
-      <button
-        onClick={handleClick}
-        className="w-full flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl border border-sidebar-border bg-sidebar-accent/30 hover:bg-sidebar-accent/50 transition-colors text-left cursor-text group"
-      >
-        <svg
-          width="16"
-          height="16"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          className="text-muted-foreground flex-shrink-0"
-        >
-          <circle cx="11" cy="11" r="8" />
-          <line x1="21" y1="21" x2="16.65" y2="16.65" />
-        </svg>
-        <span className="flex-1 text-sm text-muted-foreground truncate relative h-5 flex items-center">
-          <span
-            className={cn(
-              "transition-opacity duration-300",
-              visible ? "opacity-100" : "opacity-0"
-            )}
-          >
-            {SEARCH_EXAMPLES[currentIndex]}...
-          </span>
-        </span>
-      </button>
-    </div>
-  );
-}
-
 export function Sidebar() {
   const pathname = usePathname();
 
@@ -178,13 +112,8 @@ export function Sidebar() {
         </div>
       </div>
 
-      {/* Search Field */}
-      <div className="pt-3">
-        <AnimatedSearchField />
-      </div>
-
       {/* Navigation */}
-      <nav className="flex-1 px-3 py-2">
+      <nav className="flex-1 px-3 py-4">
         <div className="space-y-1">
           {navItems.map((item) => {
             const isActive = pathname === item.href ||
