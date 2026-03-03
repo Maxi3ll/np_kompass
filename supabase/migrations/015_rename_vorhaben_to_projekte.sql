@@ -217,14 +217,16 @@ CREATE POLICY "Author can delete own subtask_comments"
 -- 10. UPDATE NOTIFICATION TYPES: VORHABEN_* → PROJEKT_*
 -- =====================================================
 
+-- Drop CHECK constraint FIRST so we can update the data
+ALTER TABLE notifications DROP CONSTRAINT IF EXISTS notifications_type_check;
+
 -- Update existing notification data
 UPDATE notifications SET type = 'PROJEKT_CREATED' WHERE type = 'VORHABEN_CREATED';
 UPDATE notifications SET type = 'PROJEKT_VOLUNTEER' WHERE type = 'VORHABEN_VOLUNTEER';
 UPDATE notifications SET type = 'PROJEKT_SUBTASK_COMPLETED' WHERE type = 'VORHABEN_SUBTASK_COMPLETED';
 UPDATE notifications SET type = 'PROJEKT_COMMENTED' WHERE type = 'VORHABEN_COMMENTED';
 
--- Update CHECK constraint
-ALTER TABLE notifications DROP CONSTRAINT IF EXISTS notifications_type_check;
+-- Recreate CHECK constraint with new values
 ALTER TABLE notifications ADD CONSTRAINT notifications_type_check CHECK (type IN (
   'ROLE_ASSIGNED',
   'ROLE_UNASSIGNED',
