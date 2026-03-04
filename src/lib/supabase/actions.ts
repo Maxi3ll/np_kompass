@@ -232,7 +232,6 @@ export async function signUpWithPassword(email: string, password: string) {
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
-    options: { emailRedirectTo: undefined },
   });
 
   if (error) {
@@ -241,6 +240,31 @@ export async function signUpWithPassword(email: string, password: string) {
       return { error: 'already_registered' };
     }
     return { error: 'sign_up_failed', details: error.message };
+  }
+
+  // Detect fake signUp response (user already exists with confirmed email)
+  if (data.user && (!data.user.identities || data.user.identities.length === 0)) {
+    return { error: 'already_registered' };
+  }
+
+  // If signup succeeded but no session (email confirmation pending),
+  // auto-confirm since the user is already on the allowlist
+  if (data.user && !data.session) {
+    const serviceClient = createServiceClient();
+
+    await serviceClient.auth.admin.updateUserById(data.user.id, {
+      email_confirm: true,
+    });
+
+    const { error: signInError } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+
+    if (signInError) {
+      console.error('Auto sign-in after registration failed:', signInError.message);
+      return { error: 'sign_up_failed', details: signInError.message };
+    }
   }
 
   // Auto-link to persons record
