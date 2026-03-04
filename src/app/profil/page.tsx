@@ -63,13 +63,15 @@ export default async function ProfilPage() {
 
   // Check admin status and load allowlist
   const isAdmin = await isCurrentUserAdmin();
-  let allowedEmails: { id: string; email: string; added_by: string | null; created_at: string; personName: string | null }[] = [];
+  let allowedEmails: { id: string; email: string; added_by: string | null; created_at: string; personName: string | null; personRole: string | null; isSuperAdmin: boolean }[] = [];
   let adminEmail: string | null = null;
+  let currentUserIsSuperAdmin = false;
   if (isAdmin) {
     const result = await getAllowedEmails();
     if (!result.error && result.emails) {
       allowedEmails = result.emails;
       adminEmail = result.adminEmail ?? null;
+      currentUserIsSuperAdmin = result.currentUserIsSuperAdmin ?? false;
     }
   }
 
@@ -201,6 +203,7 @@ export default async function ProfilPage() {
             <AdminEmails
               initialEmails={allowedEmails}
               adminEmail={adminEmail}
+              currentUserIsSuperAdmin={currentUserIsSuperAdmin}
             />
           )}
 

@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { addAllowedEmail, removeAllowedEmail } from "@/lib/supabase/actions";
+import { addAllowedEmail, removeAllowedEmail, toggleAdminRole } from "@/lib/supabase/actions";
 
 interface AllowedEmail {
   id: string;
@@ -11,26 +11,38 @@ interface AllowedEmail {
   added_by: string | null;
   created_at: string;
   personName: string | null;
+  personRole: string | null;
+  isSuperAdmin: boolean;
 }
 
 interface AdminEmailsProps {
   initialEmails: AllowedEmail[];
   adminEmail: string | null;
+  currentUserIsSuperAdmin: boolean;
 }
 
-export function AdminEmails({ initialEmails, adminEmail }: AdminEmailsProps) {
+function formatDate(dateStr: string): string {
+  return new Date(dateStr).toLocaleDateString("de-DE", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
+}
+
+export function AdminEmails({ initialEmails, adminEmail, currentUserIsSuperAdmin }: AdminEmailsProps) {
   const [emails, setEmails] = useState(initialEmails);
   const [newEmail, setNewEmail] = useState("");
-  const [newName, setNewName] = useState("");
+  const [newFirstName, setNewFirstName] = useState("");
+  const [newLastName, setNewLastName] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
   const handleAdd = () => {
-    if (!newEmail.trim()) return;
+    if (!newEmail.trim() || !newFirstName.trim()) return;
     setError(null);
 
     startTransition(async () => {
-      const result = await addAllowedEmail(newEmail, newName);
+      const result = await addAllowedEmail(newEmail, newFirstName, newLastName);
       if (result.error) {
         if (result.error === "already_exists") {
           setError("Diese E-Mail ist bereits freigeschaltet.");
@@ -41,7 +53,7 @@ export function AdminEmails({ initialEmails, adminEmail }: AdminEmailsProps) {
         }
         return;
       }
-      // Optimistically add to list
+      const fullName = [newFirstName.trim(), newLastName.trim()].filter(Boolean).join(" ");
       setEmails((prev) => [
         ...prev,
         {
@@ -49,11 +61,14 @@ export function AdminEmails({ initialEmails, adminEmail }: AdminEmailsProps) {
           email: newEmail.toLowerCase().trim(),
           added_by: null,
           created_at: new Date().toISOString(),
-          personName: newName.trim() || null,
+          personName: fullName || null,
+          personRole: "member",
+          isSuperAdmin: false,
         },
       ]);
       setNewEmail("");
-      setNewName("");
+      setNewFirstName("");
+      setNewLastName("");
     });
   };
 
@@ -72,6 +87,31 @@ export function AdminEmails({ initialEmails, adminEmail }: AdminEmailsProps) {
         return;
       }
       setEmails((prev) => prev.filter((e) => e.id !== id));
+    });
+  };
+
+  const handleToggleAdmin = (email: string) => {
+    setError(null);
+
+    startTransition(async () => {
+      const result = await toggleAdminRole(email);
+      if (result.error) {
+        if (result.error === "cannot_toggle_superadmin") {
+          setError("Der Superadmin kann nicht geändert werden.");
+        } else if (result.error === "person_not_found") {
+          setError("Person nicht gefunden.");
+        } else {
+          setError(result.error);
+        }
+        return;
+      }
+      setEmails((prev) =>
+        prev.map((e) =>
+          e.email.toLowerCase() === email.toLowerCase()
+            ? { ...e, personRole: result.newRole ?? e.personRole }
+            : e
+        )
+      );
     });
   };
 
@@ -104,6 +144,12 @@ export function AdminEmails({ initialEmails, adminEmail }: AdminEmailsProps) {
             <span className="w-1 h-1 rounded-full bg-primary/60 flex-shrink-0" />
             Mitglieder zur Allowlist hinzufügen und entfernen
           </li>
+          {currentUserIsSuperAdmin && (
+            <li className="flex items-center gap-1.5">
+              <span className="w-1 h-1 rounded-full bg-primary/60 flex-shrink-0" />
+              Admin-Rechte an andere Mitglieder vergeben
+            </li>
+          )}
         </ul>
       </div>
 
@@ -120,7 +166,8 @@ export function AdminEmails({ initialEmails, adminEmail }: AdminEmailsProps) {
       {/* Email list */}
       <div className="space-y-2 mb-4">
         {emails.map((entry) => {
-          const isAdmin = adminEmail && entry.email.toLowerCase() === adminEmail.toLowerCase();
+          const isEnvAdmin = adminEmail && entry.email.toLowerCase() === adminEmail.toLowerCase();
+          const isDbAdmin = entry.personRole === "admin";
           return (
             <div
               key={entry.id}
@@ -133,24 +180,53 @@ export function AdminEmails({ initialEmails, adminEmail }: AdminEmailsProps) {
                 <p className={`text-sm truncate ${entry.personName ? "text-muted-foreground text-xs" : "text-foreground"}`}>
                   {entry.email}
                 </p>
-                {isAdmin && (
-                  <span className="text-xs text-primary font-medium">Admin</span>
+                <div className="flex items-center gap-2 mt-0.5">
+                  {entry.isSuperAdmin && (
+                    <span className="text-xs text-primary font-medium">Superadmin</span>
+                  )}
+                  {!entry.isSuperAdmin && isDbAdmin && (
+                    <span className="text-xs text-primary font-medium">Admin</span>
+                  )}
+                  <span className="text-xs text-muted-foreground/60">
+                    {formatDate(entry.created_at)}
+                  </span>
+                </div>
+              </div>
+              <div className="flex items-center gap-1 flex-shrink-0">
+                {/* Admin toggle — only visible for superadmin, not on own entry */}
+                {currentUserIsSuperAdmin && !isEnvAdmin && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleToggleAdmin(entry.email)}
+                    disabled={isPending}
+                    title={isDbAdmin ? "Admin-Rechte entziehen" : "Admin-Rechte vergeben"}
+                    className={`h-8 w-8 p-0 flex-shrink-0 ${
+                      isDbAdmin
+                        ? "text-primary hover:text-primary/80 hover:bg-primary/10"
+                        : "text-muted-foreground hover:text-primary hover:bg-primary/10"
+                    }`}
+                  >
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill={isDbAdmin ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                    </svg>
+                  </Button>
+                )}
+                {!isEnvAdmin && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleRemove(entry.id, entry.email)}
+                    disabled={isPending}
+                    className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10 flex-shrink-0"
+                  >
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <line x1="18" y1="6" x2="6" y2="18" />
+                      <line x1="6" y1="6" x2="18" y2="18" />
+                    </svg>
+                  </Button>
                 )}
               </div>
-              {!isAdmin && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => handleRemove(entry.id, entry.email)}
-                  disabled={isPending}
-                  className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10 flex-shrink-0"
-                >
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <line x1="18" y1="6" x2="6" y2="18" />
-                    <line x1="6" y1="6" x2="18" y2="18" />
-                  </svg>
-                </Button>
-              )}
             </div>
           );
         })}
@@ -166,28 +242,35 @@ export function AdminEmails({ initialEmails, adminEmail }: AdminEmailsProps) {
         <div className="flex gap-2">
           <Input
             type="text"
-            placeholder="Name"
-            value={newName}
-            onChange={(e) => setNewName(e.target.value)}
+            placeholder="Vorname"
+            value={newFirstName}
+            onChange={(e) => setNewFirstName(e.target.value)}
             className="h-10 rounded-xl"
           />
           <Input
-            type="email"
-            placeholder="E-Mail"
-            value={newEmail}
-            onChange={(e) => setNewEmail(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                e.preventDefault();
-                handleAdd();
-              }
-            }}
+            type="text"
+            placeholder="Nachname"
+            value={newLastName}
+            onChange={(e) => setNewLastName(e.target.value)}
             className="h-10 rounded-xl"
           />
         </div>
+        <Input
+          type="email"
+          placeholder="E-Mail"
+          value={newEmail}
+          onChange={(e) => setNewEmail(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              handleAdd();
+            }
+          }}
+          className="h-10 rounded-xl"
+        />
         <Button
           onClick={handleAdd}
-          disabled={isPending || !newEmail.trim() || !newName.trim()}
+          disabled={isPending || !newEmail.trim() || !newFirstName.trim()}
           className="w-full h-10 rounded-xl"
         >
           {isPending ? (

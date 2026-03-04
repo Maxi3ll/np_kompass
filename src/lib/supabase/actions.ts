@@ -89,8 +89,63 @@ export async function isCurrentUserAdmin(): Promise<boolean> {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user?.email) return false;
 
+  // Superadmin (env-based) is always admin
+  const adminEmail = getAdminEmail();
+  if (adminEmail && user.email.toLowerCase() === adminEmail) return true;
+
+  // Check persons.role = 'admin' in DB
+  const serviceClient = createServiceClient();
+  const { data: person } = await serviceClient
+    .from('persons')
+    .select('role')
+    .eq('auth_user_id', user.id)
+    .single();
+
+  return person?.role === 'admin';
+}
+
+export async function isSuperAdmin(): Promise<boolean> {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user?.email) return false;
+
   const adminEmail = getAdminEmail();
   return !!adminEmail && user.email.toLowerCase() === adminEmail;
+}
+
+export async function toggleAdminRole(email: string) {
+  const superAdmin = await isSuperAdmin();
+  if (!superAdmin) return { error: 'unauthorized' };
+
+  const normalizedEmail = email.toLowerCase().trim();
+
+  // Cannot toggle superadmin's own role
+  const adminEmail = getAdminEmail();
+  if (adminEmail && normalizedEmail === adminEmail) {
+    return { error: 'cannot_toggle_superadmin' };
+  }
+
+  const serviceClient = createServiceClient();
+
+  const { data: person } = await serviceClient
+    .from('persons')
+    .select('id, role')
+    .eq('email', normalizedEmail)
+    .single();
+
+  if (!person) return { error: 'person_not_found' };
+
+  const newRole = person.role === 'admin' ? 'member' : 'admin';
+
+  const { error } = await serviceClient
+    .from('persons')
+    .update({ role: newRole })
+    .eq('id', person.id);
+
+  if (error) return { error: error.message };
+
+  revalidatePath('/profil');
+  return { success: true, newRole };
 }
 
 export async function getAllowedEmails() {
@@ -105,28 +160,37 @@ export async function getAllowedEmails() {
 
   if (error) return { error: error.message };
 
-  // Join with persons to get names
+  // Join with persons to get names and roles
   const serviceClient = createServiceClient();
   const { data: persons } = await serviceClient
     .from('persons')
-    .select('email, name');
+    .select('email, name, role');
 
-  const personMap = new Map<string, string>();
+  const personMap = new Map<string, { name: string; role: string }>();
   if (persons) {
     for (const p of persons) {
-      personMap.set(p.email.toLowerCase(), p.name);
+      personMap.set(p.email.toLowerCase(), { name: p.name, role: p.role });
     }
   }
 
-  const emailsWithNames = data.map((entry: any) => ({
-    ...entry,
-    personName: personMap.get(entry.email.toLowerCase()) || null,
-  }));
+  const adminEmail = getAdminEmail();
 
-  return { emails: emailsWithNames, adminEmail: getAdminEmail() };
+  const emailsWithNames = data.map((entry: any) => {
+    const personInfo = personMap.get(entry.email.toLowerCase());
+    return {
+      ...entry,
+      personName: personInfo?.name || null,
+      personRole: personInfo?.role || null,
+      isSuperAdmin: !!(adminEmail && entry.email.toLowerCase() === adminEmail),
+    };
+  });
+
+  const currentUserIsSuperAdmin = await isSuperAdmin();
+
+  return { emails: emailsWithNames, adminEmail, currentUserIsSuperAdmin };
 }
 
-export async function addAllowedEmail(email: string, name?: string) {
+export async function addAllowedEmail(email: string, firstName?: string, lastName?: string) {
   const isAdmin = await isCurrentUserAdmin();
   if (!isAdmin) return { error: 'unauthorized' };
 
@@ -149,7 +213,8 @@ export async function addAllowedEmail(email: string, name?: string) {
   }
 
   // Auto-create person entry if name is provided
-  if (name?.trim()) {
+  const fullName = [firstName?.trim(), lastName?.trim()].filter(Boolean).join(' ');
+  if (fullName) {
     const { data: existingPerson } = await serviceClient
       .from('persons')
       .select('id')
@@ -159,7 +224,7 @@ export async function addAllowedEmail(email: string, name?: string) {
     if (!existingPerson) {
       await serviceClient.from('persons').insert({
         email: normalizedEmail,
-        name: name.trim(),
+        name: fullName,
         role: 'member',
       });
     }
