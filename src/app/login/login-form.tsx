@@ -168,10 +168,7 @@ export function LoginForm() {
       return;
     }
 
-    const result = await resetPassword(
-      email.trim(),
-      `${window.location.origin}/auth/callback?next=/passwort-aendern`
-    );
+    const result = await resetPassword(email.trim());
 
     if (result.error) {
       setError("Fehler beim Senden. Bitte versuche es erneut.");

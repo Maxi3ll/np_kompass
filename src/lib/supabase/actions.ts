@@ -352,7 +352,7 @@ export async function signUpWithPassword(email: string, password: string) {
   return { success: true };
 }
 
-export async function resetPassword(email: string, redirectTo: string) {
+export async function resetPassword(email: string) {
   const allowed = await isEmailAllowed(email);
   if (!allowed) {
     // Return success to prevent email enumeration
@@ -360,9 +360,7 @@ export async function resetPassword(email: string, redirectTo: string) {
   }
 
   const supabase = await createClient();
-  const { error } = await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo,
-  });
+  const { error } = await supabase.auth.resetPasswordForEmail(email);
 
   if (error) {
     console.error('Reset password error:', error.message, error.status);
