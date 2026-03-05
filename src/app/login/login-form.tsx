@@ -133,7 +133,7 @@ export function LoginForm() {
 
     if (result.error === "access_denied") {
       setError(
-        "Diese E-Mail ist nicht freigeschaltet. Bitte wende dich an den Admin."
+        "Diese E-Mail ist nicht freigeschaltet. Bitte wende dich an den Kompass-Admin."
       );
       setIsLoading(false);
       return;
@@ -141,14 +141,14 @@ export function LoginForm() {
 
     if (result.error === "already_registered") {
       setError(
-        "Diese E-Mail ist bereits registriert. Bitte melde dich an."
+        "Dieses Konto wurde bereits aktiviert. Bitte melde dich an."
       );
       setIsLoading(false);
       return;
     }
 
     if (result.error) {
-      setError("Registrierung fehlgeschlagen. Bitte versuche es erneut.");
+      setError("Aktivierung fehlgeschlagen. Bitte versuche es erneut.");
       setIsLoading(false);
       return;
     }
@@ -272,7 +272,7 @@ export function LoginForm() {
               onClick={() => switchMode("register")}
               className="text-primary hover:underline"
             >
-              Noch kein Konto? Registrieren
+              Konto aktivieren
             </button>
             <button
               type="button"
@@ -288,6 +288,11 @@ export function LoginForm() {
       {/* Register Form */}
       {mode === "register" && (
         <form onSubmit={handleRegister} className="space-y-4">
+          <div className="p-4 rounded-xl bg-[var(--np-blue)]/5 border border-[var(--np-blue)]/20">
+            <p className="text-sm text-muted-foreground text-center">
+              Deine E-Mail-Adresse muss zuerst vom <strong className="text-foreground">Kompass-Admin</strong> freigeschaltet werden. Wende dich an den Admin deines Vereins, falls du noch keinen Zugang hast.
+            </p>
+          </div>
           <div className="space-y-2">
             <label htmlFor="reg-email" className="text-sm font-medium text-foreground">
               E-Mail-Adresse
@@ -344,10 +349,10 @@ export function LoginForm() {
             {isLoading ? (
               <span className="flex items-center gap-2">
                 <Spinner />
-                Wird registriert...
+                Wird aktiviert...
               </span>
             ) : (
-              "Registrieren"
+              "Konto aktivieren"
             )}
           </Button>
 
@@ -357,7 +362,7 @@ export function LoginForm() {
               onClick={() => switchMode("login")}
               className="text-primary hover:underline"
             >
-              Bereits ein Konto? Anmelden
+              Bereits aktiviert? Anmelden
             </button>
           </div>
         </form>
