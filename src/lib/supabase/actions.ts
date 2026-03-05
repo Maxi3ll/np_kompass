@@ -385,6 +385,12 @@ export async function updatePassword(newPassword: string) {
 
   if (error) {
     console.error('Update password error:', error.message, error.status);
+    if (error.message?.includes('different from the old password') || error.message?.includes('same_password')) {
+      return { error: 'same_password' };
+    }
+    if (error.message?.includes('session_not_found') || error.message?.includes('not authenticated')) {
+      return { error: 'session_expired' };
+    }
     return { error: 'update_failed', details: error.message };
   }
 

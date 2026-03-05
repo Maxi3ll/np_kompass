@@ -59,6 +59,18 @@ export function PasswordChangeForm() {
       return;
     }
 
+    if (result.error === "same_password") {
+      setError("Das neue Passwort muss sich vom bisherigen unterscheiden.");
+      setIsLoading(false);
+      return;
+    }
+
+    if (result.error === "session_expired") {
+      setError("Deine Sitzung ist abgelaufen. Bitte fordere einen neuen Reset-Link an.");
+      setIsLoading(false);
+      return;
+    }
+
     if (result.error) {
       setError("Passwort konnte nicht geändert werden. Bitte versuche es erneut.");
       setIsLoading(false);
