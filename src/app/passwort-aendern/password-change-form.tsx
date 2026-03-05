@@ -25,7 +25,7 @@ function validatePassword(password: string): string | null {
   return null;
 }
 
-export function PasswordChangeForm() {
+export function PasswordChangeForm({ isResetFlow = false }: { isResetFlow?: boolean }) {
   const router = useRouter();
   const [password, setPassword] = useState("");
   const [passwordConfirm, setPasswordConfirm] = useState("");
@@ -105,10 +105,10 @@ export function PasswordChangeForm() {
           Dein Passwort wurde erfolgreich aktualisiert.
         </p>
         <button
-          onClick={() => router.push("/profil")}
+          onClick={() => router.push(isResetFlow ? "/" : "/profil")}
           className="text-sm text-primary hover:underline"
         >
-          Zurück zum Profil
+          {isResetFlow ? "Weiter zum Kompass" : "Zurück zum Profil"}
         </button>
       </div>
     );

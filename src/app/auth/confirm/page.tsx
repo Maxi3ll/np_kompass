@@ -48,7 +48,7 @@ function ConfirmContent() {
     }
 
     // Determine redirect based on type
-    const redirectTo = type === "recovery" ? "/passwort-aendern" : next;
+    const redirectTo = type === "recovery" ? "/passwort-aendern?reset=true" : next;
     router.push(redirectTo);
     router.refresh();
   };
