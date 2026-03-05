@@ -355,7 +355,8 @@ export async function signUpWithPassword(email: string, password: string) {
 export async function resetPassword(email: string, redirectTo: string) {
   const allowed = await isEmailAllowed(email);
   if (!allowed) {
-    return { error: 'access_denied' };
+    // Return success to prevent email enumeration
+    return { success: true };
   }
 
   const supabase = await createClient();
@@ -366,6 +367,27 @@ export async function resetPassword(email: string, redirectTo: string) {
   if (error) {
     console.error('Reset password error:', error.message, error.status);
     return { error: 'reset_failed', details: error.message };
+  }
+
+  return { success: true };
+}
+
+export async function updatePassword(newPassword: string) {
+  if (!newPassword || newPassword.length < 8) {
+    return { error: 'password_too_short' };
+  }
+
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    return { error: 'not_authenticated' };
+  }
+
+  const { error } = await supabase.auth.updateUser({ password: newPassword });
+
+  if (error) {
+    console.error('Update password error:', error.message, error.status);
+    return { error: 'update_failed', details: error.message };
   }
 
   return { success: true };

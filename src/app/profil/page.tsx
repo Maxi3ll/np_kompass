@@ -196,6 +196,19 @@ export default async function ProfilPage() {
                 </div>
               )}
             </div>
+
+            {/* Password Change */}
+            <div className="border-t border-border pt-3">
+              <Link
+                href="/passwort-aendern"
+                className="flex items-center justify-between py-2 text-sm text-primary hover:underline"
+              >
+                <span>Passwort ändern</span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-muted-foreground">
+                  <polyline points="9 18 15 12 9 6" />
+                </svg>
+              </Link>
+            </div>
           </div>
 
           {/* Admin Section */}

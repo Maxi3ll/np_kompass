@@ -170,14 +170,8 @@ export function LoginForm() {
 
     const result = await resetPassword(
       email.trim(),
-      `${window.location.origin}/auth/callback`
+      `${window.location.origin}/auth/callback?next=/passwort-aendern`
     );
-
-    if (result.error === "access_denied") {
-      setError("Diese E-Mail ist nicht freigeschaltet.");
-      setIsLoading(false);
-      return;
-    }
 
     if (result.error) {
       setError("Fehler beim Senden. Bitte versuche es erneut.");

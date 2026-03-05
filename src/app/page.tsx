@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { Header } from "@/components/navigation/header";
 import { AppShell } from "@/components/layout/app-shell";
 import { getDashboardData, getRecentNotifications } from "@/lib/supabase/queries";
@@ -10,6 +11,10 @@ export const revalidate = 60; // Revalidate every 60 seconds
 export default async function Home() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) {
+    redirect("/login");
+  }
 
   // Get person from database if user is logged in
   let personId: string | undefined;
