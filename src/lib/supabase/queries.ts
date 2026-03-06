@@ -404,6 +404,23 @@ export async function getPersonByAuthId(authUserId: string) {
   return data;
 }
 
+export async function getActivePersons() {
+  const supabase = await createClient();
+
+  const { data, error } = await supabase
+    .from('persons')
+    .select('id, name')
+    .eq('is_active', true)
+    .order('name');
+
+  if (error) {
+    console.error('Error fetching persons:', error);
+    return [];
+  }
+
+  return data;
+}
+
 export async function getPersonWithRoles(personId: string) {
   const supabase = await createClient();
 

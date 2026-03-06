@@ -29,6 +29,11 @@ interface Circle {
   icon?: string;
 }
 
+interface PersonOption {
+  id: string;
+  name: string;
+}
+
 interface TensionActionsProps {
   tensionId: string;
   currentStatus: string;
@@ -40,6 +45,9 @@ interface TensionActionsProps {
   currentDescription: string;
   currentCircleId: string;
   currentPriority: string;
+  currentAssignedTo: string | null;
+  isAdmin: boolean;
+  persons: PersonOption[];
 }
 
 export function TensionActions({
@@ -53,6 +61,9 @@ export function TensionActions({
   currentDescription,
   currentCircleId,
   currentPriority,
+  currentAssignedTo,
+  isAdmin,
+  persons,
 }: TensionActionsProps) {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -73,7 +84,12 @@ export function TensionActions({
   const [editCircleId, setEditCircleId] = useState(currentCircleId);
   const [editPriority, setEditPriority] = useState(currentPriority);
 
+  // Assign dialog state
+  const [assignOpen, setAssignOpen] = useState(false);
+  const [assignTo, setAssignTo] = useState(currentAssignedTo || "");
+
   const isCreator = personId === raisedBy;
+  const canAssign = isCreator || isAdmin;
 
   const handleStartWorking = async () => {
     setIsSubmitting(true);
@@ -162,8 +178,28 @@ export function TensionActions({
     setIsSubmitting(false);
   };
 
+  const handleAssign = async () => {
+    setIsSubmitting(true);
+    setError(null);
+
+    const result = await updateTension({
+      id: tensionId,
+      assignedTo: assignTo || null,
+    });
+
+    if (result.error) {
+      setError(result.error);
+      setIsSubmitting(false);
+      return;
+    }
+
+    setAssignOpen(false);
+    router.refresh();
+    setIsSubmitting(false);
+  };
+
   if (currentStatus === "RESOLVED") {
-    return isCreator ? (
+    return (isCreator || isAdmin) ? (
       <Dialog open={detailsOpen} onOpenChange={setDetailsOpen}>
         <DialogTrigger asChild>
           <Button variant="outline" className="h-10 rounded-xl text-sm">
@@ -221,8 +257,8 @@ export function TensionActions({
 
   return (
     <div className="space-y-3">
-      {/* Edit Details Button (only for creator) */}
-      {isCreator && (
+      {/* Edit Details Button (creator or admin) */}
+      {(isCreator || isAdmin) && (
         <Dialog open={detailsOpen} onOpenChange={setDetailsOpen}>
           <DialogTrigger asChild>
             <Button variant="outline" className="w-full h-10 rounded-xl text-sm">
@@ -271,6 +307,51 @@ export function TensionActions({
               <div className="flex gap-3">
                 <Button variant="outline" onClick={() => setDetailsOpen(false)} className="flex-1 h-11 rounded-xl">Abbrechen</Button>
                 <Button onClick={handleSaveDetails} disabled={isSubmitting || !editTitle.trim()} className="flex-1 h-11 rounded-xl bg-primary">{isSubmitting ? "Speichern..." : "Speichern"}</Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
+
+      {/* Assign Button (creator or admin) */}
+      {canAssign && (
+        <Dialog open={assignOpen} onOpenChange={setAssignOpen}>
+          <DialogTrigger asChild>
+            <Button variant="outline" className="w-full h-10 rounded-xl text-sm">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2">
+                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+                <circle cx="9" cy="7" r="4" />
+                <line x1="19" y1="8" x2="19" y2="14" />
+                <line x1="22" y1="11" x2="16" y2="11" />
+              </svg>
+              Zuweisen
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="mx-4 rounded-2xl">
+            <DialogHeader>
+              <DialogTitle>Spannung zuweisen</DialogTitle>
+              <DialogDescription>Wähle eine Person aus, die sich um diese Spannung kümmern soll.</DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4 pt-2">
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-foreground">Person</label>
+                <Select value={assignTo} onValueChange={setAssignTo}>
+                  <SelectTrigger className="rounded-xl">
+                    <SelectValue placeholder="Person auswählen..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {persons.map((p) => (
+                      <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              {error && <p className="text-sm text-destructive">{error}</p>}
+              <div className="flex gap-3">
+                <Button variant="outline" onClick={() => setAssignOpen(false)} className="flex-1 h-11 rounded-xl">Abbrechen</Button>
+                <Button onClick={handleAssign} disabled={isSubmitting || !assignTo} className="flex-1 h-11 rounded-xl bg-primary">
+                  {isSubmitting ? "Speichern..." : "Zuweisen"}
+                </Button>
               </div>
             </div>
           </DialogContent>

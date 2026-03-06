@@ -2,8 +2,9 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Header } from "@/components/navigation/header";
 import { AppShell } from "@/components/layout/app-shell";
-import { getTensionById, getCircles, getTensionComments } from "@/lib/supabase/queries";
+import { getTensionById, getCircles, getTensionComments, getActivePersons } from "@/lib/supabase/queries";
 import { createClient } from "@/lib/supabase/server";
+import { isCurrentUserAdmin } from "@/lib/supabase/actions";
 import { TensionActions } from "./tension-actions";
 import { TensionComments } from "./tension-comments";
 
@@ -43,10 +44,12 @@ export default async function SpannungDetailPage({ params }: PageProps) {
     personId = person?.id || user.id;
   }
 
-  const [tension, circles, comments] = await Promise.all([
+  const [tension, circles, comments, persons, admin] = await Promise.all([
     getTensionById(id),
     getCircles(),
     getTensionComments(id),
+    getActivePersons(),
+    isCurrentUserAdmin(),
   ]);
 
   if (!tension) {
@@ -214,6 +217,9 @@ export default async function SpannungDetailPage({ params }: PageProps) {
               currentDescription={tension.description || ""}
               currentCircleId={tension.circle?.id || ""}
               currentPriority={tension.priority}
+              currentAssignedTo={tension.assigned_to || null}
+              isAdmin={admin}
+              persons={persons || []}
             />
           </div>
 
