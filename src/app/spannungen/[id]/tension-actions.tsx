@@ -185,8 +185,6 @@ export function TensionActions({
     const result = await updateTension({
       id: tensionId,
       assignedTo: assignTo || null,
-      // Auto-set to IN_PROGRESS when assigning someone and status is still NEW
-      ...(assignTo && currentStatus === "NEW" ? { status: "IN_PROGRESS" as const } : {}),
     });
 
     if (result.error) {
@@ -394,6 +392,23 @@ export function TensionActions({
               </div>
             </DialogContent>
           </Dialog>
+        )}
+
+        {/* "Jetzt bearbeiten" when NEW and someone is assigned */}
+        {currentStatus === "NEW" && currentAssignedTo && (
+          <Button
+            variant="default"
+            className="flex-1 h-12 rounded-xl"
+            disabled={isSubmitting}
+            onClick={async () => {
+              setIsSubmitting(true);
+              await updateTension({ id: tensionId, status: "IN_PROGRESS" });
+              router.refresh();
+              setIsSubmitting(false);
+            }}
+          >
+            {isSubmitting ? "..." : "Jetzt bearbeiten"}
+          </Button>
         )}
 
         {/* "Nächster Schritt" when IN_PROGRESS */}
