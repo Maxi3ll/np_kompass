@@ -144,9 +144,10 @@ export function SubtaskActions({
           </div>
           <div className="space-y-2">
             <label className="text-sm font-medium text-foreground">Ansprechperson</label>
-            <Select value={editContactPersonId} onValueChange={setEditContactPersonId}>
+            <Select value={editContactPersonId} onValueChange={(v) => setEditContactPersonId(v === "__none__" ? "" : v)}>
               <SelectTrigger className="rounded-xl"><SelectValue placeholder="Ansprechperson wählen" /></SelectTrigger>
               <SelectContent>
+                <SelectItem value="__none__" className="text-muted-foreground">Keine Auswahl</SelectItem>
                 {persons.map((p) => (<SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>))}
               </SelectContent>
             </Select>

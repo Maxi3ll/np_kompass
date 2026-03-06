@@ -123,11 +123,12 @@ export function SubtaskCreateDialog({ projektId, personId, persons }: SubtaskCre
             <label className="text-sm font-medium text-foreground">
               Ansprechperson
             </label>
-            <Select value={contactPersonId} onValueChange={setContactPersonId}>
+            <Select value={contactPersonId} onValueChange={(v) => setContactPersonId(v === "__none__" ? "" : v)}>
               <SelectTrigger className="h-11 rounded-xl w-full">
                 <SelectValue placeholder="Wer ist zuständig? (optional)" />
               </SelectTrigger>
               <SelectContent>
+                <SelectItem value="__none__" className="text-muted-foreground">Keine Auswahl</SelectItem>
                 {persons.map((person) => (
                   <SelectItem key={person.id} value={person.id}>
                     {person.name}

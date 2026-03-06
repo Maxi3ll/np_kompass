@@ -8,6 +8,7 @@ import { getPersonsList } from "@/lib/supabase/actions";
 import { SubtaskActions } from "./subtask-actions";
 import { SubtaskComments } from "./subtask-comments";
 import { VolunteerSection } from "./volunteer-section";
+import type { SubtaskWithDetails } from "@/types";
 
 export const revalidate = 30;
 
@@ -53,7 +54,7 @@ export default async function SubtaskDetailPage({ params }: PageProps) {
 
   // Check if current user is already a volunteer
   const isVolunteer = personId
-    ? (subtask.volunteers || []).some((v: any) => v.id === personId)
+    ? (subtask.volunteers || []).some((v: { id: string }) => v.id === personId)
     : false;
 
   return (
@@ -75,7 +76,7 @@ export default async function SubtaskDetailPage({ params }: PageProps) {
           {/* Breadcrumb */}
           <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
             <Link href={`/projekte/${id}`} className="hover:text-foreground transition-colors">
-              {(subtask.projekt as any)?.title || 'Projekt'}
+              {(subtask as SubtaskWithDetails & { projekt?: { title?: string } }).projekt?.title || 'Projekt'}
             </Link>
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <polyline points="9 18 15 12 9 6" />

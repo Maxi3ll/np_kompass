@@ -7,6 +7,7 @@ import { getPersonsList, isCurrentUserAdmin } from "@/lib/supabase/actions";
 import { createClient } from "@/lib/supabase/server";
 import { ProjektActions } from "./projekt-actions";
 import { SubtaskCreateDialog } from "./subtask-create-dialog";
+import type { SubtaskWithDetails } from "@/types";
 
 export const revalidate = 30;
 
@@ -100,7 +101,7 @@ export default async function ProjektDetailPage({ params }: PageProps) {
             <div className="bg-card rounded-2xl shadow-card border border-border/50 p-4">
               <p className="text-xs text-muted-foreground mb-2">Beteiligte Kreise</p>
               <div className="flex flex-wrap gap-2">
-                {projekt.circles.map((circle: any) => (
+                {projekt.circles.map((circle: { id: string; name: string; color?: string; icon?: string }) => (
                   <Link
                     key={circle.id}
                     href={`/kreise/${circle.id}`}
@@ -201,7 +202,7 @@ export default async function ProjektDetailPage({ params }: PageProps) {
               currentShortDescription={projekt.short_description}
               currentDescription={projekt.description}
               currentCoordinatorId={projekt.coordinator_id}
-              currentCircleIds={projekt.circles?.map((c: any) => c.id) || []}
+              currentCircleIds={projekt.circles?.map((c: { id: string }) => c.id) || []}
               currentStartDate={projekt.start_date}
               currentEndDate={projekt.end_date}
               circles={displayCircles}
@@ -234,7 +235,7 @@ export default async function ProjektDetailPage({ params }: PageProps) {
 
             {/* Subtask List */}
             <div className="space-y-2">
-              {(projekt.subtasks || []).map((subtask: any) => {
+              {(projekt.subtasks || []).map((subtask: SubtaskWithDetails) => {
                 const st = SUBTASK_STATUS[subtask.status as keyof typeof SUBTASK_STATUS] || SUBTASK_STATUS.OPEN;
                 return (
                   <Link
@@ -257,7 +258,7 @@ export default async function ProjektDetailPage({ params }: PageProps) {
                             <span className={`inline-flex text-[10px] px-1.5 py-0.5 rounded-full font-medium ${st.color} ${st.textColor}`}>
                               {st.label}
                             </span>
-                            {subtask.volunteer_count > 0 && (
+                            {(subtask.volunteer_count ?? 0) > 0 && (
                               <span className="text-[10px] text-muted-foreground">
                                 {subtask.volunteer_count} Helfer
                               </span>

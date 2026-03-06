@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Header } from "@/components/navigation/header";
 import { AppShell } from "@/components/layout/app-shell";
 import { getProjekte } from "@/lib/supabase/queries";
+import type { ProjektWithDetails } from "@/types";
 
 export const revalidate = 30;
 
@@ -17,18 +18,18 @@ interface PageProps {
 
 export default async function ProjektePage({ searchParams }: PageProps) {
   const params = await searchParams;
-  const allProjekte = await getProjekte();
+  const allProjekte = await getProjekte() as ProjektWithDetails[];
 
   // Status counts
   const statusCounts = {
     all: allProjekte.length,
-    OPEN: allProjekte.filter((v: any) => v.status === 'OPEN').length,
-    IN_PROGRESS: allProjekte.filter((v: any) => v.status === 'IN_PROGRESS').length,
-    DONE: allProjekte.filter((v: any) => v.status === 'DONE').length,
+    OPEN: allProjekte.filter((v) => v.status === 'OPEN').length,
+    IN_PROGRESS: allProjekte.filter((v) => v.status === 'IN_PROGRESS').length,
+    DONE: allProjekte.filter((v) => v.status === 'DONE').length,
   };
 
   const projekte = params.status
-    ? allProjekte.filter((v: any) => v.status === params.status)
+    ? allProjekte.filter((v) => v.status === params.status)
     : allProjekte;
 
   const buildHref = (status?: string) => {
@@ -114,9 +115,9 @@ export default async function ProjektePage({ searchParams }: PageProps) {
         {/* Projekte List */}
         <div className="px-5 max-w-2xl mx-auto lg:max-w-4xl">
           <div className="space-y-3 stagger-fade-in">
-            {projekte.map((v: any) => {
+            {projekte.map((v) => {
               const status = STATUS_CONFIG[v.status as keyof typeof STATUS_CONFIG] || STATUS_CONFIG.OPEN;
-              const subtaskProgress = v.subtask_count > 0
+              const subtaskProgress = (v.subtask_count ?? 0) > 0
                 ? `${v.subtask_done_count}/${v.subtask_count}`
                 : null;
 
@@ -145,7 +146,7 @@ export default async function ProjektePage({ searchParams }: PageProps) {
                     {/* Circle Badges */}
                     {v.circles && v.circles.length > 0 && (
                       <div className="flex flex-wrap gap-1.5 mt-3">
-                        {v.circles.map((circle: any) => (
+                        {v.circles.map((circle) => (
                           <span
                             key={circle.id}
                             className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium"

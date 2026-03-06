@@ -118,6 +118,11 @@ export function ProjektActions({
       return;
     }
 
+    if (startDate && endDate && endDate < startDate) {
+      setEditError("Das Enddatum darf nicht vor dem Startdatum liegen");
+      return;
+    }
+
     setIsSubmitting(true);
 
     const result = await updateProjekt({
@@ -281,11 +286,12 @@ export function ProjektActions({
               <label className="text-sm font-medium text-foreground">
                 Koordinator:in
               </label>
-              <Select value={editCoordinatorId} onValueChange={setEditCoordinatorId}>
+              <Select value={editCoordinatorId} onValueChange={(v) => setEditCoordinatorId(v === "__none__" ? "" : v)}>
                 <SelectTrigger className="h-12 rounded-xl w-full">
                   <SelectValue placeholder="Wer koordiniert das Projekt? (optional)" />
                 </SelectTrigger>
                 <SelectContent>
+                  <SelectItem value="__none__" className="text-muted-foreground">Keine Auswahl</SelectItem>
                   {persons.map((person) => (
                     <SelectItem key={person.id} value={person.id}>
                       {person.name}

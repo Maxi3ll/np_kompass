@@ -7,6 +7,7 @@ export interface Person {
   email: string;
   name: string;
   phone?: string;
+  avatar_color?: string;
   familyId?: string;
   isActive: boolean;
   createdAt: Date;

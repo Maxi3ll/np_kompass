@@ -62,6 +62,11 @@ export function ProjektForm({ personId, circles, persons }: ProjektFormProps) {
       return;
     }
 
+    if (startDate && endDate && endDate < startDate) {
+      setError("Das Enddatum darf nicht vor dem Startdatum liegen");
+      return;
+    }
+
     setIsSubmitting(true);
 
     const result = await createProjekt({
@@ -146,11 +151,12 @@ export function ProjektForm({ personId, circles, persons }: ProjektFormProps) {
         <label className="text-sm font-medium text-foreground">
           Koordinator:in
         </label>
-        <Select value={coordinatorId} onValueChange={setCoordinatorId}>
+        <Select value={coordinatorId} onValueChange={(v) => setCoordinatorId(v === "__none__" ? "" : v)}>
           <SelectTrigger className="h-12 rounded-xl w-full">
             <SelectValue placeholder="Wer koordiniert das Projekt? (optional)" />
           </SelectTrigger>
           <SelectContent>
+            <SelectItem value="__none__" className="text-muted-foreground">Keine Auswahl</SelectItem>
             {persons.map((person) => (
               <SelectItem key={person.id} value={person.id}>
                 {person.name}
