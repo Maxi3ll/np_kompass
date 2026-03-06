@@ -30,6 +30,7 @@ export function AgendaItemLive({ item, isCurrent, personId }: AgendaItemLiveProp
   const [outcome, setOutcome] = useState(item.outcome || '');
   const [comment, setComment] = useState('');
   const [isPending, startTransition] = useTransition();
+  const [error, setError] = useState<string | null>(null);
   const outcomeTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
   const title = item.tension?.title || item.notes || 'Unbenannter Punkt';
 
@@ -37,8 +38,9 @@ export function AgendaItemLive({ item, isCurrent, personId }: AgendaItemLiveProp
   useEffect(() => {
     if (outcome === (item.outcome || '')) return;
     if (outcomeTimer.current) clearTimeout(outcomeTimer.current);
-    outcomeTimer.current = setTimeout(() => {
-      updateAgendaItemOutcome(item.id, outcome);
+    outcomeTimer.current = setTimeout(async () => {
+      const result = await updateAgendaItemOutcome(item.id, outcome);
+      if (result?.error) setError(result.error);
     }, 800);
     return () => {
       if (outcomeTimer.current) clearTimeout(outcomeTimer.current);
@@ -47,9 +49,14 @@ export function AgendaItemLive({ item, isCurrent, personId }: AgendaItemLiveProp
 
   function handleAddComment() {
     if (!comment.trim()) return;
+    setError(null);
     startTransition(async () => {
-      await addMeetingAgendaComment(item.id, personId, comment);
-      setComment('');
+      const result = await addMeetingAgendaComment(item.id, personId, comment);
+      if (result?.error) {
+        setError(result.error);
+      } else {
+        setComment('');
+      }
     });
   }
 
@@ -97,6 +104,7 @@ export function AgendaItemLive({ item, isCurrent, personId }: AgendaItemLiveProp
                 value={outcome}
                 onChange={(e) => setOutcome(e.target.value)}
                 placeholder="Ergebnis, Entscheidung oder nächste Schritte..."
+                maxLength={5000}
                 className="w-full px-3 py-2 text-sm rounded-xl border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary/20 resize-none"
                 rows={2}
               />
@@ -139,7 +147,11 @@ export function AgendaItemLive({ item, isCurrent, personId }: AgendaItemLiveProp
           )}
 
           {isCurrent && (
-            <div className="flex gap-2">
+            <>
+              {error && (
+                <p className="text-xs text-destructive mb-2">{error}</p>
+              )}
+              <div className="flex gap-2">
               <input
                 type="text"
                 value={comment}
@@ -151,6 +163,7 @@ export function AgendaItemLive({ item, isCurrent, personId }: AgendaItemLiveProp
                   }
                 }}
                 placeholder="Kommentar..."
+                maxLength={5000}
                 className="flex-1 px-3 py-1.5 text-sm rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary/20"
                 disabled={isPending}
               />
@@ -162,6 +175,7 @@ export function AgendaItemLive({ item, isCurrent, personId }: AgendaItemLiveProp
                 {isPending ? '...' : 'Senden'}
               </button>
             </div>
+            </>
           )}
         </div>
       )}

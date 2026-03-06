@@ -8,21 +8,11 @@ import { AgendaSection } from "./agenda-section";
 import { LiveMeeting } from "./live-meeting";
 import { StartMeetingButton } from "./start-meeting-button";
 import { ProtocolView } from "./components/protocol-view";
+import { MeetingParticipants } from "./components/meeting-participants";
+import type { MeetingType } from "@/types";
+import { MEETING_TYPE_CONFIG } from "@/types";
 
 export const revalidate = 30;
-
-const MEETING_TYPE_CONFIG = {
-  TACTICAL: {
-    label: "Taktischer Termin",
-    description: "Operative Abstimmung und Status-Updates",
-    color: "var(--np-blue)",
-  },
-  GOVERNANCE: {
-    label: "Governance-Termin",
-    description: "Strukturelle Änderungen und Rollen-Anpassungen",
-    color: "var(--circle-finanzen)",
-  },
-};
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -68,7 +58,7 @@ export default async function MeetingDetailPage({ params }: PageProps) {
               <span className="text-3xl">{meeting.circle?.icon || "⭕"}</span>
               <div className="flex-1">
                 <h1 className="text-xl font-bold text-foreground">{meeting.circle?.name}</h1>
-                <p className="text-sm text-muted-foreground">{typeConfig.label}</p>
+                <p className="text-sm text-muted-foreground">{typeConfig.labelLong}</p>
               </div>
               {/* Status Badge */}
               {isActive && (
@@ -154,45 +144,11 @@ export default async function MeetingDetailPage({ params }: PageProps) {
                 isAdmin={isAdmin}
               />
 
-              {/* Facilitator */}
-              {meeting.facilitator && (
-                <div className="bg-card rounded-2xl shadow-card border border-border/50 p-4">
-                  <p className="text-xs text-muted-foreground mb-2">Moderation</p>
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-sm font-medium">
-                      {meeting.facilitator.name?.split(" ").map((n: string) => n[0]).join("").slice(0, 2)}
-                    </div>
-                    <div>
-                      <p className="font-medium text-foreground">{meeting.facilitator.name}</p>
-                      {meeting.facilitator.email && (
-                        <p className="text-xs text-muted-foreground">{meeting.facilitator.email}</p>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Attendees */}
-              {meeting.attendees && meeting.attendees.length > 0 && (
-                <div className="bg-card rounded-2xl shadow-card border border-border/50 p-4">
-                  <p className="text-xs text-muted-foreground mb-3">
-                    Teilnehmer ({meeting.attendees.length})
-                  </p>
-                  <div className="flex flex-wrap gap-2">
-                    {meeting.attendees.map((attendee: any) => (
-                      <div
-                        key={attendee.id}
-                        className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-muted"
-                      >
-                        <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center text-primary text-xs font-medium">
-                          {attendee.name?.split(" ").map((n: string) => n[0]).join("").slice(0, 2)}
-                        </div>
-                        <span className="text-sm">{attendee.name}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
+              <MeetingParticipants
+                facilitator={meeting.facilitator}
+                attendees={meeting.attendees}
+                showEmail
+              />
 
               {/* Agenda + Open Tensions */}
               <AgendaSection
@@ -220,42 +176,10 @@ export default async function MeetingDetailPage({ params }: PageProps) {
                 <ProtocolView protocol={meeting.protocol} />
               )}
 
-              {/* Facilitator */}
-              {meeting.facilitator && (
-                <div className="bg-card rounded-2xl shadow-card border border-border/50 p-4">
-                  <p className="text-xs text-muted-foreground mb-2">Moderation</p>
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-sm font-medium">
-                      {meeting.facilitator.name?.split(" ").map((n: string) => n[0]).join("").slice(0, 2)}
-                    </div>
-                    <div>
-                      <p className="font-medium text-foreground">{meeting.facilitator.name}</p>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Attendees */}
-              {meeting.attendees && meeting.attendees.length > 0 && (
-                <div className="bg-card rounded-2xl shadow-card border border-border/50 p-4">
-                  <p className="text-xs text-muted-foreground mb-3">
-                    Teilnehmer ({meeting.attendees.length})
-                  </p>
-                  <div className="flex flex-wrap gap-2">
-                    {meeting.attendees.map((attendee: any) => (
-                      <div
-                        key={attendee.id}
-                        className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-muted"
-                      >
-                        <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center text-primary text-xs font-medium">
-                          {attendee.name?.split(" ").map((n: string) => n[0]).join("").slice(0, 2)}
-                        </div>
-                        <span className="text-sm">{attendee.name}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
+              <MeetingParticipants
+                facilitator={meeting.facilitator}
+                attendees={meeting.attendees}
+              />
 
               {/* Agenda with outcomes */}
               {meeting.agendaItems && meeting.agendaItems.length > 0 && (
@@ -264,7 +188,7 @@ export default async function MeetingDetailPage({ params }: PageProps) {
                     Agenda ({meeting.agendaItems.length} Punkte)
                   </p>
                   <div className="space-y-2">
-                    {meeting.agendaItems.map((item: any, index: number) => (
+                    {meeting.agendaItems.map((item: { id: string; is_processed: boolean; tension?: { title: string } | null; notes?: string | null; outcome?: string | null }, index: number) => (
                       <div key={item.id} className="flex items-start gap-3 p-3 rounded-xl bg-muted/50">
                         <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium flex-shrink-0 ${
                           item.is_processed
@@ -303,7 +227,7 @@ export default async function MeetingDetailPage({ params }: PageProps) {
               <div className="flex items-center gap-3">
                 <div
                   className="w-10 h-10 rounded-xl flex items-center justify-center text-xl"
-                  style={{ backgroundColor: `${meeting.circle?.color}20` }}
+                  style={{ backgroundColor: `${meeting.circle?.color || '#4A90D9'}20` }}
                 >
                   {meeting.circle?.icon || "⭕"}
                 </div>

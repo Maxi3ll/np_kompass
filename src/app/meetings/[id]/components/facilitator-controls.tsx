@@ -22,15 +22,24 @@ export function FacilitatorControls({
   const [isPending, startTransition] = useTransition();
 
   function handleAdvance() {
+    if (currentPhase === 'CLOSING') {
+      if (!confirm('Meeting abschliessen? Das Protokoll wird generiert und kann nicht rückgängig gemacht werden.')) return;
+    }
     startTransition(async () => {
-      await advanceMeetingPhase(meetingId);
+      const result = await advanceMeetingPhase(meetingId);
+      if (result?.error) {
+        alert(result.error);
+      }
     });
   }
 
   function handleProcessItem() {
     if (!currentAgendaItemId) return;
     startTransition(async () => {
-      await processAgendaItem(meetingId, currentAgendaItemId);
+      const result = await processAgendaItem(meetingId, currentAgendaItemId);
+      if (result?.error) {
+        alert(result.error);
+      }
     });
   }
 

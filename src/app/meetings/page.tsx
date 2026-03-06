@@ -2,13 +2,28 @@ import Link from "next/link";
 import { Header } from "@/components/navigation/header";
 import { AppShell } from "@/components/layout/app-shell";
 import { getMeetings, getCircles } from "@/lib/supabase/queries";
+import type { MeetingType, MeetingStatus } from "@/types";
+import { MEETING_TYPE_CONFIG } from "@/types";
 
 export const revalidate = 60;
 
-const MEETING_TYPE_CONFIG = {
-  TACTICAL: { label: "Taktisch", color: "bg-[var(--np-blue)]", textColor: "text-white" },
-  GOVERNANCE: { label: "Governance", color: "bg-[var(--circle-finanzen)]", textColor: "text-white" },
-};
+interface MeetingListItem {
+  id: string;
+  date: string;
+  type: MeetingType;
+  status: MeetingStatus;
+  circle_id: string;
+  circle?: { id: string; name: string; color?: string; icon?: string };
+  facilitator?: { id: string; name: string };
+}
+
+interface CircleListItem {
+  id: string;
+  name: string;
+  color?: string;
+  icon?: string;
+  parent_circle_id: string | null;
+}
 
 interface PageProps {
   searchParams: Promise<{ filter?: string; circle?: string }>;
@@ -24,24 +39,24 @@ export default async function MeetingsPage({ searchParams }: PageProps) {
       past: !isUpcoming,
     }),
     getCircles(),
-  ]);
+  ]) as [MeetingListItem[], CircleListItem[]];
 
   // All circles including Anker-Kreis
-  const anchorCircle = circles.find((c: any) => c.parent_circle_id === null);
+  const anchorCircle = circles.find((c) => c.parent_circle_id === null);
   const displayCircles = [
     ...(anchorCircle ? [anchorCircle] : []),
-    ...circles.filter((c: any) => c.parent_circle_id !== null),
+    ...circles.filter((c) => c.parent_circle_id !== null),
   ];
 
   // Circle counts
   const circleCounts: Record<string, number> = {};
-  allMeetings.forEach((m: any) => {
+  allMeetings.forEach((m) => {
     if (m.circle_id) circleCounts[m.circle_id] = (circleCounts[m.circle_id] || 0) + 1;
   });
 
   // Apply circle filter
   const meetings = params.circle
-    ? allMeetings.filter((m: any) => m.circle_id === params.circle)
+    ? allMeetings.filter((m) => m.circle_id === params.circle)
     : allMeetings;
 
   // Build hrefs preserving both filters
@@ -54,7 +69,7 @@ export default async function MeetingsPage({ searchParams }: PageProps) {
   };
 
   // Group meetings by date
-  const groupedMeetings = meetings.reduce((groups: Record<string, any[]>, meeting: any) => {
+  const groupedMeetings = meetings.reduce((groups: Record<string, MeetingListItem[]>, meeting) => {
     const date = new Date(meeting.date).toLocaleDateString("de-DE", {
       weekday: "long",
       day: "numeric",
@@ -109,7 +124,7 @@ export default async function MeetingsPage({ searchParams }: PageProps) {
               <span className="w-2 h-2 rounded-full bg-foreground/40 flex-shrink-0" />
               Alle Kreise ({allMeetings.length})
             </Link>
-            {displayCircles.map((circle: any) => {
+            {displayCircles.map((circle) => {
               const count = circleCounts[circle.id] || 0;
               if (count === 0) return null;
               const isActive = params.circle === circle.id;
@@ -145,7 +160,7 @@ export default async function MeetingsPage({ searchParams }: PageProps) {
                     {date}
                   </h3>
                   <div className="space-y-3">
-                    {(dateMeetings as any[]).map((meeting: any) => {
+                    {(dateMeetings as MeetingListItem[]).map((meeting) => {
                       const typeConfig = MEETING_TYPE_CONFIG[meeting.type as keyof typeof MEETING_TYPE_CONFIG];
                       const meetingTime = new Date(meeting.date).toLocaleTimeString("de-DE", {
                         hour: "2-digit",
@@ -195,7 +210,7 @@ export default async function MeetingsPage({ searchParams }: PageProps) {
                                 </div>
                                 <div className="flex flex-col items-end gap-1">
                                   <span
-                                    className={`flex-shrink-0 px-2.5 py-1 rounded-full text-xs font-medium ${typeConfig.color} ${typeConfig.textColor}`}
+                                    className={`flex-shrink-0 px-2.5 py-1 rounded-full text-xs font-medium ${typeConfig.bgClass} ${typeConfig.textClass}`}
                                   >
                                     {typeConfig.label}
                                   </span>
@@ -241,7 +256,7 @@ export default async function MeetingsPage({ searchParams }: PageProps) {
                 {isUpcoming ? "Keine anstehenden Termine" : "Keine vergangenen Termine"}
               </p>
               <p className="text-sm text-muted-foreground mt-1">
-                {isUpcoming ? "Termine werden hier angezeigt, sobald sie geplant sind." : ""}
+                {isUpcoming ? "Termine werden hier angezeigt, sobald sie geplant sind." : "Vergangene Termine erscheinen hier nach Abschluss."}
               </p>
             </div>
           )}

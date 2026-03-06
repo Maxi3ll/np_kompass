@@ -32,16 +32,13 @@ export function MeetingForm({ circles }: MeetingFormProps) {
 
   const [circleId, setCircleId] = useState("");
   const [type, setType] = useState<"TACTICAL" | "GOVERNANCE">("TACTICAL");
-  const [date, setDate] = useState("");
-  const [time, setTime] = useState("19:00");
-  const [notes, setNotes] = useState("");
-
-  // Default date to next week
-  const getDefaultDate = () => {
+  const [date, setDate] = useState(() => {
     const nextWeek = new Date();
     nextWeek.setDate(nextWeek.getDate() + 7);
     return nextWeek.toISOString().split("T")[0];
-  };
+  });
+  const [time, setTime] = useState("19:00");
+  const [notes, setNotes] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -157,7 +154,7 @@ export function MeetingForm({ circles }: MeetingFormProps) {
           <Input
             id="date"
             type="date"
-            value={date || getDefaultDate()}
+            value={date}
             onChange={(e) => setDate(e.target.value)}
             min={new Date().toISOString().split("T")[0]}
             className="h-12 rounded-xl"
@@ -187,6 +184,7 @@ export function MeetingForm({ circles }: MeetingFormProps) {
           placeholder="Themen, Vorbereitung, Hinweise... (optional)"
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
+          maxLength={5000}
           className="min-h-[80px] rounded-xl resize-none"
         />
       </div>

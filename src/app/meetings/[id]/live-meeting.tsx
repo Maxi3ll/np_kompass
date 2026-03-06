@@ -19,7 +19,7 @@ interface LiveMeetingProps {
 
 export function LiveMeeting({ meetingId, facilitatorId, initialData }: LiveMeetingProps) {
   const { personId } = useUser();
-  const state = useMeetingRealtime(meetingId, initialData);
+  const { state, isConnected } = useMeetingRealtime(meetingId, initialData);
   const [isPending, startTransition] = useTransition();
 
   const isFacilitator = personId === facilitatorId;
@@ -65,6 +65,16 @@ export function LiveMeeting({ meetingId, facilitatorId, initialData }: LiveMeeti
 
   return (
     <div className={`space-y-4 ${isFacilitator ? 'pb-20' : ''}`}>
+      {/* Connection status banner */}
+      {!isConnected && (
+        <div className="p-3 rounded-xl bg-[var(--np-yellow)]/20 border border-[var(--np-yellow)]/30 flex items-center gap-2">
+          <div className="w-2 h-2 rounded-full bg-[var(--np-yellow)] animate-pulse flex-shrink-0" />
+          <p className="text-xs text-foreground">
+            Verbindung unterbrochen — Daten werden evtl. nicht aktualisiert.
+          </p>
+        </div>
+      )}
+
       {/* Phase Stepper */}
       <div className="bg-card rounded-2xl shadow-card border border-border/50">
         <MeetingPhaseBar currentPhase={state.currentPhase} />

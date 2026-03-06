@@ -20,8 +20,12 @@ export function StartMeetingButton({ meetingId, facilitatorId, isAdmin }: StartM
   if (!canStart) return null;
 
   function handleStart() {
+    if (!confirm('Meeting jetzt starten? Alle Teilnehmer können dann live beitreten.')) return;
     startTransition(async () => {
-      await startMeeting(meetingId);
+      const result = await startMeeting(meetingId);
+      if (result?.error) {
+        alert(result.error);
+      }
     });
   }
 

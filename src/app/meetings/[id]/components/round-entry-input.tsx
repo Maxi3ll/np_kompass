@@ -34,6 +34,7 @@ export function RoundEntryInput({ meetingId, personId, phase, existingContent }:
           setSaved(false);
         }}
         placeholder={phase === 'CHECK_IN' ? 'Wie geht es dir? Was beschäftigt dich?' : 'Wie war das Meeting für dich?'}
+        maxLength={5000}
         className="flex-1 px-3 py-2 text-sm rounded-xl border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary/20 resize-none min-h-[60px]"
         disabled={isPending}
         rows={2}

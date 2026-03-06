@@ -45,24 +45,38 @@ interface AgendaSectionProps {
 export function AgendaSection({ meetingId, agendaItems, openTensions, isPast }: AgendaSectionProps) {
   const [notes, setNotes] = useState('');
   const [isPending, startTransition] = useTransition();
+  const [error, setError] = useState<string | null>(null);
 
   function handleAddFreeItem() {
     if (!notes.trim()) return;
+    setError(null);
     startTransition(async () => {
-      await addAgendaItem(meetingId, { notes: notes.trim() });
-      setNotes('');
+      const result = await addAgendaItem(meetingId, { notes: notes.trim() });
+      if (result.error) {
+        setError(result.error);
+      } else {
+        setNotes('');
+      }
     });
   }
 
   function handleAddTension(tensionId: string) {
+    setError(null);
     startTransition(async () => {
-      await addAgendaItem(meetingId, { tensionId });
+      const result = await addAgendaItem(meetingId, { tensionId });
+      if (result.error) {
+        setError(result.error);
+      }
     });
   }
 
   function handleRemove(agendaItemId: string) {
+    setError(null);
     startTransition(async () => {
-      await removeAgendaItem(agendaItemId, meetingId);
+      const result = await removeAgendaItem(agendaItemId, meetingId);
+      if (result.error) {
+        setError(result.error);
+      }
     });
   }
 
@@ -108,7 +122,7 @@ export function AgendaSection({ meetingId, agendaItems, openTensions, isPast }: 
                   <button
                     onClick={() => handleRemove(item.id)}
                     disabled={isPending}
-                    className="w-7 h-7 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors flex-shrink-0 disabled:opacity-50"
+                    className="w-9 h-9 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors flex-shrink-0 disabled:opacity-50"
                     title="Entfernen"
                   >
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -145,6 +159,7 @@ export function AgendaSection({ meetingId, agendaItems, openTensions, isPast }: 
                 }
               }}
               placeholder="Freien Punkt hinzufügen..."
+              maxLength={500}
               className="flex-1 px-3 py-2 text-sm rounded-xl border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary/20"
               disabled={isPending}
             />
@@ -158,6 +173,12 @@ export function AgendaSection({ meetingId, agendaItems, openTensions, isPast }: 
           </div>
         )}
       </div>
+
+      {error && (
+        <div className="p-3 rounded-xl bg-destructive/10 border border-destructive/20">
+          <p className="text-sm text-destructive">{error}</p>
+        </div>
+      )}
 
       {/* Open Tensions to Add */}
       {!isPast && openTensions.length > 0 && (

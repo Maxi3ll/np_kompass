@@ -166,6 +166,25 @@ export const MEETING_PHASE_CONFIG = {
   CLOSING: { label: 'Abschluss', icon: '✅', step: 3 },
 } as const;
 
+export const MEETING_TYPE_CONFIG = {
+  TACTICAL: {
+    label: 'Taktisch',
+    labelLong: 'Taktischer Termin',
+    description: 'Operative Abstimmung und Status-Updates',
+    color: 'var(--np-blue)',
+    bgClass: 'bg-[var(--np-blue)]',
+    textClass: 'text-white',
+  },
+  GOVERNANCE: {
+    label: 'Governance',
+    labelLong: 'Governance-Termin',
+    description: 'Strukturelle Änderungen und Rollen-Anpassungen',
+    color: 'var(--circle-finanzen)',
+    bgClass: 'bg-[var(--circle-finanzen)]',
+    textClass: 'text-white',
+  },
+} as const;
+
 // ============ Checklists ============
 
 export type ChecklistFrequency = 'MEETING' | 'WEEKLY' | 'MONTHLY' | 'YEARLY';

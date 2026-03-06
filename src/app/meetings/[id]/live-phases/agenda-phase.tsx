@@ -2,9 +2,27 @@
 
 import { AgendaItemLive } from '../components/agenda-item-live';
 
+interface AgendaComment {
+  id: string;
+  person_id: string;
+  content: string;
+  created_at: string;
+  person?: { id: string; name: string; avatar_color?: string };
+}
+
+interface AgendaItem {
+  id: string;
+  position: number;
+  notes: string | null;
+  is_processed: boolean;
+  outcome: string | null;
+  tension?: { id: string; title: string; status: string; priority: string } | null;
+  comments: AgendaComment[];
+}
+
 interface AgendaPhaseProps {
   meetingId: string;
-  agendaItems: any[];
+  agendaItems: AgendaItem[];
   currentAgendaPosition: number | null;
   personId: string;
 }

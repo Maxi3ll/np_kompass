@@ -7,7 +7,7 @@ export default async function NeueMeetingPage() {
   const circles = await getCircles();
 
   // Filter out Anker-Kreis (root circle without parent)
-  const displayCircles = circles.filter((c: any) => c.parent_circle_id !== null);
+  const displayCircles = circles.filter((c: { parent_circle_id: string | null }) => c.parent_circle_id !== null);
 
   return (
     <AppShell>

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useReducer, useCallback, useRef } from 'react';
+import { useEffect, useReducer, useCallback, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import type { MeetingPhase, MeetingStatus } from '@/types';
@@ -167,6 +167,7 @@ function meetingReducer(state: LiveMeetingState, action: MeetingAction): LiveMee
 
 export function useMeetingRealtime(meetingId: string, initialData: LiveMeetingState) {
   const [state, dispatch] = useReducer(meetingReducer, initialData);
+  const [isConnected, setIsConnected] = useState(true);
   const router = useRouter();
 
   // Keep a ref of agendaItemIds for the comment subscription (avoids stale closure)
@@ -220,6 +221,19 @@ export function useMeetingRealtime(meetingId: string, initialData: LiveMeetingSt
     return data;
   }, []);
 
+  const fetchAgendaItemWithRelations = useCallback(async (itemId: string) => {
+    const supabase = createClient();
+    const { data } = await supabase
+      .from('meeting_agenda_items')
+      .select('*, tension:tensions(id, title, status, priority), owner:persons(id, name)')
+      .eq('id', itemId)
+      .single();
+    if (data) {
+      return { ...data, comments: [] } as AgendaItem;
+    }
+    return null;
+  }, []);
+
   useEffect(() => {
     const supabase = createClient();
 
@@ -259,8 +273,11 @@ export function useMeetingRealtime(meetingId: string, initialData: LiveMeetingSt
       .on(
         'postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'meeting_agenda_items', filter: `meeting_id=eq.${meetingId}` },
-        (payload) => {
-          dispatch({ type: 'AGENDA_INSERT', payload: payload.new as any });
+        async (payload) => {
+          const item = await fetchAgendaItemWithRelations(payload.new.id);
+          if (item) {
+            dispatch({ type: 'AGENDA_INSERT', payload: item });
+          }
         }
       )
       .on(
@@ -284,6 +301,9 @@ export function useMeetingRealtime(meetingId: string, initialData: LiveMeetingSt
       )
       .on(
         'postgres_changes',
+        // NOTE: Supabase Realtime does not support filtering by agenda_item_id (no meeting_id column).
+        // Comments from other meetings may arrive here but are filtered client-side via agendaItemIdsRef.
+        // RLS allows all authenticated users to read comments (all members are in the same org).
         { event: 'INSERT', schema: 'public', table: 'meeting_agenda_comments' },
         async (payload) => {
           // Use ref to avoid stale closure — always has current agenda item IDs
@@ -296,12 +316,14 @@ export function useMeetingRealtime(meetingId: string, initialData: LiveMeetingSt
           }
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        setIsConnected(status === 'SUBSCRIBED');
+      });
 
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [meetingId, fetchAttendee, fetchCommentWithPerson, fetchRoundEntryWithPerson]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [meetingId, fetchAttendee, fetchAgendaItemWithRelations, fetchCommentWithPerson, fetchRoundEntryWithPerson]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  return state;
+  return { state, isConnected };
 }
