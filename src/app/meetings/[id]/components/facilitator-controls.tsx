@@ -26,9 +26,13 @@ export function FacilitatorControls({
       if (!confirm('Meeting abschliessen? Das Protokoll wird generiert und kann nicht rückgängig gemacht werden.')) return;
     }
     startTransition(async () => {
-      const result = await advanceMeetingPhase(meetingId);
-      if (result?.error) {
-        alert(result.error);
+      try {
+        const result = await advanceMeetingPhase(meetingId);
+        if (result?.error) {
+          alert(result.error);
+        }
+      } catch {
+        alert('Fehler beim Phasenwechsel. Bitte Seite neu laden.');
       }
     });
   }
@@ -36,9 +40,13 @@ export function FacilitatorControls({
   function handleProcessItem() {
     if (!currentAgendaItemId) return;
     startTransition(async () => {
-      const result = await processAgendaItem(meetingId, currentAgendaItemId);
-      if (result?.error) {
-        alert(result.error);
+      try {
+        const result = await processAgendaItem(meetingId, currentAgendaItemId);
+        if (result?.error) {
+          alert(result.error);
+        }
+      } catch {
+        alert('Fehler beim Verarbeiten. Bitte Seite neu laden.');
       }
     });
   }

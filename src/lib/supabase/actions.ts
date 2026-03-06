@@ -805,7 +805,12 @@ export async function joinMeeting(meetingId: string, personId: string) {
 }
 
 export async function advanceMeetingPhase(meetingId: string) {
-  const auth = await requireAuth();
+  let auth;
+  try {
+    auth = await requireAuth();
+  } catch {
+    return { error: 'not_authenticated' };
+  }
   const serviceClient = createServiceClient();
 
   const { data: meeting } = await serviceClient
@@ -862,7 +867,12 @@ export async function advanceMeetingPhase(meetingId: string) {
 }
 
 export async function processAgendaItem(meetingId: string, agendaItemId: string, outcome?: string) {
-  const auth = await requireAuth();
+  let auth;
+  try {
+    auth = await requireAuth();
+  } catch {
+    return { error: 'not_authenticated' };
+  }
   const serviceClient = createServiceClient();
 
   // Verify facilitator/admin
