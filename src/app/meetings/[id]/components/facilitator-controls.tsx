@@ -10,6 +10,7 @@ interface FacilitatorControlsProps {
   currentAgendaItemId?: string;
   allItemsProcessed: boolean;
   hasAgendaItems: boolean;
+  onPhaseAdvanced?: (nextPhase: MeetingPhase) => void;
 }
 
 export function FacilitatorControls({
@@ -18,6 +19,7 @@ export function FacilitatorControls({
   currentAgendaItemId,
   allItemsProcessed,
   hasAgendaItems,
+  onPhaseAdvanced,
 }: FacilitatorControlsProps) {
   const [isPending, startTransition] = useTransition();
 
@@ -30,6 +32,8 @@ export function FacilitatorControls({
         const result = await advanceMeetingPhase(meetingId);
         if (result?.error) {
           alert(result.error);
+        } else if ('nextPhase' in result && result.nextPhase) {
+          onPhaseAdvanced?.(result.nextPhase as MeetingPhase);
         }
       } catch {
         alert('Fehler beim Phasenwechsel. Bitte Seite neu laden.');

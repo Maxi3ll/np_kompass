@@ -65,6 +65,7 @@ export interface LiveMeetingState {
 type MeetingAction =
   | { type: 'INIT'; payload: LiveMeetingState }
   | { type: 'MEETING_UPDATE'; payload: Record<string, any> }
+  | { type: 'OPTIMISTIC_PHASE'; payload: MeetingPhase }
   | { type: 'ATTENDEE_INSERT'; payload: Attendee }
   | { type: 'ATTENDEE_DELETE'; payload: { id: string } }
   | { type: 'AGENDA_UPDATE'; payload: Record<string, any> }
@@ -89,6 +90,9 @@ function meetingReducer(state: LiveMeetingState, action: MeetingAction): LiveMee
         protocol: p.protocol !== undefined ? p.protocol : state.protocol,
       };
     }
+
+    case 'OPTIMISTIC_PHASE':
+      return { ...state, currentPhase: action.payload };
 
     case 'ATTENDEE_INSERT': {
       if (state.attendees.some(a => a.id === action.payload.id)) return state;
@@ -325,5 +329,5 @@ export function useMeetingRealtime(meetingId: string, initialData: LiveMeetingSt
     };
   }, [meetingId, fetchAttendee, fetchAgendaItemWithRelations, fetchCommentWithPerson, fetchRoundEntryWithPerson]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  return { state, isConnected };
+  return { state, isConnected, dispatch };
 }

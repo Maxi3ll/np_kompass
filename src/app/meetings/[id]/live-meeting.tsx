@@ -1,9 +1,10 @@
 'use client';
 
-import { useEffect, useTransition } from 'react';
+import { useEffect, useTransition, useCallback } from 'react';
 import { useUser } from '@/components/layout/user-context';
 import { useMeetingRealtime, type LiveMeetingState } from '@/hooks/use-meeting-realtime';
 import { joinMeeting } from '@/lib/supabase/actions';
+import type { MeetingPhase } from '@/types';
 import { MeetingPhaseBar } from './components/meeting-phase-bar';
 import { ParticipantList } from './components/participant-list';
 import { FacilitatorControls } from './components/facilitator-controls';
@@ -19,7 +20,7 @@ interface LiveMeetingProps {
 
 export function LiveMeeting({ meetingId, facilitatorId, initialData }: LiveMeetingProps) {
   const { personId } = useUser();
-  const { state, isConnected } = useMeetingRealtime(meetingId, initialData);
+  const { state, isConnected, dispatch } = useMeetingRealtime(meetingId, initialData);
   const [isPending, startTransition] = useTransition();
 
   const isFacilitator = personId === facilitatorId;
@@ -39,6 +40,11 @@ export function LiveMeeting({ meetingId, facilitatorId, initialData }: LiveMeeti
     i => i.position === state.currentAgendaPosition && !i.is_processed
   );
   const allItemsProcessed = state.agendaItems.length > 0 && state.agendaItems.every(i => i.is_processed);
+
+  // Optimistically update phase in client state after successful server action
+  const handlePhaseAdvanced = useCallback((nextPhase: MeetingPhase) => {
+    dispatch({ type: 'OPTIMISTIC_PHASE', payload: nextPhase });
+  }, [dispatch]);
 
   if (!personId) {
     return (
@@ -117,6 +123,7 @@ export function LiveMeeting({ meetingId, facilitatorId, initialData }: LiveMeeti
           currentAgendaItemId={currentAgendaItem?.id}
           allItemsProcessed={allItemsProcessed}
           hasAgendaItems={state.agendaItems.length > 0}
+          onPhaseAdvanced={handlePhaseAdvanced}
         />
       )}
     </div>

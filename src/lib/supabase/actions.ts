@@ -863,7 +863,7 @@ export async function advanceMeetingPhase(meetingId: string) {
   if (error) return { error: error.message };
 
   revalidatePath(`/meetings/${meetingId}`);
-  return { success: true };
+  return { success: true, nextPhase };
 }
 
 export async function processAgendaItem(meetingId: string, agendaItemId: string, outcome?: string) {
