@@ -20,7 +20,11 @@ export default async function NeuesProjektePage() {
     .eq("auth_user_id", user.id)
     .single();
 
-  const personId = person?.id || user.id;
+  if (!person?.id) {
+    redirect("/profil");
+  }
+
+  const personId = person.id;
 
   const [circles, personsResult] = await Promise.all([
     getCircles(),

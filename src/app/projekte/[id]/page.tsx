@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { Header } from "@/components/navigation/header";
 import { AppShell } from "@/components/layout/app-shell";
 import { getProjektById, getCircles } from "@/lib/supabase/queries";
-import { getPersonsList } from "@/lib/supabase/actions";
+import { getPersonsList, isCurrentUserAdmin } from "@/lib/supabase/actions";
 import { createClient } from "@/lib/supabase/server";
 import { ProjektActions } from "./projekt-actions";
 import { SubtaskCreateDialog } from "./subtask-create-dialog";
@@ -55,6 +55,10 @@ export default async function ProjektDetailPage({ params }: PageProps) {
   const status = STATUS_CONFIG[projekt.status as keyof typeof STATUS_CONFIG] || STATUS_CONFIG.OPEN;
   const persons = personsResult.persons || [];
   const displayCircles = allCircles.filter((c: any) => c.parent_circle_id !== null);
+
+  const isCreatorOrCoordinator = personId && (personId === projekt.created_by || personId === projekt.coordinator_id);
+  const isAdmin = await isCurrentUserAdmin();
+  const canManage = !!(isCreatorOrCoordinator || isAdmin);
 
   const subtaskProgress = projekt.subtask_count > 0
     ? Math.round((projekt.subtask_done_count / projekt.subtask_count) * 100)
@@ -192,6 +196,7 @@ export default async function ProjektDetailPage({ params }: PageProps) {
               personId={personId}
               createdBy={projekt.created_by}
               coordinatorId={projekt.coordinator_id}
+              canManage={canManage}
               currentTitle={projekt.title}
               currentShortDescription={projekt.short_description}
               currentDescription={projekt.description}

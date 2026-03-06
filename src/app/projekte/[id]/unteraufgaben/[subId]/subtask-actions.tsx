@@ -20,7 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { updateSubtask } from "@/lib/supabase/actions";
+import { updateSubtask, deleteSubtask } from "@/lib/supabase/actions";
 
 interface Person {
   id: string;
@@ -30,6 +30,7 @@ interface Person {
 
 interface SubtaskActionsProps {
   subtaskId: string;
+  projektId: string;
   currentStatus: string;
   personId: string;
   createdBy: string;
@@ -41,6 +42,7 @@ interface SubtaskActionsProps {
 
 export function SubtaskActions({
   subtaskId,
+  projektId,
   currentStatus,
   personId,
   createdBy,
@@ -59,11 +61,19 @@ export function SubtaskActions({
   const [editDescription, setEditDescription] = useState(currentDescription);
   const [editContactPersonId, setEditContactPersonId] = useState(currentContactPersonId);
 
+  // Delete dialog state
+  const [deleteOpen, setDeleteOpen] = useState(false);
+
   const isCreator = personId === createdBy;
 
   const handleAction = async (status: 'OPEN' | 'IN_PROGRESS' | 'DONE') => {
     setIsSubmitting(true);
-    await updateSubtask(subtaskId, { status });
+    const result = await updateSubtask(subtaskId, { status });
+    if (result?.error === 'unauthorized') {
+      setError("Du hast keine Berechtigung für diese Aktion.");
+      setIsSubmitting(false);
+      return;
+    }
     router.refresh();
     setIsSubmitting(false);
   };
@@ -84,7 +94,7 @@ export function SubtaskActions({
     });
 
     if (result?.error) {
-      setError(result.error);
+      setError(result.error === 'unauthorized' ? "Du hast keine Berechtigung für diese Aktion." : result.error);
       setIsSubmitting(false);
       return;
     }
@@ -92,6 +102,19 @@ export function SubtaskActions({
     setDetailsOpen(false);
     router.refresh();
     setIsSubmitting(false);
+  };
+
+  const handleDelete = async () => {
+    setIsSubmitting(true);
+    const result = await deleteSubtask(subtaskId);
+    if (result.error) {
+      setError(result.error === 'unauthorized' ? "Du hast keine Berechtigung für diese Aktion." : result.error);
+      setIsSubmitting(false);
+      setDeleteOpen(false);
+      return;
+    }
+    router.push(`/projekte/${projektId}`);
+    router.refresh();
   };
 
   const editDialog = isCreator ? (
@@ -140,16 +163,50 @@ export function SubtaskActions({
 
   if (currentStatus === "DONE") {
     return (
-      <div className="flex gap-3">
-        <Button
-          variant="outline"
-          onClick={() => handleAction('OPEN')}
-          disabled={isSubmitting}
-          className="flex-1 h-10 rounded-xl text-sm"
-        >
-          Wieder aufmachen
-        </Button>
-        {editDialog}
+      <div className="space-y-3">
+        <div className="flex gap-3">
+          <Button
+            variant="outline"
+            onClick={() => handleAction('OPEN')}
+            disabled={isSubmitting}
+            className="flex-1 h-10 rounded-xl text-sm"
+          >
+            Wieder aufmachen
+          </Button>
+          {editDialog}
+        </div>
+        {error && (
+          <div className="p-3 rounded-xl bg-destructive/10 border border-destructive/20">
+            <p className="text-sm text-destructive">{error}</p>
+          </div>
+        )}
+        {isCreator && (
+          <>
+            <Button
+              variant="ghost"
+              onClick={() => setDeleteOpen(true)}
+              className="w-full h-10 rounded-xl text-sm text-destructive hover:text-destructive hover:bg-destructive/10"
+            >
+              Unteraufgabe löschen
+            </Button>
+            <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
+              <DialogContent className="sm:max-w-[400px] rounded-2xl">
+                <DialogHeader>
+                  <DialogTitle>Unteraufgabe löschen?</DialogTitle>
+                </DialogHeader>
+                <p className="text-sm text-muted-foreground">
+                  Die Unteraufgabe &ldquo;{currentTitle}&rdquo; wird unwiderruflich gelöscht.
+                </p>
+                <div className="flex gap-3 pt-2">
+                  <Button variant="outline" onClick={() => setDeleteOpen(false)} className="flex-1 h-11 rounded-xl">Abbrechen</Button>
+                  <Button onClick={handleDelete} disabled={isSubmitting} className="flex-1 h-11 rounded-xl bg-destructive hover:bg-destructive/90 text-destructive-foreground">
+                    {isSubmitting ? "Wird gelöscht..." : "Endgültig löschen"}
+                  </Button>
+                </div>
+              </DialogContent>
+            </Dialog>
+          </>
+        )}
       </div>
     );
   }
@@ -189,6 +246,40 @@ export function SubtaskActions({
           {isSubmitting ? "Wird gespeichert..." : "Erledigt"}
         </Button>
       </div>
+
+      {error && (
+        <div className="p-3 rounded-xl bg-destructive/10 border border-destructive/20">
+          <p className="text-sm text-destructive">{error}</p>
+        </div>
+      )}
+
+      {isCreator && (
+        <>
+          <Button
+            variant="ghost"
+            onClick={() => setDeleteOpen(true)}
+            className="w-full h-10 rounded-xl text-sm text-destructive hover:text-destructive hover:bg-destructive/10"
+          >
+            Unteraufgabe löschen
+          </Button>
+          <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
+            <DialogContent className="sm:max-w-[400px] rounded-2xl">
+              <DialogHeader>
+                <DialogTitle>Unteraufgabe löschen?</DialogTitle>
+              </DialogHeader>
+              <p className="text-sm text-muted-foreground">
+                Die Unteraufgabe &ldquo;{currentTitle}&rdquo; wird unwiderruflich gelöscht.
+              </p>
+              <div className="flex gap-3 pt-2">
+                <Button variant="outline" onClick={() => setDeleteOpen(false)} className="flex-1 h-11 rounded-xl">Abbrechen</Button>
+                <Button onClick={handleDelete} disabled={isSubmitting} className="flex-1 h-11 rounded-xl bg-destructive hover:bg-destructive/90 text-destructive-foreground">
+                  {isSubmitting ? "Wird gelöscht..." : "Endgültig löschen"}
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
+        </>
+      )}
     </div>
   );
 }

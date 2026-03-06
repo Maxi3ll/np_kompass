@@ -123,6 +123,7 @@ export default async function SubtaskDetailPage({ params }: PageProps) {
           <div className="pt-2">
             <SubtaskActions
               subtaskId={subId}
+              projektId={id}
               currentStatus={subtask.status}
               personId={personId || ""}
               createdBy={subtask.created_by || ""}

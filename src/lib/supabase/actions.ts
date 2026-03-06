@@ -1221,6 +1221,58 @@ export async function updateProjekt(data: UpdateProjektData) {
   return { projekt };
 }
 
+export async function deleteProjekt(projektId: string) {
+  const auth = await requireAuth();
+  const serviceClient = createServiceClient();
+
+  // Verify caller is creator, coordinator, or admin
+  const { data: existing } = await serviceClient
+    .from('projekte')
+    .select('created_by, coordinator_id')
+    .eq('id', projektId)
+    .single();
+
+  if (!existing) return { error: 'not_found' };
+
+  const isCreator = existing.created_by === auth.personId;
+  const isCoordinator = existing.coordinator_id === auth.personId;
+  const isAdmin = await isCurrentUserAdmin();
+  if (!isCreator && !isCoordinator && !isAdmin) {
+    return { error: 'unauthorized' };
+  }
+
+  // Delete related data (subtask_comments, subtask_volunteers, subtasks, projekte_circles, notifications)
+  const { data: subtasks } = await serviceClient
+    .from('subtasks')
+    .select('id')
+    .eq('projekt_id', projektId);
+
+  if (subtasks && subtasks.length > 0) {
+    const subtaskIds = subtasks.map((s: any) => s.id);
+    await serviceClient.from('subtask_comments').delete().in('subtask_id', subtaskIds);
+    await serviceClient.from('subtask_volunteers').delete().in('subtask_id', subtaskIds);
+    await serviceClient.from('subtasks').delete().eq('projekt_id', projektId);
+  }
+
+  await serviceClient.from('projekte_circles').delete().eq('projekt_id', projektId);
+  await serviceClient.from('notifications').delete().eq('projekt_id', projektId);
+
+  const { error } = await serviceClient
+    .from('projekte')
+    .delete()
+    .eq('id', projektId);
+
+  if (error) {
+    console.error('Error deleting projekt:', error);
+    return { error: error.message };
+  }
+
+  revalidatePath('/projekte');
+  revalidatePath('/');
+
+  return { success: true };
+}
+
 export async function createSubtask(data: {
   projektId: string;
   title: string;
@@ -1262,15 +1314,27 @@ export async function updateSubtask(subtaskId: string, data: {
   description?: string | null;
   contactPersonId?: string | null;
 }) {
-  await requireAuth();
+  const auth = await requireAuth();
   const serviceClient = createServiceClient();
 
-  // Get subtask info for notification + revalidation
+  // Get subtask info for notification + revalidation + auth check
   const { data: oldSubtask } = await serviceClient
     .from('subtasks')
-    .select('title, projekt_id, projekt:projekte!subtasks_projekt_id_fkey(coordinator_id, title)')
+    .select('title, projekt_id, contact_person_id, created_by, projekt:projekte!subtasks_projekt_id_fkey(coordinator_id, created_by, title)')
     .eq('id', subtaskId)
     .single();
+
+  // Verify caller is subtask creator, contact person, projekt creator/coordinator, or admin
+  if (oldSubtask) {
+    const isSubtaskCreator = oldSubtask.created_by === auth.personId;
+    const isContactPerson = oldSubtask.contact_person_id === auth.personId;
+    const isProjektCreator = (oldSubtask.projekt as any)?.created_by === auth.personId;
+    const isProjektCoordinator = (oldSubtask.projekt as any)?.coordinator_id === auth.personId;
+    const isAdmin = await isCurrentUserAdmin();
+    if (!isSubtaskCreator && !isContactPerson && !isProjektCreator && !isProjektCoordinator && !isAdmin) {
+      return { error: 'unauthorized' };
+    }
+  }
 
   const updateData: Record<string, any> = {};
   if (data.status !== undefined) updateData.status = data.status;
@@ -1311,6 +1375,48 @@ export async function updateSubtask(subtaskId: string, data: {
   revalidatePath('/projekte');
 
   return { subtask };
+}
+
+export async function deleteSubtask(subtaskId: string) {
+  const auth = await requireAuth();
+  const serviceClient = createServiceClient();
+
+  // Get subtask info for auth check + revalidation
+  const { data: subtask } = await serviceClient
+    .from('subtasks')
+    .select('created_by, projekt_id, projekt:projekte!subtasks_projekt_id_fkey(created_by, coordinator_id)')
+    .eq('id', subtaskId)
+    .single();
+
+  if (!subtask) return { error: 'not_found' };
+
+  // Verify caller is subtask creator, projekt creator/coordinator, or admin
+  const isSubtaskCreator = subtask.created_by === auth.personId;
+  const isProjektCreator = (subtask.projekt as any)?.created_by === auth.personId;
+  const isProjektCoordinator = (subtask.projekt as any)?.coordinator_id === auth.personId;
+  const isAdmin = await isCurrentUserAdmin();
+  if (!isSubtaskCreator && !isProjektCreator && !isProjektCoordinator && !isAdmin) {
+    return { error: 'unauthorized' };
+  }
+
+  // Delete related data
+  await serviceClient.from('subtask_comments').delete().eq('subtask_id', subtaskId);
+  await serviceClient.from('subtask_volunteers').delete().eq('subtask_id', subtaskId);
+
+  const { error } = await serviceClient
+    .from('subtasks')
+    .delete()
+    .eq('id', subtaskId);
+
+  if (error) {
+    console.error('Error deleting subtask:', error);
+    return { error: error.message };
+  }
+
+  revalidatePath(`/projekte/${subtask.projekt_id}`);
+  revalidatePath('/projekte');
+
+  return { success: true, projektId: subtask.projekt_id };
 }
 
 export async function volunteerForSubtask(subtaskId: string, personId: string) {
@@ -1485,6 +1591,17 @@ export async function updateSubtaskComment(commentId: string, content: string) {
     return { error: error.message };
   }
 
+  // Revalidate the subtask page
+  const { data: subtask } = await serviceClient
+    .from('subtasks')
+    .select('projekt_id')
+    .eq('id', comment.subtask_id)
+    .single();
+
+  if (subtask) {
+    revalidatePath(`/projekte/${subtask.projekt_id}/unteraufgaben/${comment.subtask_id}`);
+  }
+
   return { success: true };
 }
 
@@ -1495,14 +1612,17 @@ export async function deleteSubtaskComment(commentId: string) {
   // Verify caller owns the comment
   const { data: comment } = await serviceClient
     .from('subtask_comments')
-    .select('person_id')
+    .select('person_id, subtask_id')
     .eq('id', commentId)
     .single();
 
   if (!comment || comment.person_id !== auth.personId) {
+    if (!comment) return { error: 'not_found' };
     const isAdmin = await isCurrentUserAdmin();
     if (!isAdmin) return { error: 'unauthorized' };
   }
+
+  const subtaskIdForRevalidation = comment.subtask_id;
 
   const { error } = await serviceClient
     .from('subtask_comments')
@@ -1512,6 +1632,17 @@ export async function deleteSubtaskComment(commentId: string) {
   if (error) {
     console.error('Error deleting subtask comment:', error);
     return { error: error.message };
+  }
+
+  // Revalidate the subtask page
+  const { data: subtask } = await serviceClient
+    .from('subtasks')
+    .select('projekt_id')
+    .eq('id', subtaskIdForRevalidation)
+    .single();
+
+  if (subtask) {
+    revalidatePath(`/projekte/${subtask.projekt_id}/unteraufgaben/${subtaskIdForRevalidation}`);
   }
 
   return { success: true };

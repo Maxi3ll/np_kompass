@@ -18,7 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { updateProjekt } from "@/lib/supabase/actions";
+import { updateProjekt, deleteProjekt } from "@/lib/supabase/actions";
 
 interface Person {
   id: string;
@@ -38,6 +38,7 @@ interface ProjektActionsProps {
   personId?: string | null;
   createdBy?: string | null;
   coordinatorId?: string | null;
+  canManage: boolean;
   currentTitle?: string;
   currentShortDescription?: string | null;
   currentDescription?: string | null;
@@ -55,6 +56,7 @@ export function ProjektActions({
   personId,
   createdBy,
   coordinatorId,
+  canManage,
   currentTitle,
   currentShortDescription,
   currentDescription,
@@ -69,6 +71,7 @@ export function ProjektActions({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [editError, setEditError] = useState<string | null>(null);
+  const [deleteOpen, setDeleteOpen] = useState(false);
 
   // Edit form state
   const [title, setTitle] = useState(currentTitle || "");
@@ -78,8 +81,6 @@ export function ProjektActions({
   const [selectedCircleIds, setSelectedCircleIds] = useState<string[]>(currentCircleIds || []);
   const [startDate, setStartDate] = useState(currentStartDate || "");
   const [endDate, setEndDate] = useState(currentEndDate || "");
-
-  const isCreatorOrCoordinator = personId && (personId === createdBy || personId === coordinatorId);
 
   const handleAction = async (status: 'OPEN' | 'IN_PROGRESS' | 'DONE') => {
     setIsSubmitting(true);
@@ -141,22 +142,33 @@ export function ProjektActions({
     setIsSubmitting(false);
   };
 
+  const handleDelete = async () => {
+    setIsSubmitting(true);
+    const result = await deleteProjekt(projektId);
+    if (result.error) {
+      setIsSubmitting(false);
+      return;
+    }
+    router.push('/projekte');
+    router.refresh();
+  };
+
+  if (!canManage) return null;
+
   return (
     <>
       {/* Edit Button */}
-      {isCreatorOrCoordinator && (
-        <Button
-          variant="outline"
-          onClick={handleOpenEdit}
-          className="w-full h-10 rounded-xl text-sm mb-3"
-        >
+      <Button
+        variant="outline"
+        onClick={handleOpenEdit}
+        className="w-full h-10 rounded-xl text-sm mb-3"
+      >
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2">
             <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
             <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
           </svg>
           Bearbeiten
         </Button>
-      )}
 
       {/* Status Buttons */}
       {currentStatus === "DONE" ? (
@@ -371,6 +383,50 @@ export function ProjektActions({
               </Button>
             </div>
           </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Button */}
+      <Button
+        variant="ghost"
+        onClick={() => setDeleteOpen(true)}
+        className="w-full h-10 rounded-xl text-sm mt-3 text-destructive hover:text-destructive hover:bg-destructive/10"
+      >
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2">
+          <polyline points="3 6 5 6 21 6" />
+          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+          <line x1="10" y1="11" x2="10" y2="17" />
+          <line x1="14" y1="11" x2="14" y2="17" />
+        </svg>
+        Projekt löschen
+      </Button>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
+        <DialogContent className="sm:max-w-[400px] rounded-2xl">
+          <DialogHeader>
+            <DialogTitle>Projekt löschen?</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-muted-foreground">
+            Das Projekt &ldquo;{currentTitle}&rdquo; und alle zugehörigen Unteraufgaben werden unwiderruflich gelöscht.
+          </p>
+          <div className="flex gap-3 pt-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setDeleteOpen(false)}
+              className="flex-1 h-11 rounded-xl"
+            >
+              Abbrechen
+            </Button>
+            <Button
+              onClick={handleDelete}
+              disabled={isSubmitting}
+              className="flex-1 h-11 rounded-xl bg-destructive hover:bg-destructive/90 text-destructive-foreground"
+            >
+              {isSubmitting ? "Wird gelöscht..." : "Endgültig löschen"}
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
     </>
