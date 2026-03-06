@@ -37,7 +37,7 @@ export default async function Home() {
     getDashboardData(personId),
     personId ? getRecentNotifications(personId, 5) : Promise.resolve([]),
   ]);
-  const { myRoles, openTensions, myCircleIds, myCircleTensions, assignedTensions, nextMeeting, myActiveProjekte, myVolunteerCount, myProjektName } = dashboardData;
+  const { myRoles, openTensions, myCircleIds, myCircleTensions, assignedTensions, nextMeeting, activeProjekteCount, myVolunteerCount, myProjektName } = dashboardData;
 
   // User display info
   const userName = personData?.name || user?.user_metadata?.full_name || user?.email?.split("@")[0] || "Benutzer";
@@ -137,7 +137,7 @@ export default async function Home() {
                       </svg>
                     </div>
                   </div>
-                  <p className="text-2xl font-bold text-foreground">{myActiveProjekte}</p>
+                  <p className="text-2xl font-bold text-foreground">{activeProjekteCount}</p>
                   <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">Projekte</span>
                   {myProjektName ? (
                     <div className="flex items-center gap-1 mt-1">

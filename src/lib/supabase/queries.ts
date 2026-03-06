@@ -971,25 +971,25 @@ export async function getDashboardData(personId?: string) {
     assignedTensions = assignedResult.count || 0;
   }
 
-  // Get active projekte count and name of first project with user's tasks
-  let myActiveProjekte = 0;
+  // Get total active projekte count and name of first project with user's tasks
+  let activeProjekteCount = 0;
   let myVolunteerCount = 0;
   let myProjektName: string | null = null;
+
+  // Total active projects (regardless of user)
+  const { count: totalProjekte } = await supabase
+    .from('projekte')
+    .select('*', { count: 'exact', head: true })
+    .in('status', ['OPEN', 'IN_PROGRESS']);
+  activeProjekteCount = totalProjekte || 0;
+
   if (personId) {
-    const [projekteResult, volunteerResult] = await Promise.all([
-      supabase
-        .from('projekte')
-        .select('*', { count: 'exact', head: true })
-        .eq('coordinator_id', personId)
-        .in('status', ['OPEN', 'IN_PROGRESS']),
-      supabase
-        .from('subtask_volunteers')
-        .select('subtask:subtasks!inner(projekt:projekte!inner(status))', { count: 'exact', head: true })
-        .eq('person_id', personId)
-        .in('subtasks.projekt.status', ['OPEN', 'IN_PROGRESS']),
-    ]);
-    myActiveProjekte = projekteResult.count || 0;
-    myVolunteerCount = volunteerResult.count || 0;
+    const { count: volCount } = await supabase
+      .from('subtask_volunteers')
+      .select('subtask:subtasks!inner(projekt:projekte!inner(status))', { count: 'exact', head: true })
+      .eq('person_id', personId)
+      .in('subtasks.projekt.status', ['OPEN', 'IN_PROGRESS']);
+    myVolunteerCount = volCount || 0;
 
     // Find first active project name (coordinator or volunteer)
     const { data: coordProjekt } = await supabase
@@ -1035,7 +1035,7 @@ export async function getDashboardData(personId?: string) {
     assignedTensions,
     nextMeeting,
     circles,
-    myActiveProjekte,
+    activeProjekteCount,
     myVolunteerCount,
     myProjektName,
   };
