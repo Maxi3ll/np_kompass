@@ -290,7 +290,7 @@ export function LoginForm() {
         <form onSubmit={handleRegister} className="space-y-4">
           <div className="p-4 rounded-xl bg-[var(--np-blue)]/5 border border-[var(--np-blue)]/20">
             <p className="text-sm text-muted-foreground text-center">
-              Deine E-Mail-Adresse muss zuerst vom <strong className="text-foreground">Kompass-Admin</strong> freigeschaltet werden. Wende dich an den Admin deines Vereins, falls du noch keinen Zugang hast.
+              Deine E-Mail-Adresse muss zuerst vom <strong className="text-foreground">Kompass-Admin</strong> freigeschaltet werden. Wende dich an den aktuellen Rolleninhaber, falls du noch keinen Zugang hast.
             </p>
           </div>
           <div className="space-y-2">
