@@ -912,6 +912,7 @@ export async function getDashboardData(personId?: string) {
 
   // Get user's roles if personId provided
   let myRoles: any[] = [];
+  let myCircleIds: string[] = [];
   if (personId) {
     const { data: roleAssignments } = await supabase
       .from('role_assignments')
@@ -930,8 +931,12 @@ export async function getDashboardData(personId?: string) {
       id: ra.role?.id,
       name: ra.role?.name,
       circle: ra.role?.circle?.name,
+      circleId: ra.role?.circle?.id,
       color: ra.role?.circle?.color,
     })) || [];
+
+    // Unique circle IDs the user belongs to
+    myCircleIds = [...new Set(myRoles.map(r => r.circleId).filter(Boolean))];
   }
 
   // Get next meeting
@@ -946,9 +951,30 @@ export async function getDashboardData(personId?: string) {
     .limit(1)
     .single();
 
-  // Get active projekte count for current user (as coordinator)
+  // Get tensions from user's circles + assigned to user
+  let myCircleTensions = 0;
+  let assignedTensions = 0;
+  if (personId && myCircleIds.length > 0) {
+    const [circleTensionsResult, assignedResult] = await Promise.all([
+      supabase
+        .from('tensions')
+        .select('*', { count: 'exact', head: true })
+        .in('circle_id', myCircleIds)
+        .in('status', ['NEW', 'IN_PROGRESS']),
+      supabase
+        .from('tensions')
+        .select('*', { count: 'exact', head: true })
+        .eq('assigned_to', personId)
+        .in('status', ['NEW', 'IN_PROGRESS']),
+    ]);
+    myCircleTensions = circleTensionsResult.count || 0;
+    assignedTensions = assignedResult.count || 0;
+  }
+
+  // Get active projekte count and name of first project with user's tasks
   let myActiveProjekte = 0;
   let myVolunteerCount = 0;
+  let myProjektName: string | null = null;
   if (personId) {
     const [projekteResult, volunteerResult] = await Promise.all([
       supabase
@@ -964,15 +990,54 @@ export async function getDashboardData(personId?: string) {
     ]);
     myActiveProjekte = projekteResult.count || 0;
     myVolunteerCount = volunteerResult.count || 0;
+
+    // Find first active project name (coordinator or volunteer)
+    const { data: coordProjekt } = await supabase
+      .from('projekte')
+      .select('title')
+      .eq('coordinator_id', personId)
+      .in('status', ['OPEN', 'IN_PROGRESS'])
+      .limit(1)
+      .maybeSingle();
+    myProjektName = coordProjekt?.title || null;
+
+    if (!myProjektName) {
+      // Fallback: find a project where user volunteers on a subtask
+      const { data: volRows } = await supabase
+        .from('subtask_volunteers')
+        .select('subtask_id')
+        .eq('person_id', personId)
+        .limit(1);
+      if (volRows && volRows.length > 0) {
+        const { data: subtask } = await supabase
+          .from('subtasks')
+          .select('projekt_id')
+          .eq('id', volRows[0].subtask_id)
+          .single();
+        if (subtask) {
+          const { data: projekt } = await supabase
+            .from('projekte')
+            .select('title')
+            .eq('id', subtask.projekt_id)
+            .in('status', ['OPEN', 'IN_PROGRESS'])
+            .maybeSingle();
+          myProjektName = projekt?.title || null;
+        }
+      }
+    }
   }
 
   return {
     openTensions,
     myRoles,
+    myCircleIds,
+    myCircleTensions,
+    assignedTensions,
     nextMeeting,
     circles,
     myActiveProjekte,
     myVolunteerCount,
+    myProjektName,
   };
 }
 
