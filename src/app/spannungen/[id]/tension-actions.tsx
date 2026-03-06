@@ -185,6 +185,8 @@ export function TensionActions({
     const result = await updateTension({
       id: tensionId,
       assignedTo: assignTo || null,
+      // Auto-set to IN_PROGRESS when assigning someone and status is still NEW
+      ...(assignTo && currentStatus === "NEW" ? { status: "IN_PROGRESS" as const } : {}),
     });
 
     if (result.error) {
@@ -324,12 +326,12 @@ export function TensionActions({
                 <line x1="19" y1="8" x2="19" y2="14" />
                 <line x1="22" y1="11" x2="16" y2="11" />
               </svg>
-              Zuweisen
+              {currentAssignedTo ? 'Neu zuweisen' : 'Zuweisen'}
             </Button>
           </DialogTrigger>
           <DialogContent className="mx-4 rounded-2xl">
             <DialogHeader>
-              <DialogTitle>Spannung zuweisen</DialogTitle>
+              <DialogTitle>{currentAssignedTo ? 'Spannung neu zuweisen' : 'Spannung zuweisen'}</DialogTitle>
               <DialogDescription>Wähle eine Person aus, die sich um diese Spannung kümmern soll.</DialogDescription>
             </DialogHeader>
             <div className="space-y-4 pt-2">
@@ -359,64 +361,75 @@ export function TensionActions({
       )}
 
       <div className="flex gap-3">
-        {/* Edit / Start Working Dialog */}
-        <Dialog open={editOpen} onOpenChange={setEditOpen}>
-          <DialogTrigger asChild>
-            <Button
-              variant="default"
-              className="flex-1 h-12 rounded-xl"
-            >
-              {currentStatus === "NEW" ? "Übernehmen" : "Bearbeiten"}
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="mx-4 rounded-2xl">
-            <DialogHeader>
-              <DialogTitle>
-                {currentStatus === "NEW" ? "Spannung übernehmen" : "Spannung bearbeiten"}
-              </DialogTitle>
-              <DialogDescription>
-                {currentStatus === "NEW"
-                  ? "Du übernimmst die Verantwortung für diese Spannung."
-                  : "Aktualisiere den nächsten Schritt."}
-              </DialogDescription>
-            </DialogHeader>
-
-            <div className="space-y-4 pt-2">
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-foreground">
-                  Nächster Schritt
-                </label>
-                <Textarea
-                  placeholder="Was ist der nächste konkrete Schritt?"
-                  value={nextAction}
-                  onChange={(e) => setNextAction(e.target.value)}
-                  className="min-h-[100px] rounded-xl resize-none"
-                />
+        {/* "Übernehmen" only when NEW and nobody assigned */}
+        {currentStatus === "NEW" && !currentAssignedTo && (
+          <Dialog open={editOpen} onOpenChange={setEditOpen}>
+            <DialogTrigger asChild>
+              <Button variant="default" className="flex-1 h-12 rounded-xl">
+                Übernehmen
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="mx-4 rounded-2xl">
+              <DialogHeader>
+                <DialogTitle>Spannung übernehmen</DialogTitle>
+                <DialogDescription>Du übernimmst die Verantwortung für diese Spannung.</DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4 pt-2">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-foreground">Nächster Schritt</label>
+                  <Textarea
+                    placeholder="Was ist der nächste konkrete Schritt?"
+                    value={nextAction}
+                    onChange={(e) => setNextAction(e.target.value)}
+                    className="min-h-[100px] rounded-xl resize-none"
+                  />
+                </div>
+                {error && <p className="text-sm text-destructive">{error}</p>}
+                <div className="flex gap-3">
+                  <Button variant="outline" onClick={() => setEditOpen(false)} className="flex-1 h-11 rounded-xl">Abbrechen</Button>
+                  <Button onClick={handleStartWorking} disabled={isSubmitting} className="flex-1 h-11 rounded-xl bg-primary">
+                    {isSubmitting ? "Speichern..." : "Übernehmen"}
+                  </Button>
+                </div>
               </div>
+            </DialogContent>
+          </Dialog>
+        )}
 
-              {error && (
-                <p className="text-sm text-destructive">{error}</p>
-              )}
-
-              <div className="flex gap-3">
-                <Button
-                  variant="outline"
-                  onClick={() => setEditOpen(false)}
-                  className="flex-1 h-11 rounded-xl"
-                >
-                  Abbrechen
-                </Button>
-                <Button
-                  onClick={currentStatus === "NEW" ? handleStartWorking : handleUpdateNextAction}
-                  disabled={isSubmitting}
-                  className="flex-1 h-11 rounded-xl bg-primary"
-                >
-                  {isSubmitting ? "Speichern..." : "Speichern"}
-                </Button>
+        {/* "Nächster Schritt" when IN_PROGRESS */}
+        {currentStatus === "IN_PROGRESS" && (
+          <Dialog open={editOpen} onOpenChange={setEditOpen}>
+            <DialogTrigger asChild>
+              <Button variant="default" className="flex-1 h-12 rounded-xl">
+                Nächster Schritt
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="mx-4 rounded-2xl">
+              <DialogHeader>
+                <DialogTitle>Nächsten Schritt aktualisieren</DialogTitle>
+                <DialogDescription>Aktualisiere den nächsten Schritt für diese Spannung.</DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4 pt-2">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-foreground">Nächster Schritt</label>
+                  <Textarea
+                    placeholder="Was ist der nächste konkrete Schritt?"
+                    value={nextAction}
+                    onChange={(e) => setNextAction(e.target.value)}
+                    className="min-h-[100px] rounded-xl resize-none"
+                  />
+                </div>
+                {error && <p className="text-sm text-destructive">{error}</p>}
+                <div className="flex gap-3">
+                  <Button variant="outline" onClick={() => setEditOpen(false)} className="flex-1 h-11 rounded-xl">Abbrechen</Button>
+                  <Button onClick={handleUpdateNextAction} disabled={isSubmitting} className="flex-1 h-11 rounded-xl bg-primary">
+                    {isSubmitting ? "Speichern..." : "Speichern"}
+                  </Button>
+                </div>
               </div>
-            </div>
-          </DialogContent>
-        </Dialog>
+            </DialogContent>
+          </Dialog>
+        )}
 
         {/* Resolve Dialog */}
         <Dialog open={resolveOpen} onOpenChange={setResolveOpen}>
