@@ -46,6 +46,11 @@ export function LiveMeeting({ meetingId, facilitatorId, initialData }: LiveMeeti
     dispatch({ type: 'OPTIMISTIC_PHASE', payload: nextPhase });
   }, [dispatch]);
 
+  // Optimistically mark agenda item as processed
+  const handleItemProcessed = useCallback((itemId: string, nextPosition: number | null) => {
+    dispatch({ type: 'OPTIMISTIC_ITEM_PROCESSED', payload: { itemId, nextPosition } });
+  }, [dispatch]);
+
   if (!personId) {
     return (
       <div className="text-center py-12 text-muted-foreground">
@@ -124,6 +129,7 @@ export function LiveMeeting({ meetingId, facilitatorId, initialData }: LiveMeeti
           allItemsProcessed={allItemsProcessed}
           hasAgendaItems={state.agendaItems.length > 0}
           onPhaseAdvanced={handlePhaseAdvanced}
+          onItemProcessed={handleItemProcessed}
         />
       )}
     </div>

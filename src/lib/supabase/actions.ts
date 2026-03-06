@@ -914,7 +914,11 @@ export async function processAgendaItem(meetingId: string, agendaItemId: string,
   }
 
   revalidatePath(`/meetings/${meetingId}`);
-  return { success: true, allProcessed: !nextItem };
+  return {
+    success: true,
+    processedItemId: agendaItemId,
+    nextPosition: nextItem?.position ?? null,
+  };
 }
 
 export async function updateAgendaItemOutcome(agendaItemId: string, outcome: string) {

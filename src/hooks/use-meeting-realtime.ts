@@ -66,6 +66,7 @@ type MeetingAction =
   | { type: 'INIT'; payload: LiveMeetingState }
   | { type: 'MEETING_UPDATE'; payload: Record<string, any> }
   | { type: 'OPTIMISTIC_PHASE'; payload: MeetingPhase }
+  | { type: 'OPTIMISTIC_ITEM_PROCESSED'; payload: { itemId: string; nextPosition: number | null } }
   | { type: 'ATTENDEE_INSERT'; payload: Attendee }
   | { type: 'ATTENDEE_DELETE'; payload: { id: string } }
   | { type: 'AGENDA_UPDATE'; payload: Record<string, any> }
@@ -93,6 +94,17 @@ function meetingReducer(state: LiveMeetingState, action: MeetingAction): LiveMee
 
     case 'OPTIMISTIC_PHASE':
       return { ...state, currentPhase: action.payload };
+
+    case 'OPTIMISTIC_ITEM_PROCESSED': {
+      const { itemId, nextPosition } = action.payload;
+      return {
+        ...state,
+        agendaItems: state.agendaItems.map(item =>
+          item.id === itemId ? { ...item, is_processed: true } : item
+        ),
+        currentAgendaPosition: nextPosition,
+      };
+    }
 
     case 'ATTENDEE_INSERT': {
       if (state.attendees.some(a => a.id === action.payload.id)) return state;

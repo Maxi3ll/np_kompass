@@ -11,6 +11,7 @@ interface FacilitatorControlsProps {
   allItemsProcessed: boolean;
   hasAgendaItems: boolean;
   onPhaseAdvanced?: (nextPhase: MeetingPhase) => void;
+  onItemProcessed?: (itemId: string, nextPosition: number | null) => void;
 }
 
 export function FacilitatorControls({
@@ -20,6 +21,7 @@ export function FacilitatorControls({
   allItemsProcessed,
   hasAgendaItems,
   onPhaseAdvanced,
+  onItemProcessed,
 }: FacilitatorControlsProps) {
   const [isPending, startTransition] = useTransition();
 
@@ -43,11 +45,14 @@ export function FacilitatorControls({
 
   function handleProcessItem() {
     if (!currentAgendaItemId) return;
+    const itemId = currentAgendaItemId;
     startTransition(async () => {
       try {
-        const result = await processAgendaItem(meetingId, currentAgendaItemId);
+        const result = await processAgendaItem(meetingId, itemId);
         if (result?.error) {
           alert(result.error);
+        } else if ('processedItemId' in result) {
+          onItemProcessed?.(itemId, result.nextPosition);
         }
       } catch {
         alert('Fehler beim Verarbeiten. Bitte Seite neu laden.');
