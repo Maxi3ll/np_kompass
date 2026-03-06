@@ -136,7 +136,10 @@ export default async function SpannungDetailPage({ params }: PageProps) {
             <div className="bg-card rounded-2xl shadow-card border border-border/50 p-4">
               <p className="text-xs text-muted-foreground mb-2">Zugewiesen an</p>
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-[var(--circle-gebaeude)] flex items-center justify-center text-white text-sm font-medium">
+                <div
+                  className="w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-medium"
+                  style={{ backgroundColor: tension.assigned_to_person?.avatar_color || '#4A90D9' }}
+                >
                   {tension.assigned_to_person?.name?.split(' ').map((n: string) => n[0]).join('').slice(0, 2) || '?'}
                 </div>
                 <div className="flex-1">
@@ -212,7 +215,7 @@ export default async function SpannungDetailPage({ params }: PageProps) {
               currentNextAction={tension.next_action}
               personId={personId ?? ""}
               raisedBy={tension.raised_by_person?.id ?? ""}
-              circles={circles || []}
+              circles={(circles || []).filter((c: any) => c.parent_circle_id !== null)}
               currentTitle={tension.title}
               currentDescription={tension.description || ""}
               currentCircleId={tension.circle?.id || ""}

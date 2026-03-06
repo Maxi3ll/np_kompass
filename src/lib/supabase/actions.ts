@@ -489,32 +489,6 @@ export async function createTension(data: CreateTensionData) {
   return { tension };
 }
 
-export async function createTensionAndRedirect(formData: FormData) {
-  const title = formData.get('title') as string;
-  const description = formData.get('description') as string;
-  const circleId = formData.get('circleId') as string;
-  const priority = formData.get('priority') as 'LOW' | 'MEDIUM' | 'HIGH';
-  const raisedBy = formData.get('raisedBy') as string;
-
-  if (!title || !circleId || !raisedBy) {
-    return { error: 'Titel und Kreis sind erforderlich' };
-  }
-
-  const result = await createTension({
-    title,
-    description,
-    circleId,
-    priority: priority || 'MEDIUM',
-    raisedBy,
-  });
-
-  if (result.error) {
-    return result;
-  }
-
-  redirect('/spannungen');
-}
-
 // =====================================================
 // UPDATE TENSION
 // =====================================================
@@ -548,6 +522,19 @@ export async function updateTension(data: UpdateTensionData) {
     const isAssignee = oldTension.assigned_to === auth.personId;
     const isAdmin = await isCurrentUserAdmin();
     if (!isCreator && !isAssignee && !isAdmin) {
+      return { error: 'unauthorized' };
+    }
+    // Assignees may only update status, nextAction, and resolution – not metadata
+    const isEditingMetadata =
+      data.title !== undefined ||
+      data.description !== undefined ||
+      data.circleId !== undefined ||
+      data.priority !== undefined;
+    if (isAssignee && !isCreator && !isAdmin && isEditingMetadata) {
+      return { error: 'unauthorized' };
+    }
+    // Assignees may de-assign themselves but not re-assign to others
+    if (isAssignee && !isCreator && !isAdmin && data.assignedTo !== undefined && data.assignedTo !== null) {
       return { error: 'unauthorized' };
     }
   }
@@ -619,13 +606,44 @@ export async function resolveTension(id: string, resolution: string) {
   });
 }
 
-export async function startWorkingOnTension(id: string, assignedTo: string, nextAction?: string) {
-  return updateTension({
-    id,
+// takeOverTension: any authenticated user can take over a NEW, unassigned tension
+export async function takeOverTension(id: string, nextAction?: string) {
+  const auth = await requireAuth();
+  const serviceClient = createServiceClient();
+
+  // Verify tension is NEW and unassigned
+  const { data: tension } = await serviceClient
+    .from('tensions')
+    .select('status, assigned_to, title, circle_id')
+    .eq('id', id)
+    .single();
+
+  if (!tension) return { error: 'Spannung nicht gefunden' };
+  if (tension.status !== 'NEW') return { error: 'Spannung ist nicht mehr neu' };
+  if (tension.assigned_to) return { error: 'Spannung ist bereits zugewiesen' };
+  if (!auth.personId) return { error: 'unauthorized' };
+
+  const updateData: Record<string, any> = {
     status: 'IN_PROGRESS',
-    assignedTo,
-    nextAction,
-  });
+    assigned_to: auth.personId,
+  };
+  if (nextAction) updateData.next_action = nextAction.trim().slice(0, 500);
+
+  const { error } = await serviceClient
+    .from('tensions')
+    .update(updateData)
+    .eq('id', id);
+
+  if (error) {
+    console.error('Error taking over tension:', error);
+    return { error: error.message };
+  }
+
+  revalidatePath(`/spannungen/${id}`);
+  revalidatePath('/spannungen');
+  revalidatePath('/');
+
+  return { success: true };
 }
 
 // =====================================================

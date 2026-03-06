@@ -20,7 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { updateTension, resolveTension, startWorkingOnTension, deleteTension } from "@/lib/supabase/actions";
+import { updateTension, resolveTension, deleteTension, takeOverTension } from "@/lib/supabase/actions";
 
 interface Circle {
   id: string;
@@ -91,14 +91,19 @@ export function TensionActions({
   const [assignOpen, setAssignOpen] = useState(false);
   const [assignTo, setAssignTo] = useState(currentAssignedTo || "");
 
+  // Reset dialog state ("Zurück auf Neu")
+  const [resetOpen, setResetOpen] = useState(false);
+
   const isCreator = personId === raisedBy;
+  const isAssignee = personId === currentAssignedTo;
   const canAssign = isCreator || isAdmin;
+  const canManageStatus = isCreator || isAssignee || isAdmin;
 
   const handleStartWorking = async () => {
     setIsSubmitting(true);
     setError(null);
 
-    const result = await startWorkingOnTension(tensionId, personId, nextAction || undefined);
+    const result = await takeOverTension(tensionId, nextAction || undefined);
 
     if (result.error) {
       setError(result.error);
@@ -460,7 +465,9 @@ export function TensionActions({
                     value={nextAction}
                     onChange={(e) => setNextAction(e.target.value)}
                     className="min-h-[100px] rounded-xl resize-none"
+                    maxLength={500}
                   />
+                  <p className="text-xs text-muted-foreground text-right">{nextAction.length}/500</p>
                 </div>
                 {error && <p className="text-sm text-destructive">{error}</p>}
                 <div className="flex gap-3">
@@ -475,14 +482,20 @@ export function TensionActions({
         )}
 
         {/* "Jetzt bearbeiten" when NEW and someone is assigned */}
-        {currentStatus === "NEW" && currentAssignedTo && (
+        {currentStatus === "NEW" && currentAssignedTo && canManageStatus && (
           <Button
             variant="default"
             className="flex-1 h-12 rounded-xl"
             disabled={isSubmitting}
             onClick={async () => {
               setIsSubmitting(true);
-              await updateTension({ id: tensionId, status: "IN_PROGRESS" });
+              setError(null);
+              const result = await updateTension({ id: tensionId, status: "IN_PROGRESS" });
+              if (result.error) {
+                setError(result.error);
+                setIsSubmitting(false);
+                return;
+              }
               router.refresh();
               setIsSubmitting(false);
             }}
@@ -492,7 +505,7 @@ export function TensionActions({
         )}
 
         {/* "Nächster Schritt" when IN_PROGRESS */}
-        {currentStatus === "IN_PROGRESS" && (
+        {currentStatus === "IN_PROGRESS" && canManageStatus && (
           <Dialog open={editOpen} onOpenChange={setEditOpen}>
             <DialogTrigger asChild>
               <Button variant="default" className="flex-1 h-12 rounded-xl">
@@ -512,7 +525,9 @@ export function TensionActions({
                     value={nextAction}
                     onChange={(e) => setNextAction(e.target.value)}
                     className="min-h-[100px] rounded-xl resize-none"
+                    maxLength={500}
                   />
+                  <p className="text-xs text-muted-foreground text-right">{nextAction.length}/500</p>
                 </div>
                 {error && <p className="text-sm text-destructive">{error}</p>}
                 <div className="flex gap-3">
@@ -527,6 +542,7 @@ export function TensionActions({
         )}
 
         {/* Resolve Dialog */}
+        {canManageStatus && (
         <Dialog open={resolveOpen} onOpenChange={setResolveOpen}>
           <DialogTrigger asChild>
             <Button
@@ -553,7 +569,9 @@ export function TensionActions({
                   value={resolution}
                   onChange={(e) => setResolution(e.target.value)}
                   className="min-h-[100px] rounded-xl resize-none"
+                  maxLength={2000}
                 />
+                <p className="text-xs text-muted-foreground text-right">{resolution.length}/2000</p>
               </div>
 
               {error && (
@@ -579,27 +597,56 @@ export function TensionActions({
             </div>
           </DialogContent>
         </Dialog>
+        )}
       </div>
 
       {/* Status change button for IN_PROGRESS -> back to NEW */}
-      {currentStatus === "IN_PROGRESS" && (
-        <Button
-          variant="outline"
-          onClick={async () => {
-            setIsSubmitting(true);
-            await updateTension({
-              id: tensionId,
-              status: "NEW",
-              assignedTo: null,
-            });
-            router.refresh();
-            setIsSubmitting(false);
-          }}
-          disabled={isSubmitting}
-          className="w-full h-10 rounded-xl text-sm"
-        >
-          Zurück auf "Neu" setzen
-        </Button>
+      {currentStatus === "IN_PROGRESS" && canManageStatus && (
+        <Dialog open={resetOpen} onOpenChange={setResetOpen}>
+          <DialogTrigger asChild>
+            <Button
+              variant="outline"
+              disabled={isSubmitting}
+              className="w-full h-10 rounded-xl text-sm"
+            >
+              Zurück auf "Neu" setzen
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="mx-4 rounded-2xl">
+            <DialogHeader>
+              <DialogTitle>Status zurücksetzen</DialogTitle>
+              <DialogDescription>
+                Die Spannung wird auf "Neu" zurückgesetzt und die Zuweisung wird aufgehoben.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4 pt-2">
+              {error && <p className="text-sm text-destructive">{error}</p>}
+              <div className="flex gap-3">
+                <Button variant="outline" onClick={() => setResetOpen(false)} className="flex-1 h-11 rounded-xl">Abbrechen</Button>
+                <Button
+                  variant="outline"
+                  onClick={async () => {
+                    setIsSubmitting(true);
+                    setError(null);
+                    const result = await updateTension({ id: tensionId, status: "NEW", assignedTo: null });
+                    if (result.error) {
+                      setError(result.error);
+                      setIsSubmitting(false);
+                      return;
+                    }
+                    setResetOpen(false);
+                    router.refresh();
+                    setIsSubmitting(false);
+                  }}
+                  disabled={isSubmitting}
+                  className="flex-1 h-11 rounded-xl text-destructive border-destructive/30 hover:bg-destructive/10"
+                >
+                  {isSubmitting ? "..." : "Zurücksetzen"}
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
       )}
     </div>
   );

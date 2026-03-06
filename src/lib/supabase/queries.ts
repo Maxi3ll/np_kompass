@@ -347,8 +347,8 @@ export async function getTensionById(id: string) {
     .select(`
       *,
       circle:circles!tensions_circle_id_fkey(id, name, color, icon),
-      raised_by_person:persons!tensions_raised_by_fkey(id, name, email, phone),
-      assigned_to_person:persons!tensions_assigned_to_fkey(id, name, email, phone)
+      raised_by_person:persons!tensions_raised_by_fkey(id, name),
+      assigned_to_person:persons!tensions_assigned_to_fkey(id, name, email, phone, avatar_color)
     `)
     .eq('id', id)
     .single();

@@ -29,6 +29,7 @@ export function TensionComments({ tensionId, personId, initialComments }: Tensio
   const [content, setContent] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editContent, setEditContent] = useState("");
   const [isSavingEdit, setIsSavingEdit] = useState(false);
@@ -139,13 +140,33 @@ export function TensionComments({ tensionId, personId, initialComments }: Tensio
                       >
                         Bearbeiten
                       </button>
-                      <button
-                        onClick={() => handleDelete(comment.id)}
-                        disabled={deletingId === comment.id}
-                        className="text-xs text-muted-foreground hover:text-red-500 transition-colors"
-                      >
-                        {deletingId === comment.id ? 'Wird gelöscht...' : 'Löschen'}
-                      </button>
+                      {confirmDeleteId === comment.id ? (
+                        <>
+                          <button
+                            onClick={() => setConfirmDeleteId(null)}
+                            className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+                          >
+                            Abbrechen
+                          </button>
+                          <button
+                            onClick={() => {
+                              handleDelete(comment.id);
+                              setConfirmDeleteId(null);
+                            }}
+                            disabled={deletingId === comment.id}
+                            className="text-xs text-red-500 font-medium transition-colors"
+                          >
+                            {deletingId === comment.id ? 'Wird gelöscht...' : 'Sicher löschen?'}
+                          </button>
+                        </>
+                      ) : (
+                        <button
+                          onClick={() => setConfirmDeleteId(comment.id)}
+                          className="text-xs text-muted-foreground hover:text-red-500 transition-colors"
+                        >
+                          Löschen
+                        </button>
+                      )}
                     </div>
                   )}
                 </>
