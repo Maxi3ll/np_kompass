@@ -1,22 +1,11 @@
 import Link from "next/link";
 import { Header } from "@/components/navigation/header";
 import { AppShell } from "@/components/layout/app-shell";
-import { getTensions, getCircles } from "@/lib/supabase/queries";
+import { getTensions, getCircles, getPersonByAuthId } from "@/lib/supabase/queries";
+import { getCurrentUser } from "@/lib/supabase/actions";
+import { TensionsList } from "./tensions-list";
 
 export const revalidate = 30; // Revalidate every 30 seconds
-
-const STATUS_CONFIG = {
-  NEW: { label: 'Neu', color: 'bg-[var(--status-new)]', textColor: 'text-white' },
-  IN_PROGRESS: { label: 'In Bearbeitung', color: 'bg-[var(--status-in-progress)]', textColor: 'text-[#5a4a00]' },
-  RESOLVED: { label: 'Erledigt', color: 'bg-[var(--status-resolved)]', textColor: 'text-white' },
-  ESCALATED: { label: 'Eskaliert', color: 'bg-[var(--status-escalated)]', textColor: 'text-white' },
-};
-
-const PRIORITY_CONFIG = {
-  LOW: { label: 'Niedrig', icon: '○' },
-  MEDIUM: { label: 'Mittel', icon: '◐' },
-  HIGH: { label: 'Hoch', icon: '●' },
-};
 
 interface PageProps {
   searchParams: Promise<{ status?: string; circle?: string }>;
@@ -24,10 +13,18 @@ interface PageProps {
 
 export default async function SpannungenPage({ searchParams }: PageProps) {
   const params = await searchParams;
-  const [allTensions, circles] = await Promise.all([
+  const [allTensions, circles, user] = await Promise.all([
     getTensions(),
     getCircles(),
+    getCurrentUser(),
   ]);
+
+  // Get current person ID
+  let currentPersonId: string | null = null;
+  if (user) {
+    const person = await getPersonByAuthId(user.id);
+    currentPersonId = person?.id ?? null;
+  }
 
   // All circles including Anker-Kreis, sorted: anchor first
   const anchorCircle = circles.find((c: any) => c.parent_circle_id === null);
@@ -171,109 +168,12 @@ export default async function SpannungenPage({ searchParams }: PageProps) {
 
         {/* Tensions List */}
         <div className="px-5 max-w-2xl mx-auto lg:max-w-4xl">
-          <div className="space-y-3 stagger-fade-in">
-            {tensions.map((tension: any) => {
-              const status = STATUS_CONFIG[tension.status as keyof typeof STATUS_CONFIG] || STATUS_CONFIG.NEW;
-              const priority = PRIORITY_CONFIG[tension.priority as keyof typeof PRIORITY_CONFIG] || PRIORITY_CONFIG.MEDIUM;
-
-              return (
-                <Link key={tension.id} href={`/spannungen/${tension.id}`} className="block">
-                  <div className="bg-card rounded-2xl shadow-card border border-border/50 p-4 transition-all card-lift active:scale-[0.98]">
-                    {/* Header Row */}
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="flex-1 min-w-0">
-                        <h3 className="font-semibold text-foreground line-clamp-2">
-                          {tension.title}
-                        </h3>
-                      </div>
-                      <span className={`flex-shrink-0 px-2.5 py-1 rounded-full text-xs font-medium ${status.color} ${status.textColor}`}>
-                        {status.label}
-                      </span>
-                    </div>
-
-                    {/* Description */}
-                    {tension.description && (
-                      <p className="text-sm text-muted-foreground mt-2 line-clamp-2">
-                        {tension.description}
-                      </p>
-                    )}
-
-                    {/* Meta Row */}
-                    <div className="flex items-center gap-3 mt-3 pt-3 border-t border-border/50">
-                      {/* Circle */}
-                      <div className="flex items-center gap-1.5">
-                        <span
-                          className="w-2 h-2 rounded-full"
-                          style={{ backgroundColor: tension.circle?.color || '#4A90D9' }}
-                        />
-                        <span className="text-xs text-muted-foreground">
-                          {tension.circle?.name}
-                        </span>
-                      </div>
-
-                      {/* Priority */}
-                      <div className={`flex items-center gap-1 text-xs ${
-                        tension.priority === 'HIGH' ? 'text-[var(--status-escalated)]' : 'text-muted-foreground'
-                      }`}>
-                        <span>{priority.icon}</span>
-                        <span>{priority.label}</span>
-                      </div>
-
-                      {/* Comments */}
-                      {tension.comment_count > 0 && (
-                        <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-                          </svg>
-                          <span>{tension.comment_count}</span>
-                        </div>
-                      )}
-
-                      {/* Date */}
-                      <div className="flex items-center gap-1 text-xs text-muted-foreground ml-auto">
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                          <circle cx="12" cy="12" r="10" />
-                          <polyline points="12 6 12 12 16 14" />
-                        </svg>
-                        <span>
-                          {new Date(tension.created_at).toLocaleDateString('de-DE', { day: 'numeric', month: 'short' })}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </Link>
-              );
-            })}
-
-            {tensions.length === 0 && (
-              <div className="text-center py-12">
-                <div className="w-16 h-16 rounded-full bg-[var(--status-resolved)]/20 flex items-center justify-center mx-auto mb-4">
-                  {isArchive ? (
-                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--status-resolved)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="m21 8-2-2H5L3 8" />
-                      <rect x="3" y="8" width="18" height="12" rx="1" />
-                      <path d="M10 12h4" />
-                    </svg>
-                  ) : (
-                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--status-resolved)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
-                      <polyline points="22 4 12 14.01 9 11.01" />
-                    </svg>
-                  )}
-                </div>
-                <p className="font-medium text-foreground">
-                  {isArchive ? 'Archiv ist leer' : 'Keine Spannungen'}
-                </p>
-                <p className="text-sm text-muted-foreground mt-1">
-                  {isArchive
-                    ? 'Noch keine erledigten Spannungen.'
-                    : params.status
-                      ? 'Keine Spannungen mit diesem Status.'
-                      : 'Alles erledigt!'}
-                </p>
-              </div>
-            )}
-          </div>
+          <TensionsList
+            tensions={tensions}
+            currentPersonId={currentPersonId}
+            isArchive={isArchive}
+            statusFilter={params.status}
+          />
         </div>
 
       </main>
