@@ -41,7 +41,7 @@ export default async function SpannungDetailPage({ params }: PageProps) {
       .select("id")
       .eq("auth_user_id", user.id)
       .single();
-    personId = person?.id || user.id;
+    personId = person?.id ?? null;
   }
 
   const [tension, circles, comments, persons, admin] = await Promise.all([
@@ -210,8 +210,8 @@ export default async function SpannungDetailPage({ params }: PageProps) {
               tensionId={tension.id}
               currentStatus={tension.status}
               currentNextAction={tension.next_action}
-              personId={personId || ""}
-              raisedBy={tension.raised_by_person?.id || ""}
+              personId={personId ?? ""}
+              raisedBy={tension.raised_by_person?.id ?? ""}
               circles={circles || []}
               currentTitle={tension.title}
               currentDescription={tension.description || ""}
@@ -227,7 +227,7 @@ export default async function SpannungDetailPage({ params }: PageProps) {
           <div className="bg-card rounded-2xl shadow-card border border-border/50 p-5">
             <TensionComments
               tensionId={tension.id}
-              personId={personId || ""}
+              personId={personId ?? ""}
               initialComments={comments}
             />
           </div>

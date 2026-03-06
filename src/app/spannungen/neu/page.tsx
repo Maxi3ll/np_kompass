@@ -20,8 +20,10 @@ export default async function NeuePage() {
     .eq("auth_user_id", user.id)
     .single();
 
-  // If no person linked, use user.id as fallback (will need to be linked later)
-  const personId = person?.id || user.id;
+  if (!person) {
+    redirect("/profil");
+  }
+  const personId = person.id;
 
   const circles = await getCircles();
 

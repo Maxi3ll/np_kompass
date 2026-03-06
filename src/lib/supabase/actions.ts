@@ -438,8 +438,8 @@ export async function createTension(data: CreateTensionData) {
   const { data: tension, error } = await serviceClient
     .from('tensions')
     .insert({
-      title: data.title.trim().slice(0, 500),
-      description: data.description?.trim().slice(0, 5000) || null,
+      title: data.title.trim().slice(0, 200),
+      description: data.description?.trim().slice(0, 2000) || null,
       circle_id: data.circleId,
       priority: data.priority,
       raised_by: data.raisedBy,
@@ -564,8 +564,8 @@ export async function updateTension(data: UpdateTensionData) {
   if (data.nextAction !== undefined) updateData.next_action = data.nextAction;
   if (data.assignedTo !== undefined) updateData.assigned_to = data.assignedTo;
   if (data.resolution !== undefined) updateData.resolution = data.resolution;
-  if (data.title !== undefined) updateData.title = data.title;
-  if (data.description !== undefined) updateData.description = data.description;
+  if (data.title !== undefined) updateData.title = data.title.trim().slice(0, 200);
+  if (data.description !== undefined) updateData.description = data.description?.trim().slice(0, 2000) || null;
   if (data.circleId !== undefined) updateData.circle_id = data.circleId;
 
   const { data: tension, error } = await serviceClient
@@ -1631,6 +1631,38 @@ export async function deleteTensionComment(commentId: string) {
   if (comment) {
     revalidatePath(`/spannungen/${comment.tension_id}`);
   }
+
+  return { success: true };
+}
+
+export async function deleteTension(tensionId: string) {
+  const auth = await requireAuth();
+  const serviceClient = createServiceClient();
+
+  // Verify caller owns the tension or is admin
+  const { data: tension } = await serviceClient
+    .from('tensions')
+    .select('raised_by')
+    .eq('id', tensionId)
+    .single();
+
+  if (!tension || tension.raised_by !== auth.personId) {
+    const isAdmin = await isCurrentUserAdmin();
+    if (!isAdmin) return { error: 'unauthorized' };
+  }
+
+  const { error } = await serviceClient
+    .from('tensions')
+    .delete()
+    .eq('id', tensionId);
+
+  if (error) {
+    console.error('Error deleting tension:', error);
+    return { error: error.message };
+  }
+
+  revalidatePath('/spannungen');
+  revalidatePath('/');
 
   return { success: true };
 }

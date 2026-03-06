@@ -20,7 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { updateTension, resolveTension, startWorkingOnTension } from "@/lib/supabase/actions";
+import { updateTension, resolveTension, startWorkingOnTension, deleteTension } from "@/lib/supabase/actions";
 
 interface Circle {
   id: string;
@@ -83,6 +83,9 @@ export function TensionActions({
   const [editDescription, setEditDescription] = useState(currentDescription);
   const [editCircleId, setEditCircleId] = useState(currentCircleId);
   const [editPriority, setEditPriority] = useState(currentPriority);
+
+  // Delete dialog state
+  const [deleteOpen, setDeleteOpen] = useState(false);
 
   // Assign dialog state
   const [assignOpen, setAssignOpen] = useState(false);
@@ -198,70 +201,27 @@ export function TensionActions({
     setIsSubmitting(false);
   };
 
+  const handleDelete = async () => {
+    setIsSubmitting(true);
+    setError(null);
+
+    const result = await deleteTension(tensionId);
+
+    if (result.error) {
+      setError(result.error);
+      setIsSubmitting(false);
+      return;
+    }
+
+    router.push("/spannungen");
+  };
+
   if (currentStatus === "RESOLVED") {
     return (isCreator || isAdmin) ? (
-      <Dialog open={detailsOpen} onOpenChange={setDetailsOpen}>
-        <DialogTrigger asChild>
-          <Button variant="outline" className="h-10 rounded-xl text-sm">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2">
-              <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
-              <path d="m15 5 4 4" />
-            </svg>
-            Bearbeiten
-          </Button>
-        </DialogTrigger>
-        <DialogContent className="mx-4 rounded-2xl">
-          <DialogHeader>
-            <DialogTitle>Spannung bearbeiten</DialogTitle>
-            <DialogDescription>Titel, Beschreibung, Kreis und Priorität ändern.</DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4 pt-2">
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-foreground">Titel <span className="text-destructive">*</span></label>
-              <Input value={editTitle} onChange={(e) => setEditTitle(e.target.value)} className="rounded-xl" />
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-foreground">Beschreibung</label>
-              <Textarea value={editDescription} onChange={(e) => setEditDescription(e.target.value)} className="min-h-[100px] rounded-xl resize-none" />
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-foreground">Kreis</label>
-              <Select value={editCircleId} onValueChange={setEditCircleId}>
-                <SelectTrigger className="rounded-xl"><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {circles.map((c) => (<SelectItem key={c.id} value={c.id}>{c.icon} {c.name}</SelectItem>))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-foreground">Priorität</label>
-              <Select value={editPriority} onValueChange={setEditPriority}>
-                <SelectTrigger className="rounded-xl"><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="LOW">Niedrig</SelectItem>
-                  <SelectItem value="MEDIUM">Mittel</SelectItem>
-                  <SelectItem value="HIGH">Hoch</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            {error && <p className="text-sm text-destructive">{error}</p>}
-            <div className="flex gap-3">
-              <Button variant="outline" onClick={() => setDetailsOpen(false)} className="flex-1 h-11 rounded-xl">Abbrechen</Button>
-              <Button onClick={handleSaveDetails} disabled={isSubmitting || !editTitle.trim()} className="flex-1 h-11 rounded-xl bg-primary">{isSubmitting ? "Speichern..." : "Speichern"}</Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
-    ) : null;
-  }
-
-  return (
-    <div className="space-y-3">
-      {/* Edit Details Button (creator or admin) */}
-      {(isCreator || isAdmin) && (
+      <div className="flex gap-3">
         <Dialog open={detailsOpen} onOpenChange={setDetailsOpen}>
           <DialogTrigger asChild>
-            <Button variant="outline" className="w-full h-10 rounded-xl text-sm">
+            <Button variant="outline" className="h-10 rounded-xl text-sm">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2">
                 <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
                 <path d="m15 5 4 4" />
@@ -277,11 +237,13 @@ export function TensionActions({
             <div className="space-y-4 pt-2">
               <div className="space-y-2">
                 <label className="text-sm font-medium text-foreground">Titel <span className="text-destructive">*</span></label>
-                <Input value={editTitle} onChange={(e) => setEditTitle(e.target.value)} className="rounded-xl" />
+                <Input value={editTitle} onChange={(e) => setEditTitle(e.target.value)} maxLength={200} className="rounded-xl" />
+                <p className="text-xs text-muted-foreground text-right">{editTitle.length}/200</p>
               </div>
               <div className="space-y-2">
                 <label className="text-sm font-medium text-foreground">Beschreibung</label>
-                <Textarea value={editDescription} onChange={(e) => setEditDescription(e.target.value)} className="min-h-[100px] rounded-xl resize-none" />
+                <Textarea value={editDescription} onChange={(e) => setEditDescription(e.target.value)} maxLength={2000} className="min-h-[100px] rounded-xl resize-none" />
+                <p className="text-xs text-muted-foreground text-right">{editDescription.length}/2000</p>
               </div>
               <div className="space-y-2">
                 <label className="text-sm font-medium text-foreground">Kreis</label>
@@ -311,6 +273,124 @@ export function TensionActions({
             </div>
           </DialogContent>
         </Dialog>
+
+        <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
+          <DialogTrigger asChild>
+            <Button variant="outline" className="h-10 rounded-xl text-sm text-destructive border-destructive/30 hover:bg-destructive/10">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2">
+                <polyline points="3 6 5 6 21 6" />
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+              </svg>
+              Löschen
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="mx-4 rounded-2xl">
+            <DialogHeader>
+              <DialogTitle>Spannung löschen</DialogTitle>
+              <DialogDescription>Möchtest du diese Spannung wirklich löschen? Alle Kommentare werden ebenfalls entfernt. Diese Aktion kann nicht rückgängig gemacht werden.</DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4 pt-2">
+              {error && <p className="text-sm text-destructive">{error}</p>}
+              <div className="flex gap-3">
+                <Button variant="outline" onClick={() => setDeleteOpen(false)} className="flex-1 h-11 rounded-xl">Abbrechen</Button>
+                <Button variant="destructive" onClick={handleDelete} disabled={isSubmitting} className="flex-1 h-11 rounded-xl">
+                  {isSubmitting ? "Löschen..." : "Endgültig löschen"}
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+      </div>
+    ) : null;
+  }
+
+  return (
+    <div className="space-y-3">
+      {/* Edit Details Button (creator or admin) */}
+      {(isCreator || isAdmin) && (
+        <div className="flex gap-3">
+          <Dialog open={detailsOpen} onOpenChange={setDetailsOpen}>
+            <DialogTrigger asChild>
+              <Button variant="outline" className="flex-1 h-10 rounded-xl text-sm">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2">
+                  <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
+                  <path d="m15 5 4 4" />
+                </svg>
+                Bearbeiten
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="mx-4 rounded-2xl">
+              <DialogHeader>
+                <DialogTitle>Spannung bearbeiten</DialogTitle>
+                <DialogDescription>Titel, Beschreibung, Kreis und Priorität ändern.</DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4 pt-2">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-foreground">Titel <span className="text-destructive">*</span></label>
+                  <Input value={editTitle} onChange={(e) => setEditTitle(e.target.value)} maxLength={200} className="rounded-xl" />
+                  <p className="text-xs text-muted-foreground text-right">{editTitle.length}/200</p>
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-foreground">Beschreibung</label>
+                  <Textarea value={editDescription} onChange={(e) => setEditDescription(e.target.value)} maxLength={2000} className="min-h-[100px] rounded-xl resize-none" />
+                  <p className="text-xs text-muted-foreground text-right">{editDescription.length}/2000</p>
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-foreground">Kreis</label>
+                  <Select value={editCircleId} onValueChange={setEditCircleId}>
+                    <SelectTrigger className="rounded-xl"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {circles.map((c) => (<SelectItem key={c.id} value={c.id}>{c.icon} {c.name}</SelectItem>))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-foreground">Priorität</label>
+                  <Select value={editPriority} onValueChange={setEditPriority}>
+                    <SelectTrigger className="rounded-xl"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="LOW">Niedrig</SelectItem>
+                      <SelectItem value="MEDIUM">Mittel</SelectItem>
+                      <SelectItem value="HIGH">Hoch</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                {error && <p className="text-sm text-destructive">{error}</p>}
+                <div className="flex gap-3">
+                  <Button variant="outline" onClick={() => setDetailsOpen(false)} className="flex-1 h-11 rounded-xl">Abbrechen</Button>
+                  <Button onClick={handleSaveDetails} disabled={isSubmitting || !editTitle.trim()} className="flex-1 h-11 rounded-xl bg-primary">{isSubmitting ? "Speichern..." : "Speichern"}</Button>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
+
+          <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
+            <DialogTrigger asChild>
+              <Button variant="outline" className="h-10 rounded-xl text-sm text-destructive border-destructive/30 hover:bg-destructive/10">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2">
+                  <polyline points="3 6 5 6 21 6" />
+                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                </svg>
+                Löschen
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="mx-4 rounded-2xl">
+              <DialogHeader>
+                <DialogTitle>Spannung löschen</DialogTitle>
+                <DialogDescription>Möchtest du diese Spannung wirklich löschen? Alle Kommentare werden ebenfalls entfernt. Diese Aktion kann nicht rückgängig gemacht werden.</DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4 pt-2">
+                {error && <p className="text-sm text-destructive">{error}</p>}
+                <div className="flex gap-3">
+                  <Button variant="outline" onClick={() => setDeleteOpen(false)} className="flex-1 h-11 rounded-xl">Abbrechen</Button>
+                  <Button variant="destructive" onClick={handleDelete} disabled={isSubmitting} className="flex-1 h-11 rounded-xl">
+                    {isSubmitting ? "Löschen..." : "Endgültig löschen"}
+                  </Button>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
+        </div>
       )}
 
       {/* Assign Button (creator or admin) */}
