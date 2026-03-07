@@ -33,11 +33,18 @@ export function MeetingForm({ circles }: MeetingFormProps) {
   const [circleId, setCircleId] = useState("");
   const [type, setType] = useState<"TACTICAL" | "GOVERNANCE">("TACTICAL");
   const [date, setDate] = useState(() => {
-    const nextWeek = new Date();
-    nextWeek.setDate(nextWeek.getDate() + 7);
-    return nextWeek.toISOString().split("T")[0];
+    return new Date().toISOString().split("T")[0];
   });
-  const [time, setTime] = useState("19:00");
+  const [time, setTime] = useState(() => {
+    const now = new Date();
+    const minutes = now.getMinutes();
+    const roundedMinutes = Math.ceil(minutes / 15) * 15;
+    now.setMinutes(roundedMinutes, 0, 0);
+    if (roundedMinutes >= 60) {
+      now.setHours(now.getHours());
+    }
+    return `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
+  });
   const [notes, setNotes] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
