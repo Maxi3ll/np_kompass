@@ -863,7 +863,7 @@ export async function advanceMeetingPhase(meetingId: string) {
   if (error) return { error: error.message };
 
   revalidatePath(`/meetings/${meetingId}`);
-  return { success: true, nextPhase };
+  return { success: true, nextPhase, firstPosition: updateData.current_agenda_position ?? null };
 }
 
 export async function processAgendaItem(meetingId: string, agendaItemId: string, outcome?: string) {
@@ -887,13 +887,15 @@ export async function processAgendaItem(meetingId: string, agendaItemId: string,
   const isAdmin = await isCurrentUserAdmin();
   if (!isFacilitator && !isAdmin) return { error: 'unauthorized' };
 
-  // Mark item as processed
+  // Mark item as processed (only update outcome if explicitly provided)
+  const updateData: Record<string, any> = { is_processed: true };
+  if (outcome !== undefined) {
+    updateData.outcome = outcome.trim() || null;
+  }
+
   await serviceClient
     .from('meeting_agenda_items')
-    .update({
-      is_processed: true,
-      outcome: outcome?.trim() || null,
-    })
+    .update(updateData)
     .eq('id', agendaItemId);
 
   // Advance to next unprocessed item

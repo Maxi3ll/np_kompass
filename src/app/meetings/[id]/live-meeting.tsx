@@ -42,8 +42,8 @@ export function LiveMeeting({ meetingId, facilitatorId, initialData }: LiveMeeti
   const allItemsProcessed = state.agendaItems.length > 0 && state.agendaItems.every(i => i.is_processed);
 
   // Optimistically update phase in client state after successful server action
-  const handlePhaseAdvanced = useCallback((nextPhase: MeetingPhase) => {
-    dispatch({ type: 'OPTIMISTIC_PHASE', payload: nextPhase });
+  const handlePhaseAdvanced = useCallback((nextPhase: MeetingPhase, firstPosition?: number | null) => {
+    dispatch({ type: 'OPTIMISTIC_PHASE', payload: { phase: nextPhase, firstPosition } });
   }, [dispatch]);
 
   // Optimistically mark agenda item as processed

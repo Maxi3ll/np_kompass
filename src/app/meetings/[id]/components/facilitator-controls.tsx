@@ -10,7 +10,7 @@ interface FacilitatorControlsProps {
   currentAgendaItemId?: string;
   allItemsProcessed: boolean;
   hasAgendaItems: boolean;
-  onPhaseAdvanced?: (nextPhase: MeetingPhase) => void;
+  onPhaseAdvanced?: (nextPhase: MeetingPhase, firstPosition?: number | null) => void;
   onItemProcessed?: (itemId: string, nextPosition: number | null) => void;
 }
 
@@ -35,7 +35,7 @@ export function FacilitatorControls({
         if (result?.error) {
           alert(result.error);
         } else if ('nextPhase' in result && result.nextPhase) {
-          onPhaseAdvanced?.(result.nextPhase as MeetingPhase);
+          onPhaseAdvanced?.(result.nextPhase as MeetingPhase, result.firstPosition);
         }
       } catch {
         alert('Fehler beim Phasenwechsel. Bitte Seite neu laden.');
