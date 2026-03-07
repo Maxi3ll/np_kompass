@@ -173,7 +173,11 @@ export default async function MeetingDetailPage({ params }: PageProps) {
             <>
               {/* Protocol */}
               {meeting.protocol && (
-                <ProtocolView protocol={meeting.protocol} />
+                <ProtocolView
+                  protocol={meeting.protocol}
+                  circleName={meeting.circle?.name}
+                  meetingDate={new Date(meeting.date).toISOString().slice(0, 10)}
+                />
               )}
 
               <MeetingParticipants

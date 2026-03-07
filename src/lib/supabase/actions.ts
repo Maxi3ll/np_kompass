@@ -922,8 +922,34 @@ export async function processAgendaItem(meetingId: string, agendaItemId: string,
 }
 
 export async function updateAgendaItemOutcome(agendaItemId: string, outcome: string) {
-  await requireAuth();
+  let auth;
+  try {
+    auth = await requireAuth();
+  } catch {
+    return { error: 'not_authenticated' };
+  }
   const serviceClient = createServiceClient();
+
+  // Look up the meeting for this agenda item and verify facilitator
+  const { data: agendaItem } = await serviceClient
+    .from('meeting_agenda_items')
+    .select('meeting_id')
+    .eq('id', agendaItemId)
+    .single();
+
+  if (!agendaItem) return { error: 'not_found' };
+
+  const { data: meeting } = await serviceClient
+    .from('meetings')
+    .select('facilitator_id')
+    .eq('id', agendaItem.meeting_id)
+    .single();
+
+  if (!meeting) return { error: 'not_found' };
+
+  const isFacilitator = meeting.facilitator_id === auth.personId;
+  const isAdmin = await isCurrentUserAdmin();
+  if (!isFacilitator && !isAdmin) return { error: 'unauthorized' };
 
   const { error } = await serviceClient
     .from('meeting_agenda_items')
@@ -996,7 +1022,7 @@ async function completeMeeting(meetingId: string) {
 
   if (!meeting) return { error: 'not_found' };
 
-  const [attendeesResult, agendaResult, roundEntriesResult] = await Promise.all([
+  const [attendeesResult, agendaResult, roundEntriesResult, commentsResult] = await Promise.all([
     serviceClient
       .from('meeting_attendees')
       .select('person:persons(name)')
@@ -1011,6 +1037,10 @@ async function completeMeeting(meetingId: string) {
       .select('*, person:persons(name)')
       .eq('meeting_id', meetingId)
       .order('created_at'),
+    serviceClient
+      .from('meeting_agenda_comments')
+      .select('*, person:persons(name)')
+      .order('created_at'),
   ]);
 
   const attendees = (attendeesResult.data || []).map((a: any) => a.person?.name).filter(Boolean);
@@ -1018,6 +1048,16 @@ async function completeMeeting(meetingId: string) {
   const roundEntries = roundEntriesResult.data || [];
   const checkIns = roundEntries.filter((e: any) => e.phase === 'CHECK_IN');
   const closings = roundEntries.filter((e: any) => e.phase === 'CLOSING');
+
+  // Group comments by agenda_item_id (filter to only this meeting's items)
+  const agendaItemIds = new Set(agendaItems.map((i: any) => i.id));
+  const allComments = (commentsResult.data || []).filter((c: any) => agendaItemIds.has(c.agenda_item_id));
+  const commentsByItem = new Map<string, any[]>();
+  for (const c of allComments) {
+    const list = commentsByItem.get(c.agenda_item_id) || [];
+    list.push(c);
+    commentsByItem.set(c.agenda_item_id, list);
+  }
 
   const meetingDate = new Date(meeting.date).toLocaleDateString('de-DE', {
     weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
@@ -1047,6 +1087,15 @@ async function completeMeeting(meetingId: string) {
       protocol += `### ${statusIcon} ${item.position}. ${title}\n\n`;
       if (item.outcome) {
         protocol += `**Ergebnis:** ${item.outcome}\n\n`;
+      }
+      const itemComments = commentsByItem.get(item.id);
+      if (itemComments && itemComments.length > 0) {
+        protocol += `**Notizen:**\n\n`;
+        for (const c of itemComments) {
+          const time = new Date(c.created_at).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
+          protocol += `- **${(c.person as any)?.name || 'Unbekannt'}** (${time}): ${c.content}\n`;
+        }
+        protocol += `\n`;
       }
     }
   }

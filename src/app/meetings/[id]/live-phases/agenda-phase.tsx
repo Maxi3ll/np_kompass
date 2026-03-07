@@ -25,12 +25,13 @@ interface AgendaPhaseProps {
   agendaItems: AgendaItem[];
   currentAgendaPosition: number | null;
   personId: string;
+  isFacilitator: boolean;
 }
 
 export function AgendaPhase({
   agendaItems,
   currentAgendaPosition,
-  personId,
+  isFacilitator,
 }: AgendaPhaseProps) {
   const unprocessedCount = agendaItems.filter(i => !i.is_processed).length;
 
@@ -51,7 +52,7 @@ export function AgendaPhase({
               key={item.id}
               item={item}
               isCurrent={item.position === currentAgendaPosition && !item.is_processed}
-              personId={personId}
+              isFacilitator={isFacilitator}
             />
           ))}
         </div>

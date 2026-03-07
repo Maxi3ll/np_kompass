@@ -109,6 +109,7 @@ export function LiveMeeting({ meetingId, facilitatorId, initialData }: LiveMeeti
           agendaItems={state.agendaItems}
           currentAgendaPosition={state.currentAgendaPosition}
           personId={personId}
+          isFacilitator={isFacilitator}
         />
       )}
 
