@@ -35,6 +35,7 @@ Migrations in `supabase/migrations/`. Apply with `npx supabase db push`.
 | `roles` | id, name, purpose, domains[], accountabilities[], circle_id | Functions within circles |
 | `role_assignments` | id, role_id, person_id, valid_from, valid_until | UNIQUE(role_id, person_id, valid_until), supports multiple holders |
 | `tensions` | id, title, description, status, priority, circle_id, raised_by, assigned_to | Status: NEW, IN_PROGRESS, RESOLVED |
+| `tension_comments` | id, tension_id, person_id, content | Comments on tensions (migration 014) |
 
 ### Projekte (Projects)
 | Table | Key Columns | Notes |

@@ -46,8 +46,6 @@ NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
 SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
 ALLOWED_EMAILS=admin@example.com,user2@example.com,...
-TELEGRAM_BOT_TOKEN=your-bot-token          # optional
-TELEGRAM_CHAT_ID=your-chat-id              # optional
 ```
 
 ## Full Deploy Sequence (with migrations)

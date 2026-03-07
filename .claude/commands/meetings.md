@@ -71,12 +71,17 @@ All 5 meeting tables are added to `supabase_realtime` publication:
 src/app/meetings/[id]/
 ├── page.tsx                           # Server component, fetches meeting data
 ├── live-meeting.tsx                   # Main live meeting orchestrator (useReducer + realtime)
+├── start-meeting-button.tsx           # Button to start a scheduled meeting
+├── agenda-section.tsx                 # Agenda management section (add/remove items)
+├── loading.tsx                        # Loading skeleton for meeting page
 ├── components/
 │   ├── meeting-phase-bar.tsx          # Phase stepper (CHECK_IN → AGENDA → CLOSING)
 │   ├── participant-list.tsx           # Real-time attendee list with avatars
+│   ├── meeting-participants.tsx       # Participant management (join/leave)
 │   ├── facilitator-controls.tsx       # Phase transitions + agenda management (facilitator only)
 │   ├── agenda-item-live.tsx           # Live agenda item display with comments + outcome
 │   ├── round-entry-input.tsx          # Check-in/Closing text input boxes
+│   ├── round-phase.tsx               # Shared round-phase UI (check-in/closing)
 │   └── protocol-view.tsx             # Protocol/notes display
 └── live-phases/
     ├── check-in-phase.tsx            # Check-in round UI (shows who has spoken)
@@ -147,16 +152,16 @@ const MEETING_PHASE_CONFIG = { ... };  // Labels and icons per phase
 
 ## Server Actions (in actions.ts)
 
-Meeting-related actions (all use `requireAuth()`):
+Meeting-related actions (all use `requireAuth()` or `requireAuthAs()`):
 - `createMeeting(data)` — Create new meeting
 - `updateMeeting(id, data)` — Update meeting details, status, phase
-- `addAgendaItem(meetingId, item)` — Add agenda item
-- `removeAgendaItem(itemId)` — Remove agenda item
-- `updateAgendaItem(itemId, data)` — Update processed, outcome, owner
-- `addMeetingAttendee(meetingId, personId)` — Self-join meeting
+- `addAgendaItem(meetingId, data)` — Add agenda item (with notes/tensionId)
+- `removeAgendaItem(agendaItemId, meetingId)` — Remove agenda item
+- `updateAgendaItemOutcome(agendaItemId, outcome)` — Set outcome for processed item
+- `joinMeeting(meetingId, personId)` — Self-join meeting (`requireAuthAs`)
 - `removeMeetingAttendee(meetingId, personId)` — Leave meeting
-- `addRoundEntry(meetingId, phase, content)` — Submit check-in/closing
-- `addAgendaComment(agendaItemId, content)` — Comment on agenda item
+- `saveRoundEntry(meetingId, personId, phase, content)` — Submit check-in/closing (`requireAuthAs`)
+- `addMeetingAgendaComment(agendaItemId, personId, content)` — Comment on agenda item (`requireAuthAs`)
 
 ## Facilitator Role
 

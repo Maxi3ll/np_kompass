@@ -1,7 +1,7 @@
 # CLAUDE.md
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
-Use `/meetings`, `/security`, `/database`, or `/deploy` commands for detailed feature documentation.
+Use `/meetings`, `/security`, `/database`, `/deploy`, `/auth`, `/admin`, or `/architecture` commands for detailed feature documentation.
 
 ## Project Overview
 
@@ -36,7 +36,7 @@ Server Components fetch data via `src/lib/supabase/queries.ts`. Mutations use Se
 ### Security
 - **Proxy** (`src/proxy.ts`): Checks auth + email allowlist on every request, redirects unauthorized users
 - **Server Actions**: Use `requireAuth()` and `requireAuthAs(personId)` helpers to verify identity (prevents spoofing)
-- **Security Headers** in `next.config.ts`: X-Frame-Options, HSTS, CSP, Permissions-Policy
+- **Security Headers** in `next.config.ts`: X-Frame-Options, HSTS, X-Content-Type-Options, Permissions-Policy
 - **RLS**: Row-level security on all tables, tightened in migrations 011+013
 - See `SECURITY_AUDIT.md` for full audit report
 
@@ -53,11 +53,14 @@ src/
 │   ├── personen/           # Person profiles ([id] with roles, contact, family)
 │   ├── suche/              # Global search (client-side, all entities)
 │   ├── profil/             # Profile + admin email allowlist
+│   ├── passwort-aendern/   # Password change form
 │   ├── impressum/          # Legal notice
 │   ├── datenschutz/        # Privacy policy
 │   ├── login/              # Auth login (no AppShell)
-│   └── auth/callback/      # Auth callback (auto-links person record)
+│   ├── auth/callback/      # Auth callback (auto-links person record)
+│   └── auth/confirm/       # Auth confirmation (email confirm + password reset)
 ├── components/
+│   ├── dashboard/          # Dashboard widgets (right-panel)
 │   ├── layout/             # AppShell, UserContext
 │   ├── navigation/         # Header, Sidebar, BottomNav, NotificationBell, KreiseRollenTabs
 │   └── ui/                 # shadcn/ui components
@@ -113,7 +116,7 @@ Migrations 001-016 in `supabase/migrations/`. Use `/database` command for full d
 1. Login via email + password (min 8 chars, Supabase Auth)
 2. Proxy checks email against allowlist on every request
 3. Auth callback auto-links user to `persons` record
-4. Password reset via "Passwort vergessen?" flow
+4. Password reset via "Passwort vergessen?" flow (`/auth/confirm` → `/passwort-aendern`)
 
 ### Notifications
 - **In-App**: Bell icon in header, lazy-loaded dropdown
@@ -140,15 +143,15 @@ Real-time meeting facilitation with GlassFrog-style phases. Use `/meetings` comm
 - **Colors**: Blue (#4A90D9) + Yellow (#F5C842), CSS variables
 - **Fonts**: Space Grotesk (headings), Inter (body)
 - **Responsive**: `lg:` breakpoint (1024px), 48px touch targets on mobile
-- **Components**: shadcn/ui from `src/components/ui/`, Lucide-style inline SVGs
+- **Components**: shadcn/ui from `src/components/ui/`, `lucide-react` icons
 - **Styling**: Tailwind utilities + `cn()` helper
 - **Forms**: Dialog modals with useState + Server Actions
 - **Language**: German throughout the UI
 
 ## Key Files
 
-- `NECKARPIRATEN_GOVERNANCE_TOOL_SPEC.md` - Full product specification
 - `SECURITY_AUDIT.md` - Security audit report with fixes
+- `SELF_HOSTING.md` - Self-hosting guide (Supabase + Vercel setup)
 - `src/lib/supabase/queries.ts` - All database query functions
 - `src/lib/supabase/actions.ts` - All Server Actions
 - `src/types/index.ts` - Complete TypeScript domain types

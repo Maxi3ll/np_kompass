@@ -14,7 +14,7 @@ Every request passes through the proxy that:
 - Checks email against allowlist on **every request** (not just login)
 - Signs out + redirects users whose email was removed from allowlist
 - Redirects logged-in users from `/login` to `/`
-- Public routes (whitelist): `/login`, `/auth/callback`
+- Public routes (whitelist): `/login`, `/auth/callback`, `/auth/confirm`
 
 ### 2. Server Action Authentication
 Two helper functions in `actions.ts`:
@@ -27,28 +27,33 @@ async function requireAuth(): Promise<{ userId: string; email: string; personId:
 async function requireAuthAs(claimedPersonId: string): Promise<void>
 ```
 
-**Applied to all 12+ server actions** that accept a personId from the client:
+**Applied to all server actions** that accept a personId from the client:
 - `createTension` → `requireAuthAs(raisedBy)`
-- `createVorhaben` → `requireAuthAs(createdBy)`
+- `createProjekt` → `requireAuthAs(createdBy)`
 - `createSubtask` → `requireAuthAs(createdBy)`
 - `createSubtaskComment` → `requireAuthAs(personId)`
+- `createTensionComment` → `requireAuthAs(personId)`
 - `volunteerForSubtask` → `requireAuthAs(personId)`
 - `unvolunteerFromSubtask` → `requireAuthAs(personId)`
 - `updateTension` → `requireAuth()` + ownership check
-- `updateVorhaben` → `requireAuth()` + ownership check
+- `updateProjekt` → `requireAuth()` + ownership check
 - `createMeeting` → `requireAuth()`
 - `addAgendaItem` → `requireAuth()`
 - `removeAgendaItem` → `requireAuth()`
 - `deleteSubtaskComment` → `requireAuth()` + ownership check
+- `deleteTensionComment` → `requireAuth()` + ownership check
+- `joinMeeting` → `requireAuthAs(personId)`
+- `saveRoundEntry` → `requireAuthAs(personId)`
+- `addMeetingAgendaComment` → `requireAuthAs(personId)`
 
 ### 3. Row-Level Security (RLS)
 All 17+ tables have RLS enabled. Key policies tightened in migration 011:
 
 | Table | Policy | Rule |
 |-------|--------|------|
-| `vorhaben` | UPDATE | creator OR coordinator OR admin only |
-| `vorhaben` | INSERT | `created_by = get_current_person_id()` |
-| `subtasks` | UPDATE | contact_person OR creator OR vorhaben owner OR admin |
+| `projekte` | UPDATE | creator OR coordinator OR admin only |
+| `projekte` | INSERT | `created_by = get_current_person_id()` |
+| `subtasks` | UPDATE | contact_person OR creator OR projekt owner OR admin |
 | `subtasks` | INSERT | `created_by = get_current_person_id()` |
 | `subtask_volunteers` | INSERT | `person_id = get_current_person_id()` (own only) |
 | `subtask_volunteers` | DELETE | `person_id = get_current_person_id()` (own only) |
@@ -103,7 +108,6 @@ When adding new tables:
 
 ## Open Items (from SECURITY_AUDIT.md)
 - [ ] Set up database backups (Supabase Pro PITR)
-- [ ] Review Telegram privacy (names in messages to non-EU servers)
 - [ ] Verify HSTS + cookie flags in production
 - [ ] Sign DPA/AVV with Supabase and Vercel
 - [ ] Enable Leaked Password Protection (requires Pro Plan)
