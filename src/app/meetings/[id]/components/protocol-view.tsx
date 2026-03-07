@@ -10,18 +10,53 @@ export function ProtocolView({ protocol, circleName, meetingDate }: ProtocolView
   // Simple markdown-to-HTML rendering for headings, bold, and lists
   const lines = protocol.split('\n');
 
+  function markdownToHtml(md: string): string {
+    return md
+      .split('\n')
+      .map((line) => {
+        const t = line.trim();
+        if (!t) return '<br/>';
+        if (t.startsWith('### ')) return `<h3>${inlineBold(t.slice(4))}</h3>`;
+        if (t.startsWith('## ')) return `<h2>${inlineBold(t.slice(3))}</h2>`;
+        if (t.startsWith('# ')) return `<h1>${inlineBold(t.slice(2))}</h1>`;
+        if (t.startsWith('- ')) return `<li>${inlineBold(t.slice(2))}</li>`;
+        return `<p>${inlineBold(t)}</p>`;
+      })
+      .join('\n');
+  }
+
+  function inlineBold(text: string): string {
+    return text.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+  }
+
   function handleDownload() {
-    const blob = new Blob([protocol], { type: 'text/markdown;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
     const dateStr = meetingDate || new Date().toISOString().slice(0, 10);
-    const nameStr = circleName?.replace(/\s+/g, '_') || 'Meeting';
-    a.href = url;
-    a.download = `Protokoll_${nameStr}_${dateStr}.md`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    const nameStr = circleName || 'Meeting';
+    const title = `Protokoll – ${nameStr} – ${dateStr}`;
+    const html = `<!DOCTYPE html>
+<html><head>
+<meta charset="utf-8"/>
+<title>${title}</title>
+<style>
+  body { font-family: -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif; max-width: 700px; margin: 40px auto; padding: 0 24px; color: #1a1a1a; font-size: 14px; line-height: 1.6; }
+  h1 { font-size: 20px; margin: 24px 0 8px; }
+  h2 { font-size: 16px; margin: 20px 0 6px; }
+  h3 { font-size: 14px; margin: 16px 0 4px; }
+  p { margin: 4px 0; }
+  li { margin: 2px 0 2px 16px; }
+  @media print { body { margin: 0; } }
+</style>
+</head><body>
+${markdownToHtml(protocol)}
+</body></html>`;
+
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) return;
+    printWindow.document.write(html);
+    printWindow.document.close();
+    printWindow.onload = () => {
+      printWindow.print();
+    };
   }
 
   return (
@@ -37,7 +72,7 @@ export function ProtocolView({ protocol, circleName, meetingDate }: ProtocolView
             <polyline points="7 10 12 15 17 10" />
             <line x1="12" y1="15" x2="12" y2="3" />
           </svg>
-          .md Download
+          PDF Download
         </button>
       </div>
       <div className="prose prose-sm max-w-none text-foreground">
