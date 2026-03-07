@@ -106,6 +106,7 @@ export interface Meeting {
   circleId: string;
   date: Date;
   facilitatorId?: string;
+  createdBy?: string;
   notes?: string;
   status: MeetingStatus;
   currentPhase?: MeetingPhase;

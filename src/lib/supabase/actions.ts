@@ -672,6 +672,7 @@ export async function createMeeting(data: CreateMeetingData) {
       circle_id: data.circleId,
       date: data.date,
       facilitator_id: facilitatorId,
+      created_by: auth.personId,
       notes: data.notes || null,
     })
     .select()
@@ -686,6 +687,44 @@ export async function createMeeting(data: CreateMeetingData) {
   revalidatePath('/');
 
   return { meeting };
+}
+
+export async function deleteMeeting(meetingId: string) {
+  const auth = await requireAuth();
+  const serviceClient = createServiceClient();
+
+  const { data: meeting } = await serviceClient
+    .from('meetings')
+    .select('created_by, facilitator_id, status')
+    .eq('id', meetingId)
+    .single();
+
+  if (!meeting) return { error: 'not_found' };
+
+  if (meeting.status !== 'SCHEDULED') {
+    return { error: 'only_scheduled' };
+  }
+
+  const isCreator = meeting.created_by === auth.personId || meeting.facilitator_id === auth.personId;
+  const isAdmin = await isCurrentUserAdmin();
+  if (!isCreator && !isAdmin) {
+    return { error: 'unauthorized' };
+  }
+
+  // FK constraints use ON DELETE CASCADE, so child rows are removed automatically
+  const { error } = await serviceClient
+    .from('meetings')
+    .delete()
+    .eq('id', meetingId);
+
+  if (error) {
+    console.error('Error deleting meeting:', error);
+    return { error: error.message };
+  }
+
+  revalidatePath('/meetings');
+  revalidatePath('/');
+  return { success: true };
 }
 
 // =====================================================

@@ -9,6 +9,7 @@ import { LiveMeeting } from "./live-meeting";
 import { StartMeetingButton } from "./start-meeting-button";
 import { ProtocolView } from "./components/protocol-view";
 import { MeetingParticipants } from "./components/meeting-participants";
+import { DeleteMeetingButton } from "./delete-meeting-button";
 import type { MeetingType } from "@/types";
 import { MEETING_TYPE_CONFIG } from "@/types";
 
@@ -165,6 +166,15 @@ export default async function MeetingDetailPage({ params }: PageProps) {
                   <p className="text-foreground whitespace-pre-wrap">{meeting.notes}</p>
                 </div>
               )}
+
+              {/* Delete Meeting */}
+              <DeleteMeetingButton
+                meetingId={meeting.id}
+                circleName={meeting.circle?.name || "Unbekannt"}
+                createdBy={meeting.created_by || null}
+                facilitatorId={meeting.facilitator?.id || null}
+                isAdmin={isAdmin}
+              />
             </>
           )}
 
