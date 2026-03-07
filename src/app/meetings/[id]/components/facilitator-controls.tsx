@@ -61,7 +61,7 @@ export function FacilitatorControls({
   }
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 lg:left-64 z-40 bg-card/95 backdrop-blur-sm border-t border-border shadow-lg">
+    <div className="fixed bottom-16 left-0 right-0 lg:bottom-0 lg:left-64 z-40 bg-card/95 backdrop-blur-sm border-t border-border shadow-lg">
       <div className="max-w-2xl mx-auto lg:max-w-4xl px-5 py-3 flex items-center gap-3">
         <div className="flex-1 text-xs text-muted-foreground">
           Moderator-Steuerung

@@ -75,7 +75,7 @@ export function LiveMeeting({ meetingId, facilitatorId, initialData }: LiveMeeti
   }
 
   return (
-    <div className={`space-y-4 ${isFacilitator ? 'pb-20' : ''}`}>
+    <div className="space-y-4">
       {/* Connection status banner */}
       {!isConnected && (
         <div className="p-3 rounded-xl bg-[var(--np-yellow)]/20 border border-[var(--np-yellow)]/30 flex items-center gap-2">
