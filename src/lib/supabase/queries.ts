@@ -491,11 +491,13 @@ export async function getMeetings(filters?: {
   }
 
   if (filters?.upcoming) {
-    query = query.gte('date', new Date().toISOString());
+    // Upcoming: future date AND not completed
+    query = query.gte('date', new Date().toISOString()).neq('status', 'COMPLETED');
   }
 
   if (filters?.past) {
-    query = query.lt('date', new Date().toISOString());
+    // Past: past date OR completed (completed meetings always count as past)
+    query = query.or(`date.lt.${new Date().toISOString()},status.eq.COMPLETED`);
   }
 
   if (filters?.limit) {
