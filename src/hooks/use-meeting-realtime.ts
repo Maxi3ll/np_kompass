@@ -190,6 +190,7 @@ function meetingReducer(state: LiveMeetingState, action: MeetingAction): LiveMee
 export function useMeetingRealtime(meetingId: string, initialData: LiveMeetingState) {
   const [state, dispatch] = useReducer(meetingReducer, initialData);
   const [isConnected, setIsConnected] = useState(true);
+  const hasConnectedOnce = useRef(false);
   const router = useRouter();
 
   // Keep a ref of agendaItemIds for the comment subscription (avoids stale closure)
@@ -339,7 +340,13 @@ export function useMeetingRealtime(meetingId: string, initialData: LiveMeetingSt
         }
       )
       .subscribe((status) => {
-        setIsConnected(status === 'SUBSCRIBED');
+        if (status === 'SUBSCRIBED') {
+          hasConnectedOnce.current = true;
+          setIsConnected(true);
+        } else if (hasConnectedOnce.current) {
+          // Only show disconnect banner after initial connection was established
+          setIsConnected(false);
+        }
       });
 
     return () => {

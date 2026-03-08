@@ -75,6 +75,7 @@ export default async function MeetingsPage({ searchParams }: PageProps) {
       day: "numeric",
       month: "long",
       year: "numeric",
+      timeZone: "Europe/Berlin",
     });
     if (!groups[date]) groups[date] = [];
     groups[date].push(meeting);
@@ -165,6 +166,7 @@ export default async function MeetingsPage({ searchParams }: PageProps) {
                       const meetingTime = new Date(meeting.date).toLocaleTimeString("de-DE", {
                         hour: "2-digit",
                         minute: "2-digit",
+                        timeZone: "Europe/Berlin",
                       });
 
                       const isActiveMeeting = meeting.status === 'ACTIVE';

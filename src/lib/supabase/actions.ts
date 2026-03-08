@@ -1153,7 +1153,7 @@ async function completeMeeting(meetingId: string) {
   }
 
   const meetingDate = new Date(meeting.date).toLocaleDateString('de-DE', {
-    weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
+    weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', timeZone: 'Europe/Berlin',
   });
   const meetingType = meeting.type === 'TACTICAL' ? 'Taktischer Termin' : 'Governance-Termin';
 
@@ -1185,7 +1185,7 @@ async function completeMeeting(meetingId: string) {
       if (itemComments && itemComments.length > 0) {
         protocol += `**Notizen:**\n\n`;
         for (const c of itemComments) {
-          const time = new Date(c.created_at).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
+          const time = new Date(c.created_at).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Berlin' });
           protocol += `- **${(c.person as any)?.name || 'Unbekannt'}** (${time}): ${c.content}\n`;
         }
         protocol += `\n`;

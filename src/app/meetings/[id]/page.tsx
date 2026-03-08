@@ -30,8 +30,9 @@ export default async function MeetingDetailPage({ params }: PageProps) {
 
   const typeConfig = MEETING_TYPE_CONFIG[meeting.type as keyof typeof MEETING_TYPE_CONFIG];
   const meetingDate = new Date(meeting.date);
+  const tz = "Europe/Berlin";
   const isPast = meetingDate < new Date();
-  const isToday = meetingDate.toDateString() === new Date().toDateString();
+  const isToday = meetingDate.toLocaleDateString("de-DE", { timeZone: tz }) === new Date().toLocaleDateString("de-DE", { timeZone: tz });
 
   const isActive = meeting.status === 'ACTIVE';
   const isCompleted = meeting.status === 'COMPLETED';
@@ -98,10 +99,11 @@ export default async function MeetingDetailPage({ params }: PageProps) {
                       weekday: "short",
                       day: "numeric",
                       month: "short",
+                      timeZone: tz,
                     })}
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    {meetingDate.toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" })} Uhr
+                    {meetingDate.toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit", timeZone: tz })} Uhr
                   </p>
                 </div>
               </div>

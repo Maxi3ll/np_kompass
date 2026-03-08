@@ -205,9 +205,11 @@ export default async function Home() {
                             day: "2-digit",
                             month: "2-digit",
                             year: "numeric",
+                            timeZone: "Europe/Berlin",
                           })}, {new Date(nextMeeting.date).toLocaleTimeString("de-DE", {
                             hour: "2-digit",
                             minute: "2-digit",
+                            timeZone: "Europe/Berlin",
                           })} Uhr
                         </span>
                       </div>
