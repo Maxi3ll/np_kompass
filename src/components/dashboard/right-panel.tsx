@@ -35,11 +35,6 @@ export function RightPanel({ myRoles }: RightPanelProps) {
                 <span className="text-[13px] font-medium text-foreground truncate flex-1">
                   {role.name}
                 </span>
-                {role.circle && (
-                  <span className="text-[12px] text-muted-foreground shrink-0">
-                    {role.circle}
-                  </span>
-                )}
               </Link>
             ))}
           </div>
