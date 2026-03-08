@@ -2,7 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Header } from "@/components/navigation/header";
 import { AppShell } from "@/components/layout/app-shell";
-import { getDashboardData, getRecentNotifications } from "@/lib/supabase/queries";
+import { getDashboardData } from "@/lib/supabase/queries";
 import { createClient } from "@/lib/supabase/server";
 import { RightPanel } from "@/components/dashboard/right-panel";
 
@@ -33,10 +33,7 @@ export default async function Home() {
     }
   }
 
-  const [dashboardData, recentNotifications] = await Promise.all([
-    getDashboardData(personId),
-    personId ? getRecentNotifications(personId, 5) : Promise.resolve([]),
-  ]);
+  const dashboardData = await getDashboardData(personId);
   const { myRoles, openTensions, myCircleIds, myCircleTensions, assignedTensions, nextMeeting, activeProjekteCount, myVolunteerCount, myProjektName } = dashboardData;
 
   // User display info
@@ -320,9 +317,6 @@ export default async function Home() {
 
         <RightPanel
           myRoles={myRoles}
-          recentNotifications={recentNotifications}
-          nextMeeting={nextMeeting}
-          openTensions={openTensions}
         />
         </div>
       </main>
