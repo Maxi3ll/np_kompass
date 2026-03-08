@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { Home, Zap, Rocket, Crosshair, Users, Calendar, User } from "lucide-react";
+import { Home, Zap, Rocket, CircleDot, Users, Calendar, User } from "lucide-react";
 
 interface NavItem {
   href: string;
@@ -31,7 +31,7 @@ const navItems: NavItem[] = [
   {
     href: "/kreise",
     label: "Kreise",
-    icon: <Crosshair size={20} />,
+    icon: <CircleDot size={20} />,
   },
   {
     href: "/rollen",

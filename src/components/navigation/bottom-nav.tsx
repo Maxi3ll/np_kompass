@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { Home, Zap, Crosshair, Rocket, Calendar, Plus } from "lucide-react";
+import { Home, Zap, CircleDot, Rocket, Calendar, Plus } from "lucide-react";
 
 const navItems: { href: string; label: string; icon: React.ReactNode; matchAlso?: string }[] = [
   {
@@ -21,7 +21,7 @@ const navItems: { href: string; label: string; icon: React.ReactNode; matchAlso?
     href: "/kreise",
     label: "Kreise",
     matchAlso: "/rollen",
-    icon: <Crosshair size={22} />,
+    icon: <CircleDot size={22} />,
   },
   {
     href: "/projekte",

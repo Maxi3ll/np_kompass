@@ -5,7 +5,7 @@ import { AppShell } from "@/components/layout/app-shell";
 import { getDashboardData } from "@/lib/supabase/queries";
 import { createClient } from "@/lib/supabase/server";
 import { RightPanel } from "@/components/dashboard/right-panel";
-import { Users, Crosshair, Zap, User, Rocket, Calendar, Clock, FilePlus } from "lucide-react";
+import { Users, CircleDot, Zap, User, Rocket, Calendar, Clock, FilePlus } from "lucide-react";
 
 export const revalidate = 60; // Revalidate every 60 seconds
 
@@ -79,7 +79,7 @@ export default async function Home() {
                   <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">Rollen</span>
                   {myCircleIds.length > 0 && (
                     <div className="flex items-center gap-1 mt-1">
-                      <Crosshair size={10} color="var(--np-blue)" strokeWidth={2.5} />
+                      <CircleDot size={10} color="var(--np-blue)" strokeWidth={2.5} />
                       <span className="text-[10px] font-medium text-[var(--np-blue)]">{myCircleIds.length} {myCircleIds.length === 1 ? 'Kreis' : 'Kreise'}</span>
                     </div>
                   )}
@@ -230,7 +230,7 @@ export default async function Home() {
                   color: "var(--np-blue)",
                   bgColor: "var(--np-blue-light)",
                   icon: (
-                    <Crosshair size={22} />
+                    <CircleDot size={22} />
                   ),
                 },
                 {
