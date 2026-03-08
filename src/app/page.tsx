@@ -236,8 +236,7 @@ export default async function Home() {
                         <line x1="3" y1="10" x2="21" y2="10" />
                       </svg>
                     </div>
-                    <p className="text-sm text-muted-foreground">Kein Termin geplant</p>
-                    <p className="text-xs text-muted-foreground mt-1">Termine werden bald hinzugefügt</p>
+                    <p className="text-sm text-muted-foreground">Kein Termin in einem deiner Kreise geplant</p>
                   </div>
                 )}
               </div>
