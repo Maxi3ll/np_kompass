@@ -83,7 +83,7 @@ export function AgendaItemLive({ item, isCurrent, isFacilitator }: AgendaItemLiv
               onChange={(e) => setOutcome(e.target.value)}
               placeholder="Ergebnis, Entscheidung oder nächste Schritte..."
               maxLength={5000}
-              className="w-full px-3 py-2 text-sm rounded-xl border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary/20 resize-none"
+              className="w-full px-3 py-2 text-sm rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary/20 resize-none"
               rows={2}
             />
           </div>

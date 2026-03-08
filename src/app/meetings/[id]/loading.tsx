@@ -50,7 +50,7 @@ export default function MeetingDetailLoading() {
             <Skeleton className="h-3 w-24 mb-3" />
             <div className="space-y-2">
               {[...Array(3)].map((_, i) => (
-                <div key={i} className="flex items-start gap-3 p-3 rounded-xl bg-muted/50">
+                <div key={i} className="flex items-start gap-3 p-3 rounded-lg bg-muted/50">
                   <Skeleton className="h-6 w-6 rounded-full" />
                   <div className="flex-1">
                     <Skeleton className="h-5 w-3/4 mb-1" />
@@ -64,7 +64,7 @@ export default function MeetingDetailLoading() {
           {/* Circle Link Skeleton */}
           <div className="bg-card rounded-2xl border border-border/50 p-4">
             <div className="flex items-center gap-3">
-              <Skeleton className="h-10 w-10 rounded-xl" />
+              <Skeleton className="h-10 w-10 rounded-lg" />
               <div className="flex-1">
                 <Skeleton className="h-3 w-16 mb-1" />
                 <Skeleton className="h-5 w-32" />
@@ -79,7 +79,7 @@ export default function MeetingDetailLoading() {
       <div className="fixed bottom-0 left-0 right-0 h-20 border-t border-border/50 bg-background/95">
         <div className="flex items-center justify-around h-full max-w-lg mx-auto px-6">
           {[...Array(5)].map((_, i) => (
-            <Skeleton key={i} className="h-10 w-10 rounded-xl" />
+            <Skeleton key={i} className="h-10 w-10 rounded-lg" />
           ))}
         </div>
       </div>

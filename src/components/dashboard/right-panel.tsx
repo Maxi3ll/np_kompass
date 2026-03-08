@@ -26,7 +26,7 @@ export function RightPanel({ myRoles }: RightPanelProps) {
               <Link
                 key={role.id}
                 href={`/rollen/${role.id}`}
-                className="flex items-center gap-3 bg-muted/60 rounded-xl px-4 py-3 hover:bg-muted transition-colors"
+                className="flex items-center gap-3 bg-muted/60 rounded-lg px-4 py-3 hover:bg-muted transition-colors"
               >
                 <span
                   className="w-3 h-3 rounded-full shrink-0"

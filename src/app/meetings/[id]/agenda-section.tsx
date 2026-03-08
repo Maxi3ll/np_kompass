@@ -96,7 +96,7 @@ export function AgendaSection({ meetingId, agendaItems, openTensions, isPast }: 
             {agendaItems.map((item, index) => (
               <div
                 key={item.id}
-                className="flex items-start gap-3 p-3 rounded-xl bg-muted/50"
+                className="flex items-start gap-3 p-3 rounded-lg bg-muted/50"
               >
                 <span className="w-6 h-6 rounded-full bg-primary/10 text-primary text-xs font-medium flex items-center justify-center flex-shrink-0">
                   {index + 1}
@@ -123,7 +123,7 @@ export function AgendaSection({ meetingId, agendaItems, openTensions, isPast }: 
                   <button
                     onClick={() => handleRemove(item.id)}
                     disabled={isPending}
-                    className="w-9 h-9 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors flex-shrink-0 disabled:opacity-50"
+                    className="w-9 h-9 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors flex-shrink-0 disabled:opacity-50"
                     title="Entfernen"
                   >
                     <X size={14} />
@@ -158,13 +158,13 @@ export function AgendaSection({ meetingId, agendaItems, openTensions, isPast }: 
               }}
               placeholder="Freien Punkt hinzufügen..."
               maxLength={500}
-              className="flex-1 px-3 py-2 text-sm rounded-xl border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary/20"
+              className="flex-1 px-3 py-2 text-sm rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary/20"
               disabled={isPending}
             />
             <button
               onClick={handleAddFreeItem}
               disabled={isPending || !notes.trim()}
-              className="px-3 py-2 text-sm font-medium rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-50"
+              className="px-3 py-2 text-sm font-medium rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-50"
             >
               {isPending ? '...' : 'Hinzufügen'}
             </button>
@@ -173,7 +173,7 @@ export function AgendaSection({ meetingId, agendaItems, openTensions, isPast }: 
       </div>
 
       {error && (
-        <div className="p-3 rounded-xl bg-destructive/10 border border-destructive/20">
+        <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/20">
           <p className="text-sm text-destructive">{error}</p>
         </div>
       )}
@@ -193,7 +193,7 @@ export function AgendaSection({ meetingId, agendaItems, openTensions, isPast }: 
                 <button
                   onClick={() => handleAddTension(tension.id)}
                   disabled={isPending}
-                  className="w-7 h-7 rounded-full flex items-center justify-center bg-[var(--np-yellow)] text-[#5a4a00] hover:bg-[var(--np-yellow)]/80 transition-colors flex-shrink-0 disabled:opacity-50"
+                  className="w-7 h-7 rounded-lg flex items-center justify-center bg-[var(--np-yellow)] text-[#5a4a00] hover:bg-[var(--np-yellow)]/80 transition-colors flex-shrink-0 disabled:opacity-50"
                   title="Zur Agenda hinzufügen"
                 >
                   <Plus size={14} strokeWidth={2.5} />

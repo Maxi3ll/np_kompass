@@ -35,7 +35,7 @@ export default function SpannungDetailLoading() {
           {/* Circle Info Skeleton */}
           <div className="bg-card rounded-2xl border border-border/50 p-4">
             <div className="flex items-center gap-3">
-              <Skeleton className="h-10 w-10 rounded-xl" />
+              <Skeleton className="h-10 w-10 rounded-lg" />
               <div className="flex-1">
                 <Skeleton className="h-3 w-24 mb-1" />
                 <Skeleton className="h-5 w-32" />
@@ -58,8 +58,8 @@ export default function SpannungDetailLoading() {
 
           {/* Action Buttons Skeleton */}
           <div className="flex gap-3 pt-4">
-            <Skeleton className="h-12 flex-1 rounded-xl" />
-            <Skeleton className="h-12 flex-1 rounded-xl" />
+            <Skeleton className="h-12 flex-1 rounded-lg" />
+            <Skeleton className="h-12 flex-1 rounded-lg" />
           </div>
         </div>
       </main>
@@ -68,7 +68,7 @@ export default function SpannungDetailLoading() {
       <div className="fixed bottom-0 left-0 right-0 h-20 border-t border-border/50 bg-background/95">
         <div className="flex items-center justify-around h-full max-w-lg mx-auto px-6">
           {[...Array(5)].map((_, i) => (
-            <Skeleton key={i} className="h-10 w-10 rounded-xl" />
+            <Skeleton key={i} className="h-10 w-10 rounded-lg" />
           ))}
         </div>
       </div>

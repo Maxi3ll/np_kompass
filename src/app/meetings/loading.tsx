@@ -15,8 +15,8 @@ export default function MeetingsLoading() {
         {/* Filter Tabs Skeleton */}
         <div className="px-5 pt-4 pb-3 max-w-2xl mx-auto">
           <div className="flex gap-2">
-            <Skeleton className="h-10 flex-1 rounded-xl" />
-            <Skeleton className="h-10 flex-1 rounded-xl" />
+            <Skeleton className="h-10 flex-1 rounded-lg" />
+            <Skeleton className="h-10 flex-1 rounded-lg" />
           </div>
         </div>
 
@@ -54,7 +54,7 @@ export default function MeetingsLoading() {
       <div className="fixed bottom-0 left-0 right-0 h-20 border-t border-border/50 bg-background/95">
         <div className="flex items-center justify-around h-full max-w-lg mx-auto px-6">
           {[...Array(5)].map((_, i) => (
-            <Skeleton key={i} className="h-10 w-10 rounded-xl" />
+            <Skeleton key={i} className="h-10 w-10 rounded-lg" />
           ))}
         </div>
       </div>

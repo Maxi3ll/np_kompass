@@ -102,7 +102,7 @@ export function ProjektForm({ personId, circles, persons }: ProjektFormProps) {
           placeholder="Wie heißt das Projekt?"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          className="h-12 rounded-xl"
+          className="h-12 rounded-lg"
           maxLength={200}
         />
         <p className="text-xs text-muted-foreground text-right">
@@ -120,7 +120,7 @@ export function ProjektForm({ personId, circles, persons }: ProjektFormProps) {
           placeholder="Ein Satz, der das Projekt zusammenfasst (optional)"
           value={shortDescription}
           onChange={(e) => setShortDescription(e.target.value)}
-          className="h-12 rounded-xl"
+          className="h-12 rounded-lg"
           maxLength={300}
         />
         <p className="text-xs text-muted-foreground text-right">
@@ -138,7 +138,7 @@ export function ProjektForm({ personId, circles, persons }: ProjektFormProps) {
           placeholder="Beschreibe das Projekt genauer... (optional)"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
-          className="min-h-[120px] rounded-xl resize-none"
+          className="min-h-[120px] rounded-lg resize-none"
           maxLength={5000}
         />
         <p className="text-xs text-muted-foreground text-right">
@@ -152,7 +152,7 @@ export function ProjektForm({ personId, circles, persons }: ProjektFormProps) {
           Koordinator:in
         </label>
         <Select value={coordinatorId} onValueChange={(v) => setCoordinatorId(v === "__none__" ? "" : v)}>
-          <SelectTrigger className="h-12 rounded-xl w-full">
+          <SelectTrigger className="h-12 rounded-lg w-full">
             <SelectValue placeholder="Wer koordiniert das Projekt? (optional)" />
           </SelectTrigger>
           <SelectContent>
@@ -179,7 +179,7 @@ export function ProjektForm({ personId, circles, persons }: ProjektFormProps) {
                 key={circle.id}
                 type="button"
                 onClick={() => toggleCircle(circle.id)}
-                className={`inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border-2 text-sm font-medium transition-all ${
+                className={`inline-flex items-center gap-1.5 px-3 py-2 rounded-lg border-2 text-sm font-medium transition-all ${
                   isSelected
                     ? 'border-primary bg-primary/10 text-primary'
                     : 'border-border text-muted-foreground hover:border-muted-foreground/30'
@@ -209,7 +209,7 @@ export function ProjektForm({ personId, circles, persons }: ProjektFormProps) {
             type="date"
             value={startDate}
             onChange={(e) => setStartDate(e.target.value)}
-            className="h-12 rounded-xl"
+            className="h-12 rounded-lg"
           />
         </div>
         <div className="space-y-2">
@@ -221,14 +221,14 @@ export function ProjektForm({ personId, circles, persons }: ProjektFormProps) {
             type="date"
             value={endDate}
             onChange={(e) => setEndDate(e.target.value)}
-            className="h-12 rounded-xl"
+            className="h-12 rounded-lg"
           />
         </div>
       </div>
 
       {/* Error Message */}
       {error && (
-        <div className="p-3 rounded-xl bg-destructive/10 border border-destructive/20">
+        <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/20">
           <p className="text-sm text-destructive">{error}</p>
         </div>
       )}
@@ -238,7 +238,7 @@ export function ProjektForm({ personId, circles, persons }: ProjektFormProps) {
         <Button
           type="submit"
           disabled={isSubmitting}
-          className="w-full h-12 rounded-xl bg-[var(--np-yellow)] hover:bg-[var(--np-yellow)]/90 text-[#5a4a00] font-semibold text-base"
+          className="w-full h-12 rounded-lg bg-[var(--np-yellow)] hover:bg-[var(--np-yellow)]/90 text-[#5a4a00] font-semibold text-base"
         >
           {isSubmitting ? (
             <span className="flex items-center gap-2">

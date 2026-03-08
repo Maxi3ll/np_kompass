@@ -111,7 +111,7 @@ export function CircleFormDialog({
               placeholder="z.B. Betrieb"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="h-10 rounded-xl"
+              className="h-10 rounded-lg"
             />
           </div>
 
@@ -121,7 +121,7 @@ export function CircleFormDialog({
               placeholder="Wofür ist dieser Kreis verantwortlich?"
               value={purpose}
               onChange={(e) => setPurpose(e.target.value)}
-              className="min-h-[80px] rounded-xl resize-none"
+              className="min-h-[80px] rounded-lg resize-none"
             />
           </div>
 
@@ -133,7 +133,7 @@ export function CircleFormDialog({
                   key={c.value}
                   type="button"
                   onClick={() => setColor(c.value)}
-                  className={`w-10 h-10 rounded-xl transition-all ${
+                  className={`w-10 h-10 rounded-lg transition-all ${
                     color === c.value
                       ? "ring-2 ring-offset-2 ring-foreground scale-110"
                       : "hover:scale-105"
@@ -151,7 +151,7 @@ export function CircleFormDialog({
               placeholder="z.B. 🏠"
               value={icon}
               onChange={(e) => setIcon(e.target.value)}
-              className="h-10 rounded-xl w-20 text-center text-lg"
+              className="h-10 rounded-lg w-20 text-center text-lg"
               maxLength={4}
             />
           </div>
@@ -161,14 +161,14 @@ export function CircleFormDialog({
           <Button
             variant="outline"
             onClick={() => onOpenChange(false)}
-            className="rounded-xl"
+            className="rounded-lg"
           >
             Abbrechen
           </Button>
           <Button
             onClick={handleSubmit}
             disabled={isPending || !name.trim()}
-            className="rounded-xl"
+            className="rounded-lg"
           >
             {isPending ? "Speichern..." : mode === "edit" ? "Speichern" : "Erstellen"}
           </Button>

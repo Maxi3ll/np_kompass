@@ -58,7 +58,7 @@ export function CircleAdminActions({ circle, hasRoles }: CircleAdminActionsProps
         <Button
           variant="outline"
           onClick={() => setEditOpen(true)}
-          className="flex-1 h-10 rounded-xl text-sm"
+          className="flex-1 h-10 rounded-lg text-sm"
         >
           <Pencil size={14} className="mr-1.5" />
           Bearbeiten
@@ -66,7 +66,7 @@ export function CircleAdminActions({ circle, hasRoles }: CircleAdminActionsProps
         <Button
           variant="outline"
           onClick={() => setAddRoleOpen(true)}
-          className="flex-1 h-10 rounded-xl text-sm"
+          className="flex-1 h-10 rounded-lg text-sm"
         >
           <Plus size={14} className="mr-1.5" />
           Rolle hinzufügen
@@ -77,7 +77,7 @@ export function CircleAdminActions({ circle, hasRoles }: CircleAdminActionsProps
         <Button
           variant="outline"
           onClick={() => setDeleteOpen(true)}
-          className="w-full h-10 rounded-xl text-sm text-destructive hover:text-destructive hover:bg-destructive/10 border-destructive/20 mt-2"
+          className="w-full h-10 rounded-lg text-sm text-destructive hover:text-destructive hover:bg-destructive/10 border-destructive/20 mt-2"
         >
           Kreis löschen
         </Button>
@@ -114,14 +114,14 @@ export function CircleAdminActions({ circle, hasRoles }: CircleAdminActionsProps
             </div>
           )}
           <DialogFooter>
-            <Button variant="outline" onClick={() => setDeleteOpen(false)} className="rounded-xl">
+            <Button variant="outline" onClick={() => setDeleteOpen(false)} className="rounded-lg">
               Abbrechen
             </Button>
             <Button
               variant="destructive"
               onClick={handleDelete}
               disabled={isPending}
-              className="rounded-xl"
+              className="rounded-lg"
             >
               {isPending ? "Löschen..." : "Löschen"}
             </Button>

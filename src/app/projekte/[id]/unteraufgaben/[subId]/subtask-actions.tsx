@@ -121,7 +121,7 @@ export function SubtaskActions({
   const editDialog = isCreator ? (
     <Dialog open={detailsOpen} onOpenChange={setDetailsOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" className={`${currentStatus === "DONE" ? "" : "w-full "}h-10 rounded-xl text-sm`}>
+        <Button variant="outline" className={`${currentStatus === "DONE" ? "" : "w-full "}h-10 rounded-lg text-sm`}>
           <Pencil size={16} className="mr-2" />
           Bearbeiten
         </Button>
@@ -134,16 +134,16 @@ export function SubtaskActions({
         <div className="space-y-4 pt-2">
           <div className="space-y-2">
             <label className="text-sm font-medium text-foreground">Titel <span className="text-destructive">*</span></label>
-            <Input value={editTitle} onChange={(e) => setEditTitle(e.target.value)} className="rounded-xl" />
+            <Input value={editTitle} onChange={(e) => setEditTitle(e.target.value)} className="rounded-lg" />
           </div>
           <div className="space-y-2">
             <label className="text-sm font-medium text-foreground">Beschreibung</label>
-            <Textarea value={editDescription} onChange={(e) => setEditDescription(e.target.value)} className="min-h-[100px] rounded-xl resize-none" />
+            <Textarea value={editDescription} onChange={(e) => setEditDescription(e.target.value)} className="min-h-[100px] rounded-lg resize-none" />
           </div>
           <div className="space-y-2">
             <label className="text-sm font-medium text-foreground">Ansprechperson</label>
             <Select value={editContactPersonId} onValueChange={(v) => setEditContactPersonId(v === "__none__" ? "" : v)}>
-              <SelectTrigger className="rounded-xl"><SelectValue placeholder="Ansprechperson wählen" /></SelectTrigger>
+              <SelectTrigger className="rounded-lg"><SelectValue placeholder="Ansprechperson wählen" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="__none__" className="text-muted-foreground">Keine Auswahl</SelectItem>
                 {persons.map((p) => (<SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>))}
@@ -152,8 +152,8 @@ export function SubtaskActions({
           </div>
           {error && <p className="text-sm text-destructive">{error}</p>}
           <div className="flex gap-3">
-            <Button variant="outline" onClick={() => setDetailsOpen(false)} className="flex-1 h-11 rounded-xl">Abbrechen</Button>
-            <Button onClick={handleSaveDetails} disabled={isSubmitting || !editTitle.trim()} className="flex-1 h-11 rounded-xl bg-primary">{isSubmitting ? "Speichern..." : "Speichern"}</Button>
+            <Button variant="outline" onClick={() => setDetailsOpen(false)} className="flex-1 h-11 rounded-lg">Abbrechen</Button>
+            <Button onClick={handleSaveDetails} disabled={isSubmitting || !editTitle.trim()} className="flex-1 h-11 rounded-lg bg-primary">{isSubmitting ? "Speichern..." : "Speichern"}</Button>
           </div>
         </div>
       </DialogContent>
@@ -168,14 +168,14 @@ export function SubtaskActions({
             variant="outline"
             onClick={() => handleAction('OPEN')}
             disabled={isSubmitting}
-            className="flex-1 h-10 rounded-xl text-sm"
+            className="flex-1 h-10 rounded-lg text-sm"
           >
             Wieder aufmachen
           </Button>
           {editDialog}
         </div>
         {error && (
-          <div className="p-3 rounded-xl bg-destructive/10 border border-destructive/20">
+          <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/20">
             <p className="text-sm text-destructive">{error}</p>
           </div>
         )}
@@ -184,7 +184,7 @@ export function SubtaskActions({
             <Button
               variant="ghost"
               onClick={() => setDeleteOpen(true)}
-              className="w-full h-10 rounded-xl text-sm text-destructive hover:text-destructive hover:bg-destructive/10"
+              className="w-full h-10 rounded-lg text-sm text-destructive hover:text-destructive hover:bg-destructive/10"
             >
               Unteraufgabe löschen
             </Button>
@@ -197,8 +197,8 @@ export function SubtaskActions({
                   Die Unteraufgabe &ldquo;{currentTitle}&rdquo; wird unwiderruflich gelöscht.
                 </p>
                 <div className="flex gap-3 pt-2">
-                  <Button variant="outline" onClick={() => setDeleteOpen(false)} className="flex-1 h-11 rounded-xl">Abbrechen</Button>
-                  <Button onClick={handleDelete} disabled={isSubmitting} className="flex-1 h-11 rounded-xl bg-destructive hover:bg-destructive/90 text-destructive-foreground">
+                  <Button variant="outline" onClick={() => setDeleteOpen(false)} className="flex-1 h-11 rounded-lg">Abbrechen</Button>
+                  <Button onClick={handleDelete} disabled={isSubmitting} className="flex-1 h-11 rounded-lg bg-destructive hover:bg-destructive/90 text-destructive-foreground">
                     {isSubmitting ? "Wird gelöscht..." : "Endgültig löschen"}
                   </Button>
                 </div>
@@ -220,7 +220,7 @@ export function SubtaskActions({
             variant="default"
             onClick={() => handleAction('IN_PROGRESS')}
             disabled={isSubmitting}
-            className="flex-1 h-12 rounded-xl"
+            className="flex-1 h-12 rounded-lg"
           >
             {isSubmitting ? "Wird gespeichert..." : "In Arbeit nehmen"}
           </Button>
@@ -231,7 +231,7 @@ export function SubtaskActions({
             variant="default"
             onClick={() => handleAction('OPEN')}
             disabled={isSubmitting}
-            className="flex-1 h-12 rounded-xl"
+            className="flex-1 h-12 rounded-lg"
           >
             Zurück auf Offen
           </Button>
@@ -240,14 +240,14 @@ export function SubtaskActions({
         <Button
           onClick={() => handleAction('DONE')}
           disabled={isSubmitting}
-          className="flex-1 h-12 rounded-xl bg-[var(--status-resolved)] hover:bg-[var(--status-resolved)]/90 text-white"
+          className="flex-1 h-12 rounded-lg bg-[var(--status-resolved)] hover:bg-[var(--status-resolved)]/90 text-white"
         >
           {isSubmitting ? "Wird gespeichert..." : "Erledigt"}
         </Button>
       </div>
 
       {error && (
-        <div className="p-3 rounded-xl bg-destructive/10 border border-destructive/20">
+        <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/20">
           <p className="text-sm text-destructive">{error}</p>
         </div>
       )}
@@ -257,7 +257,7 @@ export function SubtaskActions({
           <Button
             variant="ghost"
             onClick={() => setDeleteOpen(true)}
-            className="w-full h-10 rounded-xl text-sm text-destructive hover:text-destructive hover:bg-destructive/10"
+            className="w-full h-10 rounded-lg text-sm text-destructive hover:text-destructive hover:bg-destructive/10"
           >
             Unteraufgabe löschen
           </Button>
@@ -270,8 +270,8 @@ export function SubtaskActions({
                 Die Unteraufgabe &ldquo;{currentTitle}&rdquo; wird unwiderruflich gelöscht.
               </p>
               <div className="flex gap-3 pt-2">
-                <Button variant="outline" onClick={() => setDeleteOpen(false)} className="flex-1 h-11 rounded-xl">Abbrechen</Button>
-                <Button onClick={handleDelete} disabled={isSubmitting} className="flex-1 h-11 rounded-xl bg-destructive hover:bg-destructive/90 text-destructive-foreground">
+                <Button variant="outline" onClick={() => setDeleteOpen(false)} className="flex-1 h-11 rounded-lg">Abbrechen</Button>
+                <Button onClick={handleDelete} disabled={isSubmitting} className="flex-1 h-11 rounded-lg bg-destructive hover:bg-destructive/90 text-destructive-foreground">
                   {isSubmitting ? "Wird gelöscht..." : "Endgültig löschen"}
                 </Button>
               </div>

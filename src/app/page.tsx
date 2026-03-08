@@ -161,7 +161,7 @@ export default async function Home() {
                         </h3>
                       </div>
                       <div
-                        className="w-10 h-10 rounded-xl flex items-center justify-center"
+                        className="w-10 h-10 rounded-lg flex items-center justify-center"
                         style={{ backgroundColor: `color-mix(in srgb, ${nextMeeting.circle?.color || "var(--np-blue)"} 15%, transparent)` }}
                       >
                         <Calendar size={20} color={nextMeeting.circle?.color || "var(--np-blue)"} />
@@ -188,7 +188,7 @@ export default async function Home() {
 
                     <Link
                       href={`/meetings/${nextMeeting.id}`}
-                      className="mt-4 flex items-center justify-center gap-2 w-full py-3 px-4 rounded-xl bg-primary text-primary-foreground font-medium text-sm transition-all hover:bg-primary/90 active:scale-[0.98]"
+                      className="mt-4 flex items-center justify-center gap-2 w-full py-3 px-4 rounded-lg bg-primary text-primary-foreground font-medium text-sm transition-all hover:bg-primary/90 active:scale-[0.98]"
                     >
                       <FilePlus size={18} />
                       Termin vorbereiten
@@ -196,7 +196,7 @@ export default async function Home() {
                   </>
                 ) : (
                   <div className="text-center py-4">
-                    <div className="w-12 h-12 rounded-xl bg-muted flex items-center justify-center mx-auto mb-3">
+                    <div className="w-12 h-12 rounded-lg bg-muted flex items-center justify-center mx-auto mb-3">
                       <Calendar size={24} className="text-muted-foreground" />
                     </div>
                     <p className="text-sm text-muted-foreground">Kein Termin in einem deiner Kreise geplant</p>
@@ -247,7 +247,7 @@ export default async function Home() {
                 <Link key={action.href} href={action.href} className="block">
                   <div className="flex flex-col items-center justify-center p-3 rounded-2xl bg-card border border-border/50 shadow-sm transition-all hover:shadow-md hover:-translate-y-0.5 active:scale-95 card-lift">
                     <div
-                      className="w-11 h-11 rounded-xl flex items-center justify-center mb-2"
+                      className="w-11 h-11 rounded-lg flex items-center justify-center mb-2"
                       style={{ backgroundColor: action.bgColor }}
                     >
                       <span style={{ color: action.color }}>{action.icon}</span>

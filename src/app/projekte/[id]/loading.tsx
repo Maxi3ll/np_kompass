@@ -23,8 +23,8 @@ export default function ProjektDetailLoading() {
           <div className="bg-card rounded-2xl border border-border/50 p-4">
             <Skeleton className="h-3 w-20 mb-3" />
             <div className="flex gap-2">
-              <Skeleton className="h-8 w-24 rounded-xl" />
-              <Skeleton className="h-8 w-20 rounded-xl" />
+              <Skeleton className="h-8 w-24 rounded-lg" />
+              <Skeleton className="h-8 w-20 rounded-lg" />
             </div>
           </div>
 
@@ -43,7 +43,7 @@ export default function ProjektDetailLoading() {
             <Skeleton className="h-5 w-32 mb-3" />
             <Skeleton className="h-2 w-full rounded-full mb-4" />
             {[...Array(3)].map((_, i) => (
-              <Skeleton key={i} className="h-16 w-full rounded-xl mb-2" />
+              <Skeleton key={i} className="h-16 w-full rounded-lg mb-2" />
             ))}
           </div>
         </div>

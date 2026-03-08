@@ -114,10 +114,10 @@ export default async function PersonenDetailPage({ params }: PageProps) {
                   <Link
                     key={role.id}
                     href={`/rollen/${role.id}`}
-                    className="flex items-center gap-3 p-3 -mx-1 rounded-xl hover:bg-muted/50 transition-colors"
+                    className="flex items-center gap-3 p-3 -mx-1 rounded-lg hover:bg-muted/50 transition-colors"
                   >
                     <div
-                      className="w-10 h-10 rounded-xl flex items-center justify-center text-lg flex-shrink-0"
+                      className="w-10 h-10 rounded-lg flex items-center justify-center text-lg flex-shrink-0"
                       style={{ backgroundColor: `${role.circle?.color || "#4A90D9"}20` }}
                     >
                       {role.circle?.icon || "⭕"}

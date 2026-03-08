@@ -145,7 +145,7 @@ export default async function KreisDetailPage({ params }: PageProps) {
               className="mt-6 flex items-center justify-between p-4 rounded-2xl bg-[var(--np-yellow-light)] border border-[var(--np-yellow)]/20"
             >
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-[var(--np-yellow)] flex items-center justify-center">
+                <div className="w-10 h-10 rounded-lg bg-[var(--np-yellow)] flex items-center justify-center">
                   <CircleAlert size={20} color="#5a4a00" />
                 </div>
                 <div>

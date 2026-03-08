@@ -116,7 +116,7 @@ export default async function RollenPage({ searchParams }: PageProps) {
                             <div className="flex items-center gap-4 p-4 pl-5">
                               {/* Icon */}
                               <div
-                                className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 text-2xl"
+                                className="w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0 text-2xl"
                                 style={{ backgroundColor: `${role.circle?.color}20` }}
                               >
                                 {role.circle?.icon || "⭕"}

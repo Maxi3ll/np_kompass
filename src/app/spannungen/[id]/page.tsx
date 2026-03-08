@@ -94,7 +94,7 @@ export default async function SpannungDetailPage({ params }: PageProps) {
             <div className="bg-card rounded-2xl shadow-card border border-border/50 p-4 transition-all card-lift active:scale-[0.98]">
               <div className="flex items-center gap-3">
                 <div
-                  className="w-10 h-10 rounded-xl flex items-center justify-center text-xl"
+                  className="w-10 h-10 rounded-lg flex items-center justify-center text-xl"
                   style={{ backgroundColor: `${tension.circle?.color}20` }}
                 >
                   {tension.circle?.icon || '⭕'}

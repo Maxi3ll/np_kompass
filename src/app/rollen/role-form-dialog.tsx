@@ -119,7 +119,7 @@ export function RoleFormDialog({
               placeholder="z.B. Elterndienst-Koordination"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="h-10 rounded-xl"
+              className="h-10 rounded-lg"
             />
           </div>
 
@@ -129,7 +129,7 @@ export function RoleFormDialog({
               placeholder="Was soll diese Rolle erreichen?"
               value={purpose}
               onChange={(e) => setPurpose(e.target.value)}
-              className="min-h-[60px] rounded-xl resize-none"
+              className="min-h-[60px] rounded-lg resize-none"
             />
           </div>
 
@@ -159,9 +159,9 @@ export function RoleFormDialog({
                 value={newDomain}
                 onChange={(e) => setNewDomain(e.target.value)}
                 onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addDomain(); } }}
-                className="h-9 rounded-xl text-sm"
+                className="h-9 rounded-lg text-sm"
               />
-              <Button type="button" variant="outline" onClick={addDomain} disabled={!newDomain.trim()} className="h-9 rounded-xl px-3">
+              <Button type="button" variant="outline" onClick={addDomain} disabled={!newDomain.trim()} className="h-9 rounded-lg px-3">
                 <Plus size={14} />
               </Button>
             </div>
@@ -193,9 +193,9 @@ export function RoleFormDialog({
                 value={newAccountability}
                 onChange={(e) => setNewAccountability(e.target.value)}
                 onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addAccountability(); } }}
-                className="h-9 rounded-xl text-sm"
+                className="h-9 rounded-lg text-sm"
               />
-              <Button type="button" variant="outline" onClick={addAccountability} disabled={!newAccountability.trim()} className="h-9 rounded-xl px-3">
+              <Button type="button" variant="outline" onClick={addAccountability} disabled={!newAccountability.trim()} className="h-9 rounded-lg px-3">
                 <Plus size={14} />
               </Button>
             </div>
@@ -203,10 +203,10 @@ export function RoleFormDialog({
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)} className="rounded-xl">
+          <Button variant="outline" onClick={() => onOpenChange(false)} className="rounded-lg">
             Abbrechen
           </Button>
-          <Button onClick={handleSubmit} disabled={isPending || !name.trim()} className="rounded-xl">
+          <Button onClick={handleSubmit} disabled={isPending || !name.trim()} className="rounded-lg">
             {isPending ? "Speichern..." : mode === "edit" ? "Speichern" : "Erstellen"}
           </Button>
         </DialogFooter>

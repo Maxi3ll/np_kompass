@@ -58,7 +58,7 @@ export function Sidebar() {
     <aside className="hidden lg:flex fixed inset-y-0 left-0 z-50 w-64 flex-col bg-sidebar border-r border-sidebar-border">
       {/* Brand Header */}
       <div className="flex items-center gap-3 px-6 h-16 border-b border-sidebar-border">
-        <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[var(--np-blue)] to-[var(--np-blue-dark)] flex items-center justify-center shadow-sm">
+        <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-[var(--np-blue)] to-[var(--np-blue-dark)] flex items-center justify-center shadow-sm">
           <span className="text-lg leading-none">🧭</span>
         </div>
         <div>
@@ -81,7 +81,7 @@ export function Sidebar() {
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  "flex items-center gap-3 rounded-xl text-sm font-medium transition-all",
+                  "flex items-center gap-3 rounded-lg text-sm font-medium transition-all",
                   item.sub ? "px-3 py-2 pl-10 text-[13px]" : "px-3 py-2.5",
                   isActive
                     ? "bg-sidebar-primary/10 text-sidebar-primary"
@@ -109,14 +109,14 @@ export function Sidebar() {
       <div className="px-3 space-y-2">
         <Link
           href="/spannungen/neu"
-          className="flex items-center justify-center gap-2 w-full py-3 px-4 rounded-xl bg-[var(--np-yellow)] text-[#5a4a00] font-semibold text-sm transition-all hover:bg-[var(--np-yellow-dark)] active:scale-[0.98] shadow-sm"
+          className="flex items-center justify-center gap-2 w-full py-3 px-4 rounded-lg bg-[var(--np-yellow)] text-[#5a4a00] font-semibold text-sm transition-all hover:bg-[var(--np-yellow-dark)] active:scale-[0.98] shadow-sm"
         >
           <Zap size={18} strokeWidth={2.5} />
           Neue Spannung
         </Link>
         <Link
           href="/meetings/neu"
-          className="flex items-center justify-center gap-2 w-full py-3 px-4 rounded-xl bg-primary text-primary-foreground font-semibold text-sm transition-all hover:bg-primary/90 active:scale-[0.98] shadow-sm"
+          className="flex items-center justify-center gap-2 w-full py-3 px-4 rounded-lg bg-primary text-primary-foreground font-semibold text-sm transition-all hover:bg-primary/90 active:scale-[0.98] shadow-sm"
         >
           <Calendar size={18} />
           Neuer Termin

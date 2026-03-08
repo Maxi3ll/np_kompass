@@ -127,10 +127,10 @@ export function SearchClient() {
                 <Link
                   key={circle.id}
                   href={`/kreise/${circle.id}`}
-                  className="flex items-center gap-3 p-3 rounded-xl bg-card border border-border/50 hover:bg-muted/50 transition-colors"
+                  className="flex items-center gap-3 p-3 rounded-lg bg-card border border-border/50 hover:bg-muted/50 transition-colors"
                 >
                   <div
-                    className="w-10 h-10 rounded-xl flex items-center justify-center text-lg flex-shrink-0"
+                    className="w-10 h-10 rounded-lg flex items-center justify-center text-lg flex-shrink-0"
                     style={{ backgroundColor: `${circle.color}20` }}
                   >
                     {circle.icon || "⭕"}
@@ -153,10 +153,10 @@ export function SearchClient() {
                 <Link
                   key={role.id}
                   href={`/rollen/${role.id}`}
-                  className="flex items-center gap-3 p-3 rounded-xl bg-card border border-border/50 hover:bg-muted/50 transition-colors"
+                  className="flex items-center gap-3 p-3 rounded-lg bg-card border border-border/50 hover:bg-muted/50 transition-colors"
                 >
                   <div
-                    className="w-10 h-10 rounded-xl flex items-center justify-center text-lg flex-shrink-0"
+                    className="w-10 h-10 rounded-lg flex items-center justify-center text-lg flex-shrink-0"
                     style={{ backgroundColor: `${role.circle?.color || "#4A90D9"}20` }}
                   >
                     {role.circle?.icon || "⭕"}
@@ -177,10 +177,10 @@ export function SearchClient() {
                 <Link
                   key={tension.id}
                   href={`/spannungen/${tension.id}`}
-                  className="flex items-center gap-3 p-3 rounded-xl bg-card border border-border/50 hover:bg-muted/50 transition-colors"
+                  className="flex items-center gap-3 p-3 rounded-lg bg-card border border-border/50 hover:bg-muted/50 transition-colors"
                 >
                   <div
-                    className="w-10 h-10 rounded-xl flex items-center justify-center text-lg flex-shrink-0"
+                    className="w-10 h-10 rounded-lg flex items-center justify-center text-lg flex-shrink-0"
                     style={{ backgroundColor: `${tension.circle?.color || "#4A90D9"}20` }}
                   >
                     {tension.circle?.icon || "⚡"}
@@ -206,9 +206,9 @@ export function SearchClient() {
                 <Link
                   key={v.id}
                   href={`/projekte/${v.id}`}
-                  className="flex items-center gap-3 p-3 rounded-xl bg-card border border-border/50 hover:bg-muted/50 transition-colors"
+                  className="flex items-center gap-3 p-3 rounded-lg bg-card border border-border/50 hover:bg-muted/50 transition-colors"
                 >
-                  <div className="w-10 h-10 rounded-xl flex items-center justify-center text-lg flex-shrink-0 bg-[var(--np-blue-light)]">
+                  <div className="w-10 h-10 rounded-lg flex items-center justify-center text-lg flex-shrink-0 bg-[var(--np-blue-light)]">
                     <Rocket size={18} color="var(--np-blue)" />
                   </div>
                   <div className="flex-1 min-w-0">
@@ -231,7 +231,7 @@ export function SearchClient() {
                 <Link
                   key={person.id}
                   href={`/personen/${person.id}`}
-                  className="flex items-center gap-3 p-3 rounded-xl bg-card border border-border/50 hover:bg-muted/50 transition-colors"
+                  className="flex items-center gap-3 p-3 rounded-lg bg-card border border-border/50 hover:bg-muted/50 transition-colors"
                 >
                   <div
                     className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 text-white font-semibold text-sm"

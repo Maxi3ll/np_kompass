@@ -30,7 +30,7 @@ export function DeleteAccountButton() {
   }
 
   return (
-    <div className="bg-destructive/5 border border-destructive/20 rounded-xl p-4 space-y-3">
+    <div className="bg-destructive/5 border border-destructive/20 rounded-lg p-4 space-y-3">
       <p className="text-sm font-medium text-destructive">
         Konto unwiderruflich löschen?
       </p>

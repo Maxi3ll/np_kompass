@@ -105,7 +105,7 @@ function ConfirmContent() {
       <Button
         onClick={handleConfirm}
         disabled={isLoading}
-        className="w-full h-12 rounded-xl bg-[var(--np-blue)] hover:bg-[var(--np-blue)]/90"
+        className="w-full h-12 rounded-lg bg-[var(--np-blue)] hover:bg-[var(--np-blue)]/90"
       >
         {isLoading ? (
           <span className="flex items-center gap-2">

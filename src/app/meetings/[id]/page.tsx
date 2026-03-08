@@ -217,7 +217,7 @@ export default async function MeetingDetailPage({ params }: PageProps) {
                   </p>
                   <div className="space-y-2">
                     {meeting.agendaItems.map((item: { id: string; is_processed: boolean; tension?: { title: string } | null; notes?: string | null; outcome?: string | null }, index: number) => (
-                      <div key={item.id} className="flex items-start gap-3 p-3 rounded-xl bg-muted/50">
+                      <div key={item.id} className="flex items-start gap-3 p-3 rounded-lg bg-muted/50">
                         <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium flex-shrink-0 ${
                           item.is_processed
                             ? 'bg-[var(--status-resolved)] text-white'
@@ -254,7 +254,7 @@ export default async function MeetingDetailPage({ params }: PageProps) {
             <div className="bg-card rounded-2xl shadow-card border border-border/50 p-4 transition-all card-lift active:scale-[0.98]">
               <div className="flex items-center gap-3">
                 <div
-                  className="w-10 h-10 rounded-xl flex items-center justify-center text-xl"
+                  className="w-10 h-10 rounded-lg flex items-center justify-center text-xl"
                   style={{ backgroundColor: `${meeting.circle?.color || '#4A90D9'}20` }}
                 >
                   {meeting.circle?.icon || "⭕"}

@@ -134,7 +134,7 @@ export function ProfileEditDialog({
                   type="button"
                   onClick={() => setAvatarColor(color.value)}
                   className={cn(
-                    "flex flex-col items-center gap-1.5 p-2 rounded-xl transition-all",
+                    "flex flex-col items-center gap-1.5 p-2 rounded-lg transition-all",
                     avatarColor === color.value
                       ? "bg-muted ring-2 ring-primary ring-offset-2 ring-offset-background"
                       : "hover:bg-muted/50"

@@ -45,7 +45,7 @@ export default function ProjekteLoading() {
       <div className="fixed bottom-0 left-0 right-0 h-20 border-t border-border/50 bg-background/95">
         <div className="flex items-center justify-around h-full max-w-lg mx-auto px-6">
           {[...Array(5)].map((_, i) => (
-            <Skeleton key={i} className="h-10 w-10 rounded-xl" />
+            <Skeleton key={i} className="h-10 w-10 rounded-lg" />
           ))}
         </div>
       </div>

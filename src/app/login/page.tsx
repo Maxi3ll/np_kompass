@@ -32,7 +32,7 @@ export default async function LoginPage({ searchParams }: PageProps) {
 
           {/* Error Messages */}
           {params.error && (
-            <div className="mb-6 p-4 rounded-xl bg-destructive/10 border border-destructive/20">
+            <div className="mb-6 p-4 rounded-lg bg-destructive/10 border border-destructive/20">
               <p className="text-sm text-destructive text-center">
                 {params.error === "auth"
                   ? "Anmeldung fehlgeschlagen. Bitte versuche es erneut."
@@ -45,7 +45,7 @@ export default async function LoginPage({ searchParams }: PageProps) {
 
           {/* Success Message */}
           {params.message && (
-            <div className="mb-6 p-4 rounded-xl bg-[var(--status-resolved)]/10 border border-[var(--status-resolved)]/20">
+            <div className="mb-6 p-4 rounded-lg bg-[var(--status-resolved)]/10 border border-[var(--status-resolved)]/20">
               <p className="text-sm text-[var(--status-resolved)] text-center">
                 {params.message === "check-email"
                   ? "Prüfe deine E-Mails für den Login-Link!"

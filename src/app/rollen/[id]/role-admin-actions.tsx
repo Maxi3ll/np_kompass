@@ -110,7 +110,7 @@ export function RoleAdminActions({ role, holders, circleId, persons }: RoleAdmin
           <Button
             variant="outline"
             onClick={() => setEditOpen(true)}
-            className="h-10 rounded-xl text-sm"
+            className="h-10 rounded-lg text-sm"
           >
             <Pencil size={14} className="mr-1.5" />
             Bearbeiten
@@ -119,7 +119,7 @@ export function RoleAdminActions({ role, holders, circleId, persons }: RoleAdmin
           <Button
             variant="outline"
             onClick={() => setAssignOpen(true)}
-            className="h-10 rounded-xl text-sm"
+            className="h-10 rounded-lg text-sm"
           >
             <UserPlus size={14} className="mr-1.5" />
             Person zuweisen
@@ -129,7 +129,7 @@ export function RoleAdminActions({ role, holders, circleId, persons }: RoleAdmin
             <Button
               variant="outline"
               onClick={() => setUnassignOpen(true)}
-              className="h-10 rounded-xl text-sm"
+              className="h-10 rounded-lg text-sm"
             >
               <UserX size={14} className="mr-1.5" />
               Zuweisung beenden
@@ -140,7 +140,7 @@ export function RoleAdminActions({ role, holders, circleId, persons }: RoleAdmin
             <Button
               variant="outline"
               onClick={() => setDeleteOpen(true)}
-              className="h-10 rounded-xl text-sm text-destructive hover:text-destructive hover:bg-destructive/10 border-destructive/20"
+              className="h-10 rounded-lg text-sm text-destructive hover:text-destructive hover:bg-destructive/10 border-destructive/20"
             >
               Löschen
             </Button>
@@ -188,7 +188,7 @@ export function RoleAdminActions({ role, holders, circleId, persons }: RoleAdmin
                 Wähle die Person, deren Zuweisung beendet werden soll:
               </p>
               <Select value={selectedUnassignPersonId} onValueChange={setSelectedUnassignPersonId}>
-                <SelectTrigger className="h-12 rounded-xl w-full">
+                <SelectTrigger className="h-12 rounded-lg w-full">
                   <SelectValue placeholder="Person auswählen..." />
                 </SelectTrigger>
                 <SelectContent>
@@ -203,13 +203,13 @@ export function RoleAdminActions({ role, holders, circleId, persons }: RoleAdmin
           )}
 
           <DialogFooter>
-            <Button variant="outline" onClick={() => setUnassignOpen(false)} className="rounded-xl">
+            <Button variant="outline" onClick={() => setUnassignOpen(false)} className="rounded-lg">
               Abbrechen
             </Button>
             <Button
               onClick={handleUnassign}
               disabled={isPending || (holders.length > 1 && !selectedUnassignPersonId)}
-              className="rounded-xl"
+              className="rounded-lg"
             >
               {isPending ? "Beenden..." : "Zuweisung beenden"}
             </Button>
@@ -227,10 +227,10 @@ export function RoleAdminActions({ role, holders, circleId, persons }: RoleAdmin
             Möchtest du die Rolle &quot;{role.name}&quot; wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.
           </p>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setDeleteOpen(false)} className="rounded-xl">
+            <Button variant="outline" onClick={() => setDeleteOpen(false)} className="rounded-lg">
               Abbrechen
             </Button>
-            <Button variant="destructive" onClick={handleDelete} disabled={isPending} className="rounded-xl">
+            <Button variant="destructive" onClick={handleDelete} disabled={isPending} className="rounded-lg">
               {isPending ? "Löschen..." : "Löschen"}
             </Button>
           </DialogFooter>

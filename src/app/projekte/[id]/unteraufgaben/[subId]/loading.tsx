@@ -33,12 +33,12 @@ export default function SubtaskDetailLoading() {
             </div>
           </div>
 
-          <Skeleton className="h-12 w-full rounded-xl" />
+          <Skeleton className="h-12 w-full rounded-lg" />
 
           <div className="pt-4">
             <Skeleton className="h-5 w-24 mb-3" />
-            <Skeleton className="h-12 w-full rounded-xl mb-2" />
-            <Skeleton className="h-12 w-full rounded-xl" />
+            <Skeleton className="h-12 w-full rounded-lg mb-2" />
+            <Skeleton className="h-12 w-full rounded-lg" />
           </div>
         </div>
       </main>

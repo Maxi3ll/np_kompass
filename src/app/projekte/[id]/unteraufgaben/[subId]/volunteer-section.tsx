@@ -54,7 +54,7 @@ export function VolunteerSection({ subtaskId, personId, volunteers, isVolunteer 
             <Link
               key={volunteer.id}
               href={`/personen/${volunteer.id}`}
-              className="flex items-center gap-3 p-3 rounded-xl bg-card border border-border/50 hover:bg-muted/30 transition-colors"
+              className="flex items-center gap-3 p-3 rounded-lg bg-card border border-border/50 hover:bg-muted/30 transition-colors"
             >
               <div
                 className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-medium"
@@ -85,7 +85,7 @@ export function VolunteerSection({ subtaskId, personId, volunteers, isVolunteer 
               variant="outline"
               onClick={handleUnvolunteer}
               disabled={isSubmitting}
-              className="w-full h-11 rounded-xl text-sm"
+              className="w-full h-11 rounded-lg text-sm"
             >
               {isSubmitting ? "Wird gespeichert..." : "Nicht mehr helfen"}
             </Button>
@@ -93,7 +93,7 @@ export function VolunteerSection({ subtaskId, personId, volunteers, isVolunteer 
             <Button
               onClick={handleVolunteer}
               disabled={isSubmitting}
-              className="w-full h-11 rounded-xl bg-[var(--np-yellow)] hover:bg-[var(--np-yellow)]/90 text-[#5a4a00] font-semibold"
+              className="w-full h-11 rounded-lg bg-[var(--np-yellow)] hover:bg-[var(--np-yellow)]/90 text-[#5a4a00] font-semibold"
             >
               {isSubmitting ? (
                 <span className="flex items-center gap-2">

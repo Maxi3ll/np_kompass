@@ -128,7 +128,7 @@ export function AdminEmails({ initialEmails, adminEmail, currentUserIsSuperAdmin
       </div>
 
       {/* Admin rights description */}
-      <div className="rounded-xl bg-primary/5 border border-primary/10 px-3 py-2.5 mb-4">
+      <div className="rounded-lg bg-primary/5 border border-primary/10 px-3 py-2.5 mb-4">
         <p className="text-xs font-medium text-primary mb-1.5">Deine Admin-Rechte</p>
         <ul className="text-xs text-muted-foreground space-y-1">
           <li className="flex items-center gap-1.5">
@@ -170,7 +170,7 @@ export function AdminEmails({ initialEmails, adminEmail, currentUserIsSuperAdmin
           return (
             <div
               key={entry.id}
-              className="flex items-center justify-between gap-2 py-2 px-3 rounded-xl bg-muted/50"
+              className="flex items-center justify-between gap-2 py-2 px-3 rounded-lg bg-muted/50"
             >
               <div className="flex-1 min-w-0">
                 {entry.personName && (
@@ -239,14 +239,14 @@ export function AdminEmails({ initialEmails, adminEmail, currentUserIsSuperAdmin
             placeholder="Vorname"
             value={newFirstName}
             onChange={(e) => setNewFirstName(e.target.value)}
-            className="h-10 rounded-xl"
+            className="h-10 rounded-lg"
           />
           <Input
             type="text"
             placeholder="Nachname"
             value={newLastName}
             onChange={(e) => setNewLastName(e.target.value)}
-            className="h-10 rounded-xl"
+            className="h-10 rounded-lg"
           />
         </div>
         <Input
@@ -260,12 +260,12 @@ export function AdminEmails({ initialEmails, adminEmail, currentUserIsSuperAdmin
               handleAdd();
             }
           }}
-          className="h-10 rounded-xl"
+          className="h-10 rounded-lg"
         />
         <Button
           onClick={handleAdd}
           disabled={isPending || !newEmail.trim() || !newFirstName.trim()}
-          className="w-full h-10 rounded-xl"
+          className="w-full h-10 rounded-lg"
         >
           {isPending ? (
             <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">

@@ -16,7 +16,7 @@ export function AddCircleButton({ parentCircleId }: AddCircleButtonProps) {
     <>
       <Button
         onClick={() => setOpen(true)}
-        className="w-full h-12 rounded-xl mt-4"
+        className="w-full h-12 rounded-lg mt-4"
       >
         <Plus size={16} className="mr-2" />
         Kreis hinzufügen

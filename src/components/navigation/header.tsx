@@ -43,7 +43,7 @@ export function Header({
           ) : (
             <div className="flex items-center gap-2 lg:hidden">
               {/* Neckarpiraten Logo/Icon - hidden on desktop (shown in sidebar) */}
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[var(--np-blue)] to-[var(--np-blue-dark)] flex items-center justify-center shadow-sm">
+              <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-[var(--np-blue)] to-[var(--np-blue-dark)] flex items-center justify-center shadow-sm">
                 <span className="text-lg leading-none">🧭</span>
               </div>
             </div>
@@ -84,7 +84,7 @@ export function Header({
               </Avatar>
             </button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-56 rounded-xl shadow-lg">
+          <DropdownMenuContent align="end" className="w-56 rounded-lg shadow-lg">
             <div className="px-3 py-2 border-b border-border/50">
               <p className="text-sm font-medium">{userName}</p>
               {userEmail && <p className="text-xs text-muted-foreground truncate mt-0.5">{userEmail}</p>}

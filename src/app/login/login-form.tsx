@@ -220,7 +220,7 @@ export function LoginForm() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               disabled={isLoading}
-              className="h-12 rounded-xl"
+              className="h-12 rounded-lg"
             />
           </div>
           <div className="space-y-2">
@@ -234,7 +234,7 @@ export function LoginForm() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               disabled={isLoading}
-              className="h-12 rounded-xl"
+              className="h-12 rounded-lg"
             />
           </div>
 
@@ -243,7 +243,7 @@ export function LoginForm() {
           <Button
             type="submit"
             disabled={isLoading}
-            className="w-full h-12 rounded-xl bg-[var(--np-blue)] hover:bg-[var(--np-blue)]/90"
+            className="w-full h-12 rounded-lg bg-[var(--np-blue)] hover:bg-[var(--np-blue)]/90"
           >
             {isLoading ? (
               <span className="flex items-center gap-2">
@@ -277,7 +277,7 @@ export function LoginForm() {
       {/* Register Form */}
       {mode === "register" && (
         <form onSubmit={handleRegister} className="space-y-4">
-          <div className="p-4 rounded-xl bg-[var(--np-blue)]/5 border border-[var(--np-blue)]/20">
+          <div className="p-4 rounded-lg bg-[var(--np-blue)]/5 border border-[var(--np-blue)]/20">
             <p className="text-sm text-muted-foreground text-center">
               Deine E-Mail-Adresse muss zuerst vom <strong className="text-foreground">Kompass-Admin</strong> freigeschaltet werden. Wende dich an den aktuellen Rolleninhaber, falls du noch keinen Zugang hast.
             </p>
@@ -293,7 +293,7 @@ export function LoginForm() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               disabled={isLoading}
-              className="h-12 rounded-xl"
+              className="h-12 rounded-lg"
             />
           </div>
           <div className="space-y-2">
@@ -307,7 +307,7 @@ export function LoginForm() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               disabled={isLoading}
-              className="h-12 rounded-xl"
+              className="h-12 rounded-lg"
             />
             <p className="text-xs text-muted-foreground">
               Groß- und Kleinbuchstaben, Ziffern und Sonderzeichen erforderlich.
@@ -324,7 +324,7 @@ export function LoginForm() {
               value={passwordConfirm}
               onChange={(e) => setPasswordConfirm(e.target.value)}
               disabled={isLoading}
-              className="h-12 rounded-xl"
+              className="h-12 rounded-lg"
             />
           </div>
 
@@ -333,7 +333,7 @@ export function LoginForm() {
           <Button
             type="submit"
             disabled={isLoading}
-            className="w-full h-12 rounded-xl bg-[var(--np-blue)] hover:bg-[var(--np-blue)]/90"
+            className="w-full h-12 rounded-lg bg-[var(--np-blue)] hover:bg-[var(--np-blue)]/90"
           >
             {isLoading ? (
               <span className="flex items-center gap-2">
@@ -381,7 +381,7 @@ export function LoginForm() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               disabled={isLoading}
-              className="h-12 rounded-xl"
+              className="h-12 rounded-lg"
             />
           </div>
 
@@ -390,7 +390,7 @@ export function LoginForm() {
           <Button
             type="submit"
             disabled={isLoading}
-            className="w-full h-12 rounded-xl bg-[var(--np-blue)] hover:bg-[var(--np-blue)]/90"
+            className="w-full h-12 rounded-lg bg-[var(--np-blue)] hover:bg-[var(--np-blue)]/90"
           >
             {isLoading ? (
               <span className="flex items-center gap-2">

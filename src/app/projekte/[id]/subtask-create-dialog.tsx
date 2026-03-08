@@ -79,7 +79,7 @@ export function SubtaskCreateDialog({ projektId, personId, persons }: SubtaskCre
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <button className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl border-2 border-dashed border-border text-sm font-medium text-muted-foreground hover:border-primary/50 hover:text-primary transition-colors">
+        <button className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-lg border-2 border-dashed border-border text-sm font-medium text-muted-foreground hover:border-primary/50 hover:text-primary transition-colors">
           <Plus size={16} />
           Unteraufgabe hinzufügen
         </button>
@@ -98,7 +98,7 @@ export function SubtaskCreateDialog({ projektId, personId, persons }: SubtaskCre
               placeholder="Was muss erledigt werden?"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="h-11 rounded-xl"
+              className="h-11 rounded-lg"
               maxLength={200}
             />
           </div>
@@ -112,7 +112,7 @@ export function SubtaskCreateDialog({ projektId, personId, persons }: SubtaskCre
               placeholder="Details zur Unteraufgabe (optional)"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              className="min-h-[80px] rounded-xl resize-none"
+              className="min-h-[80px] rounded-lg resize-none"
               maxLength={2000}
             />
           </div>
@@ -122,7 +122,7 @@ export function SubtaskCreateDialog({ projektId, personId, persons }: SubtaskCre
               Ansprechperson
             </label>
             <Select value={contactPersonId} onValueChange={(v) => setContactPersonId(v === "__none__" ? "" : v)}>
-              <SelectTrigger className="h-11 rounded-xl w-full">
+              <SelectTrigger className="h-11 rounded-lg w-full">
                 <SelectValue placeholder="Wer ist zuständig? (optional)" />
               </SelectTrigger>
               <SelectContent>
@@ -137,7 +137,7 @@ export function SubtaskCreateDialog({ projektId, personId, persons }: SubtaskCre
           </div>
 
           {error && (
-            <div className="p-3 rounded-xl bg-destructive/10 border border-destructive/20">
+            <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/20">
               <p className="text-sm text-destructive">{error}</p>
             </div>
           )}
@@ -145,7 +145,7 @@ export function SubtaskCreateDialog({ projektId, personId, persons }: SubtaskCre
           <Button
             type="submit"
             disabled={isSubmitting}
-            className="w-full h-11 rounded-xl"
+            className="w-full h-11 rounded-lg"
           >
             {isSubmitting ? "Wird erstellt..." : "Erstellen"}
           </Button>

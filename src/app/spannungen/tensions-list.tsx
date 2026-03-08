@@ -156,7 +156,7 @@ export function TensionsList({ tensions, currentPersonId, isArchive, statusFilte
         <div className="mt-6 text-center">
           <button
             onClick={() => setVisibleCount((prev) => prev + PAGE_SIZE)}
-            className="px-6 py-2.5 rounded-full text-sm font-medium bg-muted text-foreground hover:bg-muted/80 transition-all active:scale-[0.97]"
+            className="px-6 py-2.5 rounded-lg text-sm font-medium bg-muted text-foreground hover:bg-muted/80 transition-all active:scale-[0.97]"
           >
             Mehr laden ({sorted.length - visibleCount} weitere)
           </button>

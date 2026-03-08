@@ -128,10 +128,10 @@ export default async function ProfilPage() {
                   <Link
                     key={role.id}
                     href={`/rollen/${role.id}`}
-                    className="flex items-center gap-3 p-3 rounded-xl bg-muted/50 hover:bg-muted transition-colors"
+                    className="flex items-center gap-3 p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors"
                   >
                     <div
-                      className="w-10 h-10 rounded-xl flex items-center justify-center text-lg"
+                      className="w-10 h-10 rounded-lg flex items-center justify-center text-lg"
                       style={{ backgroundColor: `${role.circle?.color}20` }}
                     >
                       {role.circle?.icon || "⭕"}
@@ -221,7 +221,7 @@ export default async function ProfilPage() {
           {!person && (
             <div className="bg-[var(--np-yellow-light)] rounded-2xl border border-[var(--np-yellow)]/20 p-4">
               <div className="flex gap-3">
-                <div className="w-10 h-10 rounded-xl bg-[var(--np-yellow)] flex items-center justify-center flex-shrink-0">
+                <div className="w-10 h-10 rounded-lg bg-[var(--np-yellow)] flex items-center justify-center flex-shrink-0">
                   <CircleAlert size={20} color="#5a4a00" />
                 </div>
                 <div>

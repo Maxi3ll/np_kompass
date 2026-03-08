@@ -81,7 +81,7 @@ export function SubtaskComments({ subtaskId, personId, initialComments }: Subtas
       {initialComments.length > 0 && (
         <div className="space-y-3 mb-4">
           {initialComments.map((comment) => (
-            <div key={comment.id} className="bg-card rounded-xl border border-border/50 p-3">
+            <div key={comment.id} className="bg-card rounded-lg border border-border/50 p-3">
               <div className="flex items-center gap-2 mb-2">
                 <div
                   className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] text-white font-medium"
@@ -107,7 +107,7 @@ export function SubtaskComments({ subtaskId, personId, initialComments }: Subtas
                   <Textarea
                     value={editContent}
                     onChange={(e) => setEditContent(e.target.value)}
-                    className="min-h-[60px] rounded-xl resize-none text-sm"
+                    className="min-h-[60px] rounded-lg resize-none text-sm"
                     maxLength={2000}
                   />
                   <div className="flex gap-2 justify-end">
@@ -162,13 +162,13 @@ export function SubtaskComments({ subtaskId, personId, initialComments }: Subtas
             placeholder="Kommentar schreiben..."
             value={content}
             onChange={(e) => setContent(e.target.value)}
-            className="min-h-[80px] rounded-xl resize-none"
+            className="min-h-[80px] rounded-lg resize-none"
             maxLength={2000}
           />
           <Button
             onClick={handleSubmit}
             disabled={isSubmitting || !content.trim()}
-            className="h-10 rounded-xl"
+            className="h-10 rounded-lg"
           >
             {isSubmitting ? "Senden..." : "Kommentieren"}
           </Button>

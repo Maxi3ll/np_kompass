@@ -87,7 +87,7 @@ export function TensionForm({ circles, personId }: TensionFormProps) {
           placeholder="Was ist das Problem oder die Idee?"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          className="h-12 rounded-xl"
+          className="h-12 rounded-lg"
           maxLength={200}
         />
         <p className="text-xs text-muted-foreground text-right">
@@ -105,7 +105,7 @@ export function TensionForm({ circles, personId }: TensionFormProps) {
           placeholder="Beschreibe die Spannung genauer... (optional)"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
-          className="min-h-[120px] rounded-xl resize-none"
+          className="min-h-[120px] rounded-lg resize-none"
           maxLength={2000}
         />
         <p className="text-xs text-muted-foreground text-right">
@@ -119,7 +119,7 @@ export function TensionForm({ circles, personId }: TensionFormProps) {
           Kreis <span className="text-destructive">*</span>
         </label>
         <Select value={circleId} onValueChange={setCircleId}>
-          <SelectTrigger className="h-12 rounded-xl w-full">
+          <SelectTrigger className="h-12 rounded-lg w-full">
             <SelectValue placeholder="In welchem Kreis gehört die Spannung?" />
           </SelectTrigger>
           <SelectContent>
@@ -149,7 +149,7 @@ export function TensionForm({ circles, personId }: TensionFormProps) {
               key={option.value}
               type="button"
               onClick={() => setPriority(option.value)}
-              className={`p-3 rounded-xl border-2 transition-all text-center ${
+              className={`p-3 rounded-lg border-2 transition-all text-center ${
                 priority === option.value
                   ? option.value === "HIGH"
                     ? "border-[var(--status-escalated)] bg-[var(--status-escalated)]/10"
@@ -182,7 +182,7 @@ export function TensionForm({ circles, personId }: TensionFormProps) {
 
       {/* Error Message */}
       {error && (
-        <div className="p-3 rounded-xl bg-destructive/10 border border-destructive/20">
+        <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/20">
           <p className="text-sm text-destructive">{error}</p>
         </div>
       )}
@@ -192,7 +192,7 @@ export function TensionForm({ circles, personId }: TensionFormProps) {
         <Button
           type="submit"
           disabled={isSubmitting}
-          className="w-full h-12 rounded-xl bg-[var(--np-yellow)] hover:bg-[var(--np-yellow)]/90 text-[#5a4a00] font-semibold text-base"
+          className="w-full h-12 rounded-lg bg-[var(--np-yellow)] hover:bg-[var(--np-yellow)]/90 text-[#5a4a00] font-semibold text-base"
         >
           {isSubmitting ? (
             <span className="flex items-center gap-2">

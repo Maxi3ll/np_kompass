@@ -130,7 +130,7 @@ export function EditMeetingButton({
       <Button
         variant="ghost"
         onClick={handleOpenEdit}
-        className="w-full h-10 rounded-xl text-sm text-muted-foreground hover:text-foreground hover:bg-muted"
+        className="w-full h-10 rounded-lg text-sm text-muted-foreground hover:text-foreground hover:bg-muted"
       >
         <Pencil size={16} className="mr-2" />
         Termin bearbeiten
@@ -149,7 +149,7 @@ export function EditMeetingButton({
                 Kreis <span className="text-destructive">*</span>
               </label>
               <Select value={circleId} onValueChange={setCircleId}>
-                <SelectTrigger className="h-12 rounded-xl w-full">
+                <SelectTrigger className="h-12 rounded-lg w-full">
                   <SelectValue placeholder="Kreis wählen" />
                 </SelectTrigger>
                 <SelectContent>
@@ -172,7 +172,7 @@ export function EditMeetingButton({
                 <button
                   type="button"
                   onClick={() => setType("TACTICAL")}
-                  className={`p-3 rounded-xl border-2 transition-all text-left ${
+                  className={`p-3 rounded-lg border-2 transition-all text-left ${
                     type === "TACTICAL"
                       ? "border-[var(--np-blue)] bg-[var(--np-blue)]/10"
                       : "border-border hover:border-muted-foreground/30"
@@ -187,7 +187,7 @@ export function EditMeetingButton({
                 <button
                   type="button"
                   onClick={() => setType("GOVERNANCE")}
-                  className={`p-3 rounded-xl border-2 transition-all text-left ${
+                  className={`p-3 rounded-lg border-2 transition-all text-left ${
                     type === "GOVERNANCE"
                       ? "border-[var(--circle-finanzen)] bg-[var(--circle-finanzen)]/10"
                       : "border-border hover:border-muted-foreground/30"
@@ -213,7 +213,7 @@ export function EditMeetingButton({
                   type="date"
                   value={date}
                   onChange={(e) => setDate(e.target.value)}
-                  className="h-12 rounded-xl"
+                  className="h-12 rounded-lg"
                 />
               </div>
               <div className="space-y-2">
@@ -225,7 +225,7 @@ export function EditMeetingButton({
                   type="time"
                   value={time}
                   onChange={(e) => setTime(e.target.value)}
-                  className="h-12 rounded-xl"
+                  className="h-12 rounded-lg"
                 />
               </div>
             </div>
@@ -241,12 +241,12 @@ export function EditMeetingButton({
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
                 maxLength={5000}
-                className="min-h-[80px] rounded-xl resize-none"
+                className="min-h-[80px] rounded-lg resize-none"
               />
             </div>
 
             {error && (
-              <div className="p-3 rounded-xl bg-destructive/10 border border-destructive/20">
+              <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/20">
                 <p className="text-sm text-destructive">{error}</p>
               </div>
             )}
@@ -256,14 +256,14 @@ export function EditMeetingButton({
                 type="button"
                 variant="outline"
                 onClick={() => setEditOpen(false)}
-                className="flex-1 h-11 rounded-xl"
+                className="flex-1 h-11 rounded-lg"
               >
                 Abbrechen
               </Button>
               <Button
                 type="submit"
                 disabled={isSubmitting}
-                className="flex-1 h-11 rounded-xl"
+                className="flex-1 h-11 rounded-lg"
               >
                 {isSubmitting ? "Wird gespeichert..." : "Speichern"}
               </Button>

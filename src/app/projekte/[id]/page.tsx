@@ -106,7 +106,7 @@ export default async function ProjektDetailPage({ params }: PageProps) {
                   <Link
                     key={circle.id}
                     href={`/kreise/${circle.id}`}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-sm font-medium transition-colors hover:opacity-80"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors hover:opacity-80"
                     style={{
                       backgroundColor: `${circle.color || '#4A90D9'}15`,
                       color: circle.color || '#4A90D9',
@@ -232,7 +232,7 @@ export default async function ProjektDetailPage({ params }: PageProps) {
                     href={`/projekte/${projekt.id}/unteraufgaben/${subtask.id}`}
                     className="block"
                   >
-                    <div className="bg-card rounded-xl border border-border/50 p-3 transition-all hover:bg-muted/30 active:scale-[0.98]">
+                    <div className="bg-card rounded-lg border border-border/50 p-3 transition-all hover:bg-muted/30 active:scale-[0.98]">
                       <div className="flex items-center gap-3">
                         <div className={`w-2 h-2 rounded-full flex-shrink-0 ${
                           subtask.status === 'DONE' ? 'bg-[var(--status-resolved)]' :

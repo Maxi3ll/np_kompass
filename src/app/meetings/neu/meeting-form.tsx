@@ -91,7 +91,7 @@ export function MeetingForm({ circles }: MeetingFormProps) {
           Kreis <span className="text-destructive">*</span>
         </label>
         <Select value={circleId} onValueChange={setCircleId}>
-          <SelectTrigger className="h-12 rounded-xl w-full">
+          <SelectTrigger className="h-12 rounded-lg w-full">
             <SelectValue placeholder="Für welchen Kreis ist der Termin?" />
           </SelectTrigger>
           <SelectContent>
@@ -116,7 +116,7 @@ export function MeetingForm({ circles }: MeetingFormProps) {
           <button
             type="button"
             onClick={() => setType("TACTICAL")}
-            className={`p-4 rounded-xl border-2 transition-all text-left ${
+            className={`p-4 rounded-lg border-2 transition-all text-left ${
               type === "TACTICAL"
                 ? "border-[var(--np-blue)] bg-[var(--np-blue)]/10"
                 : "border-border hover:border-muted-foreground/30"
@@ -134,7 +134,7 @@ export function MeetingForm({ circles }: MeetingFormProps) {
           <button
             type="button"
             onClick={() => setType("GOVERNANCE")}
-            className={`p-4 rounded-xl border-2 transition-all text-left ${
+            className={`p-4 rounded-lg border-2 transition-all text-left ${
               type === "GOVERNANCE"
                 ? "border-[var(--circle-finanzen)] bg-[var(--circle-finanzen)]/10"
                 : "border-border hover:border-muted-foreground/30"
@@ -164,7 +164,7 @@ export function MeetingForm({ circles }: MeetingFormProps) {
             value={date}
             onChange={(e) => setDate(e.target.value)}
             min={new Date().toISOString().split("T")[0]}
-            className="h-12 rounded-xl"
+            className="h-12 rounded-lg"
           />
         </div>
         <div className="space-y-2">
@@ -176,7 +176,7 @@ export function MeetingForm({ circles }: MeetingFormProps) {
             type="time"
             value={time}
             onChange={(e) => setTime(e.target.value)}
-            className="h-12 rounded-xl"
+            className="h-12 rounded-lg"
           />
         </div>
       </div>
@@ -192,13 +192,13 @@ export function MeetingForm({ circles }: MeetingFormProps) {
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
           maxLength={5000}
-          className="min-h-[80px] rounded-xl resize-none"
+          className="min-h-[80px] rounded-lg resize-none"
         />
       </div>
 
       {/* Error Message */}
       {error && (
-        <div className="p-3 rounded-xl bg-destructive/10 border border-destructive/20">
+        <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/20">
           <p className="text-sm text-destructive">{error}</p>
         </div>
       )}
@@ -208,7 +208,7 @@ export function MeetingForm({ circles }: MeetingFormProps) {
         <Button
           type="submit"
           disabled={isSubmitting}
-          className="w-full h-12 rounded-xl"
+          className="w-full h-12 rounded-lg"
         >
           {isSubmitting ? (
             <span className="flex items-center gap-2">

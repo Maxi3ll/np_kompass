@@ -61,7 +61,7 @@ export function BottomNav() {
             <Link
               href="/meetings/neu"
               onClick={() => setFabOpen(false)}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-primary text-primary-foreground font-medium text-sm shadow-lg whitespace-nowrap animate-in fade-in slide-in-from-bottom-2 duration-200"
+              className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-primary text-primary-foreground font-medium text-sm shadow-lg whitespace-nowrap animate-in fade-in slide-in-from-bottom-2 duration-200"
             >
               <Calendar size={16} />
               Termin
@@ -69,7 +69,7 @@ export function BottomNav() {
             <Link
               href="/spannungen/neu"
               onClick={() => setFabOpen(false)}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-[var(--np-yellow)] text-[#5a4a00] font-medium text-sm shadow-lg whitespace-nowrap animate-in fade-in slide-in-from-bottom-2 duration-150"
+              className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-[var(--np-yellow)] text-[#5a4a00] font-medium text-sm shadow-lg whitespace-nowrap animate-in fade-in slide-in-from-bottom-2 duration-150"
             >
               <Zap size={16} />
               Spannung
@@ -116,7 +116,7 @@ export function BottomNav() {
                 href={item.href}
                 onClick={() => setFabOpen(false)}
                 className={cn(
-                  "flex flex-col items-center justify-center gap-0.5 px-2 py-2 rounded-xl transition-all touch-target",
+                  "flex flex-col items-center justify-center gap-0.5 px-2 py-2 rounded-lg transition-all touch-target",
                   "active:scale-95 active:bg-primary/10",
                   isActive
                     ? "text-primary"

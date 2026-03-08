@@ -167,7 +167,7 @@ export function ProjektActions({
       <Button
         variant="outline"
         onClick={handleOpenEdit}
-        className="w-full h-10 rounded-xl text-sm mb-3"
+        className="w-full h-10 rounded-lg text-sm mb-3"
       >
           <Pencil size={16} className="mr-2" />
           Bearbeiten
@@ -179,7 +179,7 @@ export function ProjektActions({
           variant="outline"
           onClick={() => handleAction('OPEN')}
           disabled={isSubmitting}
-          className="w-full h-10 rounded-xl text-sm"
+          className="w-full h-10 rounded-lg text-sm"
         >
           Wieder aufmachen
         </Button>
@@ -190,7 +190,7 @@ export function ProjektActions({
               variant="default"
               onClick={() => handleAction('IN_PROGRESS')}
               disabled={isSubmitting}
-              className="flex-1 h-12 rounded-xl"
+              className="flex-1 h-12 rounded-lg"
             >
               {isSubmitting ? "Wird gespeichert..." : "Umsetzen starten"}
             </Button>
@@ -201,7 +201,7 @@ export function ProjektActions({
               variant="default"
               onClick={() => handleAction('OPEN')}
               disabled={isSubmitting}
-              className="flex-1 h-12 rounded-xl"
+              className="flex-1 h-12 rounded-lg"
             >
               Zurück auf Offen
             </Button>
@@ -210,7 +210,7 @@ export function ProjektActions({
           <Button
             onClick={() => handleAction('DONE')}
             disabled={isSubmitting}
-            className="flex-1 h-12 rounded-xl bg-[var(--status-resolved)] hover:bg-[var(--status-resolved)]/90 text-white"
+            className="flex-1 h-12 rounded-lg bg-[var(--status-resolved)] hover:bg-[var(--status-resolved)]/90 text-white"
           >
             {isSubmitting ? "Wird gespeichert..." : "Abgeschlossen"}
           </Button>
@@ -235,7 +235,7 @@ export function ProjektActions({
                 placeholder="Wie heißt das Projekt?"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                className="h-12 rounded-xl"
+                className="h-12 rounded-lg"
                 maxLength={200}
               />
               <p className="text-xs text-muted-foreground text-right">
@@ -253,7 +253,7 @@ export function ProjektActions({
                 placeholder="Ein Satz, der das Projekt zusammenfasst (optional)"
                 value={shortDescription}
                 onChange={(e) => setShortDescription(e.target.value)}
-                className="h-12 rounded-xl"
+                className="h-12 rounded-lg"
                 maxLength={300}
               />
               <p className="text-xs text-muted-foreground text-right">
@@ -271,7 +271,7 @@ export function ProjektActions({
                 placeholder="Beschreibe das Projekt genauer... (optional)"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                className="min-h-[120px] rounded-xl resize-none"
+                className="min-h-[120px] rounded-lg resize-none"
                 maxLength={5000}
               />
               <p className="text-xs text-muted-foreground text-right">
@@ -285,7 +285,7 @@ export function ProjektActions({
                 Koordinator:in
               </label>
               <Select value={editCoordinatorId} onValueChange={(v) => setEditCoordinatorId(v === "__none__" ? "" : v)}>
-                <SelectTrigger className="h-12 rounded-xl w-full">
+                <SelectTrigger className="h-12 rounded-lg w-full">
                   <SelectValue placeholder="Wer koordiniert das Projekt? (optional)" />
                 </SelectTrigger>
                 <SelectContent>
@@ -313,7 +313,7 @@ export function ProjektActions({
                         key={circle.id}
                         type="button"
                         onClick={() => toggleCircle(circle.id)}
-                        className={`inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border-2 text-sm font-medium transition-all ${
+                        className={`inline-flex items-center gap-1.5 px-3 py-2 rounded-lg border-2 text-sm font-medium transition-all ${
                           isSelected
                             ? 'border-primary bg-primary/10 text-primary'
                             : 'border-border text-muted-foreground hover:border-muted-foreground/30'
@@ -344,7 +344,7 @@ export function ProjektActions({
                   type="date"
                   value={startDate}
                   onChange={(e) => setStartDate(e.target.value)}
-                  className="h-12 rounded-xl"
+                  className="h-12 rounded-lg"
                 />
               </div>
               <div className="space-y-2">
@@ -356,14 +356,14 @@ export function ProjektActions({
                   type="date"
                   value={endDate}
                   onChange={(e) => setEndDate(e.target.value)}
-                  className="h-12 rounded-xl"
+                  className="h-12 rounded-lg"
                 />
               </div>
             </div>
 
             {/* Error Message */}
             {editError && (
-              <div className="p-3 rounded-xl bg-destructive/10 border border-destructive/20">
+              <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/20">
                 <p className="text-sm text-destructive">{editError}</p>
               </div>
             )}
@@ -374,14 +374,14 @@ export function ProjektActions({
                 type="button"
                 variant="outline"
                 onClick={() => setEditOpen(false)}
-                className="flex-1 h-12 rounded-xl"
+                className="flex-1 h-12 rounded-lg"
               >
                 Abbrechen
               </Button>
               <Button
                 type="submit"
                 disabled={isSubmitting}
-                className="flex-1 h-12 rounded-xl"
+                className="flex-1 h-12 rounded-lg"
               >
                 {isSubmitting ? "Wird gespeichert..." : "Speichern"}
               </Button>
@@ -394,7 +394,7 @@ export function ProjektActions({
       <Button
         variant="ghost"
         onClick={() => setDeleteOpen(true)}
-        className="w-full h-10 rounded-xl text-sm mt-3 text-destructive hover:text-destructive hover:bg-destructive/10"
+        className="w-full h-10 rounded-lg text-sm mt-3 text-destructive hover:text-destructive hover:bg-destructive/10"
       >
         <Trash2 size={16} className="mr-2" />
         Projekt löschen
@@ -414,14 +414,14 @@ export function ProjektActions({
               type="button"
               variant="outline"
               onClick={() => setDeleteOpen(false)}
-              className="flex-1 h-11 rounded-xl"
+              className="flex-1 h-11 rounded-lg"
             >
               Abbrechen
             </Button>
             <Button
               onClick={handleDelete}
               disabled={isSubmitting}
-              className="flex-1 h-11 rounded-xl bg-destructive hover:bg-destructive/90 text-destructive-foreground"
+              className="flex-1 h-11 rounded-lg bg-destructive hover:bg-destructive/90 text-destructive-foreground"
             >
               {isSubmitting ? "Wird gelöscht..." : "Endgültig löschen"}
             </Button>

@@ -116,7 +116,7 @@ export function NotificationBell() {
 
       <DropdownMenuContent
         align="end"
-        className="w-80 rounded-xl shadow-lg max-h-[70vh] overflow-hidden flex flex-col"
+        className="w-80 rounded-lg shadow-lg max-h-[70vh] overflow-hidden flex flex-col"
       >
         {/* Header */}
         <div className="flex items-center justify-between px-3 py-2.5 border-b border-border/50">

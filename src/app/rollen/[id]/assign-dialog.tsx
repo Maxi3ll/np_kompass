@@ -82,7 +82,7 @@ export function AssignDialog({ open, onOpenChange, roleId, persons, currentHolde
               </p>
             ) : (
               <Select value={personId} onValueChange={setPersonId}>
-                <SelectTrigger className="h-12 rounded-xl w-full">
+                <SelectTrigger className="h-12 rounded-lg w-full">
                   <SelectValue placeholder="Person auswählen..." />
                 </SelectTrigger>
                 <SelectContent>
@@ -101,13 +101,13 @@ export function AssignDialog({ open, onOpenChange, roleId, persons, currentHolde
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)} className="rounded-xl">
+          <Button variant="outline" onClick={() => onOpenChange(false)} className="rounded-lg">
             Abbrechen
           </Button>
           <Button
             onClick={handleAssign}
             disabled={isPending || !personId}
-            className="rounded-xl"
+            className="rounded-lg"
           >
             {isPending ? "Zuweisen..." : "Zuweisen"}
           </Button>

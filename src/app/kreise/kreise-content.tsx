@@ -101,7 +101,7 @@ export function KreiseContent({ circles, roles, isAdmin }: KreiseContentProps) {
                   <div className="flex items-center gap-4 p-4 pl-5">
                     {/* Icon */}
                     <div
-                      className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 text-2xl"
+                      className="w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0 text-2xl"
                       style={{ backgroundColor: `${circle.color}20` || '#4A90D920' }}
                     >
                       {circle.icon || '⭕'}

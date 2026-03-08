@@ -227,7 +227,7 @@ export function TensionActions({
       <div className="flex gap-3">
         <Dialog open={detailsOpen} onOpenChange={setDetailsOpen}>
           <DialogTrigger asChild>
-            <Button variant="outline" className="h-10 rounded-xl text-sm">
+            <Button variant="outline" className="h-10 rounded-lg text-sm">
               <Pencil size={16} className="mr-2" />
               Bearbeiten
             </Button>
@@ -240,18 +240,18 @@ export function TensionActions({
             <div className="space-y-4 pt-2">
               <div className="space-y-2">
                 <label className="text-sm font-medium text-foreground">Titel <span className="text-destructive">*</span></label>
-                <Input value={editTitle} onChange={(e) => setEditTitle(e.target.value)} maxLength={200} className="rounded-xl" />
+                <Input value={editTitle} onChange={(e) => setEditTitle(e.target.value)} maxLength={200} className="rounded-lg" />
                 <p className="text-xs text-muted-foreground text-right">{editTitle.length}/200</p>
               </div>
               <div className="space-y-2">
                 <label className="text-sm font-medium text-foreground">Beschreibung</label>
-                <Textarea value={editDescription} onChange={(e) => setEditDescription(e.target.value)} maxLength={2000} className="min-h-[100px] rounded-xl resize-none" />
+                <Textarea value={editDescription} onChange={(e) => setEditDescription(e.target.value)} maxLength={2000} className="min-h-[100px] rounded-lg resize-none" />
                 <p className="text-xs text-muted-foreground text-right">{editDescription.length}/2000</p>
               </div>
               <div className="space-y-2">
                 <label className="text-sm font-medium text-foreground">Kreis</label>
                 <Select value={editCircleId} onValueChange={setEditCircleId}>
-                  <SelectTrigger className="rounded-xl"><SelectValue /></SelectTrigger>
+                  <SelectTrigger className="rounded-lg"><SelectValue /></SelectTrigger>
                   <SelectContent>
                     {circles.map((c) => (<SelectItem key={c.id} value={c.id}>{c.icon} {c.name}</SelectItem>))}
                   </SelectContent>
@@ -260,7 +260,7 @@ export function TensionActions({
               <div className="space-y-2">
                 <label className="text-sm font-medium text-foreground">Priorität</label>
                 <Select value={editPriority} onValueChange={setEditPriority}>
-                  <SelectTrigger className="rounded-xl"><SelectValue /></SelectTrigger>
+                  <SelectTrigger className="rounded-lg"><SelectValue /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="LOW">Niedrig</SelectItem>
                     <SelectItem value="MEDIUM">Mittel</SelectItem>
@@ -270,8 +270,8 @@ export function TensionActions({
               </div>
               {error && <p className="text-sm text-destructive">{error}</p>}
               <div className="flex gap-3">
-                <Button variant="outline" onClick={() => setDetailsOpen(false)} className="flex-1 h-11 rounded-xl">Abbrechen</Button>
-                <Button onClick={handleSaveDetails} disabled={isSubmitting || !editTitle.trim()} className="flex-1 h-11 rounded-xl bg-primary">{isSubmitting ? "Speichern..." : "Speichern"}</Button>
+                <Button variant="outline" onClick={() => setDetailsOpen(false)} className="flex-1 h-11 rounded-lg">Abbrechen</Button>
+                <Button onClick={handleSaveDetails} disabled={isSubmitting || !editTitle.trim()} className="flex-1 h-11 rounded-lg bg-primary">{isSubmitting ? "Speichern..." : "Speichern"}</Button>
               </div>
             </div>
           </DialogContent>
@@ -279,7 +279,7 @@ export function TensionActions({
 
         <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
           <DialogTrigger asChild>
-            <Button variant="outline" className="h-10 rounded-xl text-sm text-destructive border-destructive/30 hover:bg-destructive/10">
+            <Button variant="outline" className="h-10 rounded-lg text-sm text-destructive border-destructive/30 hover:bg-destructive/10">
               <Trash2 size={16} className="mr-2" />
               Löschen
             </Button>
@@ -292,8 +292,8 @@ export function TensionActions({
             <div className="space-y-4 pt-2">
               {error && <p className="text-sm text-destructive">{error}</p>}
               <div className="flex gap-3">
-                <Button variant="outline" onClick={() => setDeleteOpen(false)} className="flex-1 h-11 rounded-xl">Abbrechen</Button>
-                <Button variant="destructive" onClick={handleDelete} disabled={isSubmitting} className="flex-1 h-11 rounded-xl">
+                <Button variant="outline" onClick={() => setDeleteOpen(false)} className="flex-1 h-11 rounded-lg">Abbrechen</Button>
+                <Button variant="destructive" onClick={handleDelete} disabled={isSubmitting} className="flex-1 h-11 rounded-lg">
                   {isSubmitting ? "Löschen..." : "Endgültig löschen"}
                 </Button>
               </div>
@@ -311,7 +311,7 @@ export function TensionActions({
         <div className="flex gap-3">
           <Dialog open={detailsOpen} onOpenChange={setDetailsOpen}>
             <DialogTrigger asChild>
-              <Button variant="outline" className="flex-1 h-10 rounded-xl text-sm">
+              <Button variant="outline" className="flex-1 h-10 rounded-lg text-sm">
                 <Pencil size={16} className="mr-2" />
                 Bearbeiten
               </Button>
@@ -324,18 +324,18 @@ export function TensionActions({
               <div className="space-y-4 pt-2">
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-foreground">Titel <span className="text-destructive">*</span></label>
-                  <Input value={editTitle} onChange={(e) => setEditTitle(e.target.value)} maxLength={200} className="rounded-xl" />
+                  <Input value={editTitle} onChange={(e) => setEditTitle(e.target.value)} maxLength={200} className="rounded-lg" />
                   <p className="text-xs text-muted-foreground text-right">{editTitle.length}/200</p>
                 </div>
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-foreground">Beschreibung</label>
-                  <Textarea value={editDescription} onChange={(e) => setEditDescription(e.target.value)} maxLength={2000} className="min-h-[100px] rounded-xl resize-none" />
+                  <Textarea value={editDescription} onChange={(e) => setEditDescription(e.target.value)} maxLength={2000} className="min-h-[100px] rounded-lg resize-none" />
                   <p className="text-xs text-muted-foreground text-right">{editDescription.length}/2000</p>
                 </div>
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-foreground">Kreis</label>
                   <Select value={editCircleId} onValueChange={setEditCircleId}>
-                    <SelectTrigger className="rounded-xl"><SelectValue /></SelectTrigger>
+                    <SelectTrigger className="rounded-lg"><SelectValue /></SelectTrigger>
                     <SelectContent>
                       {circles.map((c) => (<SelectItem key={c.id} value={c.id}>{c.icon} {c.name}</SelectItem>))}
                     </SelectContent>
@@ -344,7 +344,7 @@ export function TensionActions({
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-foreground">Priorität</label>
                   <Select value={editPriority} onValueChange={setEditPriority}>
-                    <SelectTrigger className="rounded-xl"><SelectValue /></SelectTrigger>
+                    <SelectTrigger className="rounded-lg"><SelectValue /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="LOW">Niedrig</SelectItem>
                       <SelectItem value="MEDIUM">Mittel</SelectItem>
@@ -354,8 +354,8 @@ export function TensionActions({
                 </div>
                 {error && <p className="text-sm text-destructive">{error}</p>}
                 <div className="flex gap-3">
-                  <Button variant="outline" onClick={() => setDetailsOpen(false)} className="flex-1 h-11 rounded-xl">Abbrechen</Button>
-                  <Button onClick={handleSaveDetails} disabled={isSubmitting || !editTitle.trim()} className="flex-1 h-11 rounded-xl bg-primary">{isSubmitting ? "Speichern..." : "Speichern"}</Button>
+                  <Button variant="outline" onClick={() => setDetailsOpen(false)} className="flex-1 h-11 rounded-lg">Abbrechen</Button>
+                  <Button onClick={handleSaveDetails} disabled={isSubmitting || !editTitle.trim()} className="flex-1 h-11 rounded-lg bg-primary">{isSubmitting ? "Speichern..." : "Speichern"}</Button>
                 </div>
               </div>
             </DialogContent>
@@ -363,7 +363,7 @@ export function TensionActions({
 
           <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
             <DialogTrigger asChild>
-              <Button variant="outline" className="h-10 rounded-xl text-sm text-destructive border-destructive/30 hover:bg-destructive/10">
+              <Button variant="outline" className="h-10 rounded-lg text-sm text-destructive border-destructive/30 hover:bg-destructive/10">
                 <Trash2 size={16} className="mr-2" />
                 Löschen
               </Button>
@@ -376,8 +376,8 @@ export function TensionActions({
               <div className="space-y-4 pt-2">
                 {error && <p className="text-sm text-destructive">{error}</p>}
                 <div className="flex gap-3">
-                  <Button variant="outline" onClick={() => setDeleteOpen(false)} className="flex-1 h-11 rounded-xl">Abbrechen</Button>
-                  <Button variant="destructive" onClick={handleDelete} disabled={isSubmitting} className="flex-1 h-11 rounded-xl">
+                  <Button variant="outline" onClick={() => setDeleteOpen(false)} className="flex-1 h-11 rounded-lg">Abbrechen</Button>
+                  <Button variant="destructive" onClick={handleDelete} disabled={isSubmitting} className="flex-1 h-11 rounded-lg">
                     {isSubmitting ? "Löschen..." : "Endgültig löschen"}
                   </Button>
                 </div>
@@ -391,7 +391,7 @@ export function TensionActions({
       {canAssign && (
         <Dialog open={assignOpen} onOpenChange={setAssignOpen}>
           <DialogTrigger asChild>
-            <Button variant="outline" className="w-full h-10 rounded-xl text-sm">
+            <Button variant="outline" className="w-full h-10 rounded-lg text-sm">
               <UserPlus size={16} className="mr-2" />
               {currentAssignedTo ? 'Neu zuweisen' : 'Zuweisen'}
             </Button>
@@ -405,7 +405,7 @@ export function TensionActions({
               <div className="space-y-2">
                 <label className="text-sm font-medium text-foreground">Person</label>
                 <Select value={assignTo} onValueChange={setAssignTo}>
-                  <SelectTrigger className="rounded-xl">
+                  <SelectTrigger className="rounded-lg">
                     <SelectValue placeholder="Person auswählen..." />
                   </SelectTrigger>
                   <SelectContent>
@@ -417,8 +417,8 @@ export function TensionActions({
               </div>
               {error && <p className="text-sm text-destructive">{error}</p>}
               <div className="flex gap-3">
-                <Button variant="outline" onClick={() => setAssignOpen(false)} className="flex-1 h-11 rounded-xl">Abbrechen</Button>
-                <Button onClick={handleAssign} disabled={isSubmitting || !assignTo} className="flex-1 h-11 rounded-xl bg-primary">
+                <Button variant="outline" onClick={() => setAssignOpen(false)} className="flex-1 h-11 rounded-lg">Abbrechen</Button>
+                <Button onClick={handleAssign} disabled={isSubmitting || !assignTo} className="flex-1 h-11 rounded-lg bg-primary">
                   {isSubmitting ? "Speichern..." : "Zuweisen"}
                 </Button>
               </div>
@@ -432,7 +432,7 @@ export function TensionActions({
         {currentStatus === "NEW" && !currentAssignedTo && (
           <Dialog open={editOpen} onOpenChange={setEditOpen}>
             <DialogTrigger asChild>
-              <Button variant="default" className="flex-1 h-12 rounded-xl">
+              <Button variant="default" className="flex-1 h-12 rounded-lg">
                 Übernehmen
               </Button>
             </DialogTrigger>
@@ -448,15 +448,15 @@ export function TensionActions({
                     placeholder="Was ist der nächste konkrete Schritt?"
                     value={nextAction}
                     onChange={(e) => setNextAction(e.target.value)}
-                    className="min-h-[100px] rounded-xl resize-none"
+                    className="min-h-[100px] rounded-lg resize-none"
                     maxLength={500}
                   />
                   <p className="text-xs text-muted-foreground text-right">{nextAction.length}/500</p>
                 </div>
                 {error && <p className="text-sm text-destructive">{error}</p>}
                 <div className="flex gap-3">
-                  <Button variant="outline" onClick={() => setEditOpen(false)} className="flex-1 h-11 rounded-xl">Abbrechen</Button>
-                  <Button onClick={handleStartWorking} disabled={isSubmitting} className="flex-1 h-11 rounded-xl bg-primary">
+                  <Button variant="outline" onClick={() => setEditOpen(false)} className="flex-1 h-11 rounded-lg">Abbrechen</Button>
+                  <Button onClick={handleStartWorking} disabled={isSubmitting} className="flex-1 h-11 rounded-lg bg-primary">
                     {isSubmitting ? "Speichern..." : "Übernehmen"}
                   </Button>
                 </div>
@@ -469,7 +469,7 @@ export function TensionActions({
         {currentStatus === "NEW" && currentAssignedTo && canManageStatus && (
           <Button
             variant="default"
-            className="flex-1 h-12 rounded-xl"
+            className="flex-1 h-12 rounded-lg"
             disabled={isSubmitting}
             onClick={async () => {
               setIsSubmitting(true);
@@ -492,7 +492,7 @@ export function TensionActions({
         {currentStatus === "IN_PROGRESS" && canManageStatus && (
           <Dialog open={editOpen} onOpenChange={setEditOpen}>
             <DialogTrigger asChild>
-              <Button variant="default" className="flex-1 h-12 rounded-xl">
+              <Button variant="default" className="flex-1 h-12 rounded-lg">
                 Nächster Schritt
               </Button>
             </DialogTrigger>
@@ -508,15 +508,15 @@ export function TensionActions({
                     placeholder="Was ist der nächste konkrete Schritt?"
                     value={nextAction}
                     onChange={(e) => setNextAction(e.target.value)}
-                    className="min-h-[100px] rounded-xl resize-none"
+                    className="min-h-[100px] rounded-lg resize-none"
                     maxLength={500}
                   />
                   <p className="text-xs text-muted-foreground text-right">{nextAction.length}/500</p>
                 </div>
                 {error && <p className="text-sm text-destructive">{error}</p>}
                 <div className="flex gap-3">
-                  <Button variant="outline" onClick={() => setEditOpen(false)} className="flex-1 h-11 rounded-xl">Abbrechen</Button>
-                  <Button onClick={handleUpdateNextAction} disabled={isSubmitting} className="flex-1 h-11 rounded-xl bg-primary">
+                  <Button variant="outline" onClick={() => setEditOpen(false)} className="flex-1 h-11 rounded-lg">Abbrechen</Button>
+                  <Button onClick={handleUpdateNextAction} disabled={isSubmitting} className="flex-1 h-11 rounded-lg bg-primary">
                     {isSubmitting ? "Speichern..." : "Speichern"}
                   </Button>
                 </div>
@@ -530,7 +530,7 @@ export function TensionActions({
         <Dialog open={resolveOpen} onOpenChange={setResolveOpen}>
           <DialogTrigger asChild>
             <Button
-              className="flex-1 h-12 rounded-xl bg-[var(--status-resolved)] hover:bg-[var(--status-resolved)]/90 text-white"
+              className="flex-1 h-12 rounded-lg bg-[var(--status-resolved)] hover:bg-[var(--status-resolved)]/90 text-white"
             >
               Erledigt
             </Button>
@@ -552,7 +552,7 @@ export function TensionActions({
                   placeholder="Wie wurde das Problem gelöst?"
                   value={resolution}
                   onChange={(e) => setResolution(e.target.value)}
-                  className="min-h-[100px] rounded-xl resize-none"
+                  className="min-h-[100px] rounded-lg resize-none"
                   maxLength={2000}
                 />
                 <p className="text-xs text-muted-foreground text-right">{resolution.length}/2000</p>
@@ -566,14 +566,14 @@ export function TensionActions({
                 <Button
                   variant="outline"
                   onClick={() => setResolveOpen(false)}
-                  className="flex-1 h-11 rounded-xl"
+                  className="flex-1 h-11 rounded-lg"
                 >
                   Abbrechen
                 </Button>
                 <Button
                   onClick={handleResolve}
                   disabled={isSubmitting || !resolution.trim()}
-                  className="flex-1 h-11 rounded-xl bg-[var(--status-resolved)] hover:bg-[var(--status-resolved)]/90 text-white"
+                  className="flex-1 h-11 rounded-lg bg-[var(--status-resolved)] hover:bg-[var(--status-resolved)]/90 text-white"
                 >
                   {isSubmitting ? "Speichern..." : "Als erledigt markieren"}
                 </Button>
@@ -591,7 +591,7 @@ export function TensionActions({
             <Button
               variant="outline"
               disabled={isSubmitting}
-              className="w-full h-10 rounded-xl text-sm"
+              className="w-full h-10 rounded-lg text-sm"
             >
               Zurück auf "Neu" setzen
             </Button>
@@ -606,7 +606,7 @@ export function TensionActions({
             <div className="space-y-4 pt-2">
               {error && <p className="text-sm text-destructive">{error}</p>}
               <div className="flex gap-3">
-                <Button variant="outline" onClick={() => setResetOpen(false)} className="flex-1 h-11 rounded-xl">Abbrechen</Button>
+                <Button variant="outline" onClick={() => setResetOpen(false)} className="flex-1 h-11 rounded-lg">Abbrechen</Button>
                 <Button
                   variant="outline"
                   onClick={async () => {
@@ -623,7 +623,7 @@ export function TensionActions({
                     setIsSubmitting(false);
                   }}
                   disabled={isSubmitting}
-                  className="flex-1 h-11 rounded-xl text-destructive border-destructive/30 hover:bg-destructive/10"
+                  className="flex-1 h-11 rounded-lg text-destructive border-destructive/30 hover:bg-destructive/10"
                 >
                   {isSubmitting ? "..." : "Zurücksetzen"}
                 </Button>

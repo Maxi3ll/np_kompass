@@ -18,7 +18,7 @@ export function LogoutButton() {
       variant="outline"
       onClick={handleLogout}
       disabled={isLoading}
-      className="w-full h-12 rounded-xl text-destructive hover:text-destructive hover:bg-destructive/10 border-destructive/20"
+      className="w-full h-12 rounded-lg text-destructive hover:text-destructive hover:bg-destructive/10 border-destructive/20"
     >
       {isLoading ? (
         <span className="flex items-center gap-2">

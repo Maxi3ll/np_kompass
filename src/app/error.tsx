@@ -33,21 +33,21 @@ export default function Error({
           <div className="flex flex-col gap-3">
             <Button
               onClick={reset}
-              className="w-full h-12 rounded-xl"
+              className="w-full h-12 rounded-lg"
             >
               Erneut versuchen
             </Button>
             <Button
               variant="outline"
               onClick={() => window.location.href = "/"}
-              className="w-full h-12 rounded-xl"
+              className="w-full h-12 rounded-lg"
             >
               Zur Startseite
             </Button>
           </div>
 
           {process.env.NODE_ENV === "development" && error.message && (
-            <div className="mt-6 p-4 rounded-xl bg-muted text-left">
+            <div className="mt-6 p-4 rounded-lg bg-muted text-left">
               <p className="text-xs font-mono text-muted-foreground break-all">
                 {error.message}
               </p>

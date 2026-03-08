@@ -52,7 +52,7 @@ export default async function ProjektePage({ searchParams }: PageProps) {
           </p>
           <Link
             href="/projekte/neu"
-            className="mt-4 inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-primary text-primary-foreground font-semibold text-sm transition-all hover:bg-primary/90 active:scale-[0.98] shadow-sm"
+            className="mt-4 inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-primary text-primary-foreground font-semibold text-sm transition-all hover:bg-primary/90 active:scale-[0.98] shadow-sm"
           >
             <Plus size={16} strokeWidth={2.5} />
             Neues Projekt

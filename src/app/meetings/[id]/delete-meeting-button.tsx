@@ -60,7 +60,7 @@ export function DeleteMeetingButton({ meetingId, circleName, createdBy, facilita
       <Button
         variant="ghost"
         onClick={() => setDeleteOpen(true)}
-        className="w-full h-10 rounded-xl text-sm text-destructive hover:text-destructive hover:bg-destructive/10"
+        className="w-full h-10 rounded-lg text-sm text-destructive hover:text-destructive hover:bg-destructive/10"
       >
         <Trash2 size={16} className="mr-2" />
         Termin löschen
@@ -80,14 +80,14 @@ export function DeleteMeetingButton({ meetingId, circleName, createdBy, facilita
               type="button"
               variant="outline"
               onClick={() => setDeleteOpen(false)}
-              className="flex-1 h-11 rounded-xl"
+              className="flex-1 h-11 rounded-lg"
             >
               Abbrechen
             </Button>
             <Button
               onClick={handleDelete}
               disabled={isSubmitting}
-              className="flex-1 h-11 rounded-xl bg-destructive hover:bg-destructive/90 text-destructive-foreground"
+              className="flex-1 h-11 rounded-lg bg-destructive hover:bg-destructive/90 text-destructive-foreground"
             >
               {isSubmitting ? "Wird gelöscht..." : "Endgültig löschen"}
             </Button>

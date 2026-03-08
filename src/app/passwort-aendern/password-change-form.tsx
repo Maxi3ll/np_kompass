@@ -125,7 +125,7 @@ export function PasswordChangeForm({ isResetFlow = false }: { isResetFlow?: bool
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           disabled={isLoading}
-          className="h-12 rounded-xl"
+          className="h-12 rounded-lg"
         />
         <p className="text-xs text-muted-foreground">
           Groß- und Kleinbuchstaben, Ziffern und Sonderzeichen erforderlich.
@@ -143,7 +143,7 @@ export function PasswordChangeForm({ isResetFlow = false }: { isResetFlow?: bool
           value={passwordConfirm}
           onChange={(e) => setPasswordConfirm(e.target.value)}
           disabled={isLoading}
-          className="h-12 rounded-xl"
+          className="h-12 rounded-lg"
         />
       </div>
 
@@ -152,7 +152,7 @@ export function PasswordChangeForm({ isResetFlow = false }: { isResetFlow?: bool
       <Button
         type="submit"
         disabled={isLoading}
-        className="w-full h-12 rounded-xl bg-[var(--np-blue)] hover:bg-[var(--np-blue)]/90"
+        className="w-full h-12 rounded-lg bg-[var(--np-blue)] hover:bg-[var(--np-blue)]/90"
       >
         {isLoading ? (
           <span className="flex items-center gap-2">

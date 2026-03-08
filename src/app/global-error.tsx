@@ -29,7 +29,7 @@ export default function GlobalError({
 
               <Button
                 onClick={reset}
-                className="w-full h-12 rounded-xl bg-blue-600 hover:bg-blue-700 text-white"
+                className="w-full h-12 rounded-lg bg-blue-600 hover:bg-blue-700 text-white"
               >
                 Erneut versuchen
               </Button>

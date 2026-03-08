@@ -165,7 +165,7 @@ export default async function RollenDetailPage({ params }: PageProps) {
           {/* Back to Circle */}
           <Link
             href={`/kreise/${role.circle_id}`}
-            className="flex items-center justify-center gap-2 py-3 px-4 rounded-xl border border-border text-foreground font-medium text-sm transition-all hover:bg-accent active:scale-[0.98]"
+            className="flex items-center justify-center gap-2 py-3 px-4 rounded-lg border border-border text-foreground font-medium text-sm transition-all hover:bg-accent active:scale-[0.98]"
           >
             <ChevronLeft size={18} />
             Zurück zu {role.circle_name}

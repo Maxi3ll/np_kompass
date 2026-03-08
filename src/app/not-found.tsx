@@ -19,12 +19,12 @@ export default function NotFound() {
 
           <div className="flex flex-col gap-3">
             <Link href="/">
-              <Button className="w-full h-12 rounded-xl">
+              <Button className="w-full h-12 rounded-lg">
                 Zur Startseite
               </Button>
             </Link>
             <Link href="/spannungen">
-              <Button variant="outline" className="w-full h-12 rounded-xl">
+              <Button variant="outline" className="w-full h-12 rounded-lg">
                 Zu den Spannungen
               </Button>
             </Link>

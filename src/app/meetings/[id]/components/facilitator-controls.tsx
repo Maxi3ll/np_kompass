@@ -79,7 +79,7 @@ export function FacilitatorControls({
           <button
             onClick={handleAdvance}
             disabled={isPending}
-            className="px-4 py-2.5 text-sm font-medium rounded-xl bg-[var(--np-blue)] text-white hover:bg-[var(--np-blue)]/90 transition-colors disabled:opacity-50"
+            className="px-4 py-2.5 text-sm font-medium rounded-lg bg-[var(--np-blue)] text-white hover:bg-[var(--np-blue)]/90 transition-colors disabled:opacity-50"
           >
             {isPending ? '...' : 'Weiter zur Agenda →'}
           </button>
@@ -91,7 +91,7 @@ export function FacilitatorControls({
               <button
                 onClick={handleProcessItem}
                 disabled={isPending}
-                className="px-4 py-2.5 text-sm font-medium rounded-xl bg-[var(--status-resolved)] text-white hover:bg-[var(--status-resolved)]/90 transition-colors disabled:opacity-50"
+                className="px-4 py-2.5 text-sm font-medium rounded-lg bg-[var(--status-resolved)] text-white hover:bg-[var(--status-resolved)]/90 transition-colors disabled:opacity-50"
               >
                 {isPending ? '...' : 'Punkt abschliessen'}
               </button>
@@ -100,7 +100,7 @@ export function FacilitatorControls({
               <button
                 onClick={handleAdvance}
                 disabled={isPending}
-                className="px-4 py-2.5 text-sm font-medium rounded-xl bg-[var(--np-blue)] text-white hover:bg-[var(--np-blue)]/90 transition-colors disabled:opacity-50"
+                className="px-4 py-2.5 text-sm font-medium rounded-lg bg-[var(--np-blue)] text-white hover:bg-[var(--np-blue)]/90 transition-colors disabled:opacity-50"
               >
                 {isPending ? '...' : 'Zur Abschlussrunde →'}
               </button>
@@ -112,7 +112,7 @@ export function FacilitatorControls({
           <button
             onClick={handleAdvance}
             disabled={isPending}
-            className="px-4 py-2.5 text-sm font-medium rounded-xl bg-[var(--status-resolved)] text-white hover:bg-[var(--status-resolved)]/90 transition-colors disabled:opacity-50"
+            className="px-4 py-2.5 text-sm font-medium rounded-lg bg-[var(--status-resolved)] text-white hover:bg-[var(--status-resolved)]/90 transition-colors disabled:opacity-50"
           >
             {isPending ? '...' : 'Meeting abschliessen ✓'}
           </button>
