@@ -689,6 +689,58 @@ export async function createMeeting(data: CreateMeetingData) {
   return { meeting };
 }
 
+export interface UpdateMeetingData {
+  id: string;
+  type?: 'TACTICAL' | 'GOVERNANCE';
+  circleId?: string;
+  date?: string; // ISO string
+  notes?: string | null;
+}
+
+export async function updateMeeting(data: UpdateMeetingData) {
+  const auth = await requireAuth();
+  const serviceClient = createServiceClient();
+
+  const { data: meeting } = await serviceClient
+    .from('meetings')
+    .select('created_by, facilitator_id, status')
+    .eq('id', data.id)
+    .single();
+
+  if (!meeting) return { error: 'not_found' };
+
+  if (meeting.status !== 'SCHEDULED') {
+    return { error: 'only_scheduled' };
+  }
+
+  const isCreator = meeting.created_by === auth.personId || meeting.facilitator_id === auth.personId;
+  const isAdmin = await isCurrentUserAdmin();
+  if (!isCreator && !isAdmin) {
+    return { error: 'unauthorized' };
+  }
+
+  const updateData: Record<string, unknown> = {};
+  if (data.type !== undefined) updateData.type = data.type;
+  if (data.circleId !== undefined) updateData.circle_id = data.circleId;
+  if (data.date !== undefined) updateData.date = data.date;
+  if (data.notes !== undefined) updateData.notes = data.notes || null;
+
+  const { error } = await serviceClient
+    .from('meetings')
+    .update(updateData)
+    .eq('id', data.id);
+
+  if (error) {
+    console.error('Error updating meeting:', error);
+    return { error: error.message };
+  }
+
+  revalidatePath(`/meetings/${data.id}`);
+  revalidatePath('/meetings');
+  revalidatePath('/');
+  return { success: true };
+}
+
 export async function deleteMeeting(meetingId: string) {
   const auth = await requireAuth();
   const serviceClient = createServiceClient();

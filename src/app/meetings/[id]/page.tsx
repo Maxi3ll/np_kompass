@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Header } from "@/components/navigation/header";
 import { AppShell } from "@/components/layout/app-shell";
-import { getMeetingById, getLiveMeetingData } from "@/lib/supabase/queries";
+import { getMeetingById, getLiveMeetingData, getCircles } from "@/lib/supabase/queries";
 import { isCurrentUserAdmin } from "@/lib/supabase/actions";
 import { AgendaSection } from "./agenda-section";
 import { LiveMeeting } from "./live-meeting";
@@ -10,6 +10,7 @@ import { StartMeetingButton } from "./start-meeting-button";
 import { ProtocolView } from "./components/protocol-view";
 import { MeetingParticipants } from "./components/meeting-participants";
 import { DeleteMeetingButton } from "./delete-meeting-button";
+import { EditMeetingButton } from "./edit-meeting-button";
 import type { MeetingType } from "@/types";
 import { MEETING_TYPE_CONFIG } from "@/types";
 
@@ -42,7 +43,11 @@ export default async function MeetingDetailPage({ params }: PageProps) {
   }
 
   // Check if current user is facilitator or admin (for "start" button)
-  const isAdmin = await isCurrentUserAdmin();
+  const [isAdmin, allCircles] = await Promise.all([
+    isCurrentUserAdmin(),
+    getCircles(),
+  ]);
+  const editCircles = allCircles.filter((c: { parent_circle_id: string | null }) => c.parent_circle_id !== null);
 
   return (
     <AppShell>
@@ -167,7 +172,18 @@ export default async function MeetingDetailPage({ params }: PageProps) {
                 </div>
               )}
 
-              {/* Delete Meeting */}
+              {/* Edit / Delete Meeting */}
+              <EditMeetingButton
+                meetingId={meeting.id}
+                currentType={meeting.type as "TACTICAL" | "GOVERNANCE"}
+                currentCircleId={meeting.circle?.id || ""}
+                currentDate={meeting.date}
+                currentNotes={meeting.notes || null}
+                circles={editCircles}
+                createdBy={meeting.created_by || null}
+                facilitatorId={meeting.facilitator?.id || null}
+                isAdmin={isAdmin}
+              />
               <DeleteMeetingButton
                 meetingId={meeting.id}
                 circleName={meeting.circle?.name || "Unbekannt"}
