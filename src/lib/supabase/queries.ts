@@ -958,17 +958,22 @@ export async function getDashboardData(personId?: string) {
     myCircleIds = [...new Set(myRoles.map(r => r.circleId).filter(Boolean))];
   }
 
-  // Get next meeting
-  const { data: nextMeeting } = await supabase
-    .from('meetings')
-    .select(`
-      *,
-      circle:circles(id, name, color, icon)
-    `)
-    .gte('date', new Date().toISOString())
-    .order('date')
-    .limit(1)
-    .single();
+  // Get next meeting (only from circles where the user has a role)
+  let nextMeeting = null;
+  if (myCircleIds.length > 0) {
+    const { data } = await supabase
+      .from('meetings')
+      .select(`
+        *,
+        circle:circles(id, name, color, icon)
+      `)
+      .in('circle_id', myCircleIds)
+      .gte('date', new Date().toISOString())
+      .order('date')
+      .limit(1)
+      .single();
+    nextMeeting = data;
+  }
 
   // Get tensions from user's circles + assigned to user
   let myCircleTensions = 0;
