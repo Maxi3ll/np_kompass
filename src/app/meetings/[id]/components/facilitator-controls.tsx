@@ -53,6 +53,14 @@ export function FacilitatorControls({
           alert(result.error);
         } else if ('processedItemId' in result) {
           onItemProcessed?.(itemId, result.nextPosition);
+
+          // Auto-advance to closing when all agenda items are processed
+          if (result.nextPosition === null) {
+            const advanceResult = await advanceMeetingPhase(meetingId);
+            if (advanceResult && !advanceResult.error && 'nextPhase' in advanceResult && advanceResult.nextPhase) {
+              onPhaseAdvanced?.(advanceResult.nextPhase as MeetingPhase, advanceResult.firstPosition);
+            }
+          }
         }
       } catch {
         alert('Fehler beim Verarbeiten. Bitte Seite neu laden.');
@@ -88,7 +96,7 @@ export function FacilitatorControls({
                 {isPending ? '...' : 'Punkt abschliessen'}
               </button>
             )}
-            {(allItemsProcessed || !hasAgendaItems) && (
+            {!hasAgendaItems && (
               <button
                 onClick={handleAdvance}
                 disabled={isPending}

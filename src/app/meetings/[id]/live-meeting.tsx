@@ -96,11 +96,7 @@ export function LiveMeeting({ meetingId, facilitatorId, initialData }: LiveMeeti
 
       {/* Phase Content */}
       {state.currentPhase === 'CHECK_IN' && (
-        <CheckInPhase
-          meetingId={meetingId}
-          personId={personId}
-          checkIns={state.checkIns}
-        />
+        <CheckInPhase />
       )}
 
       {state.currentPhase === 'AGENDA' && (

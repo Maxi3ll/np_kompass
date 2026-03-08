@@ -70,17 +70,21 @@ export function BottomNav() {
   const pathname = usePathname();
   const [fabOpen, setFabOpen] = useState(false);
 
+  // Hide FAB on meeting detail pages (live meetings have facilitator controls in that space)
+  const isMeetingDetail = /^\/meetings\/[^/]+$/.test(pathname);
+
   return (
     <>
       {/* Backdrop overlay when FAB is open */}
-      {fabOpen && (
+      {fabOpen && !isMeetingDetail && (
         <div
           className="fixed inset-0 z-40 bg-black/30 backdrop-blur-[2px] lg:hidden"
           onClick={() => setFabOpen(false)}
         />
       )}
 
-      {/* Floating Action Button - bottom right, above navbar */}
+      {/* Floating Action Button - bottom right, above navbar (hidden on meeting detail pages) */}
+      {!isMeetingDetail && (
       <div className="fixed bottom-20 right-4 z-50 lg:hidden" style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
         {/* Expanded action options */}
         {fabOpen && (
@@ -137,6 +141,7 @@ export function BottomNav() {
           </div>
         </button>
       </div>
+      )}
 
       {/* Bottom Navigation Bar */}
       <nav className="fixed bottom-0 left-0 right-0 z-50 glass border-t border-border/50 bottom-nav-safe lg:hidden">
