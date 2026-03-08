@@ -11,6 +11,7 @@ import { ExportDataButton } from "./export-data-button";
 import { AdminEmails } from "./admin-emails";
 import { ProfileEditDialog } from "./profile-edit-dialog";
 import Link from "next/link";
+import { ChevronRight, CircleAlert } from "lucide-react";
 
 export default async function ProfilPage() {
   const supabase = await createClient();
@@ -139,9 +140,7 @@ export default async function ProfilPage() {
                       <p className="font-medium text-foreground">{role.name}</p>
                       <p className="text-xs text-muted-foreground">{role.circle?.name}</p>
                     </div>
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-muted-foreground">
-                      <polyline points="9 18 15 12 9 6" />
-                    </svg>
+                    <ChevronRight size={16} className="text-muted-foreground" />
                   </Link>
                 ))}
               </div>
@@ -204,9 +203,7 @@ export default async function ProfilPage() {
                 className="flex items-center justify-between py-2 text-sm text-primary hover:underline"
               >
                 <span>Passwort ändern</span>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-muted-foreground">
-                  <polyline points="9 18 15 12 9 6" />
-                </svg>
+                <ChevronRight size={16} className="text-muted-foreground" />
               </Link>
             </div>
           </div>
@@ -225,11 +222,7 @@ export default async function ProfilPage() {
             <div className="bg-[var(--np-yellow-light)] rounded-2xl border border-[var(--np-yellow)]/20 p-4">
               <div className="flex gap-3">
                 <div className="w-10 h-10 rounded-xl bg-[var(--np-yellow)] flex items-center justify-center flex-shrink-0">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#5a4a00" strokeWidth="2">
-                    <circle cx="12" cy="12" r="10" />
-                    <line x1="12" y1="8" x2="12" y2="12" />
-                    <line x1="12" y1="16" x2="12.01" y2="16" />
-                  </svg>
+                  <CircleAlert size={20} color="#5a4a00" />
                 </div>
                 <div>
                   <p className="font-medium text-[#5a4a00]">Account nicht verknüpft</p>

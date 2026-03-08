@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { ChevronRight, CircleAlert } from "lucide-react";
 import { Header } from "@/components/navigation/header";
 import { AppShell } from "@/components/layout/app-shell";
 import { getCircleWithRoles } from "@/lib/supabase/queries";
@@ -94,9 +95,7 @@ export default async function KreisDetailPage({ params }: PageProps) {
                       </p>
                     </div>
                     <div className="flex-shrink-0 text-muted-foreground/50 ml-2">
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <polyline points="9 18 15 12 9 6" />
-                      </svg>
+                      <ChevronRight size={20} />
                     </div>
                   </div>
 
@@ -123,11 +122,7 @@ export default async function KreisDetailPage({ params }: PageProps) {
                       </div>
                     ) : (
                       <div className="flex items-center gap-2 text-sm text-amber-600">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                          <circle cx="12" cy="12" r="10" />
-                          <line x1="12" y1="8" x2="12" y2="12" />
-                          <line x1="12" y1="16" x2="12.01" y2="16" />
-                        </svg>
+                        <CircleAlert size={16} />
                         <span>Vakant - Rolle unbesetzt</span>
                       </div>
                     )}
@@ -151,20 +146,14 @@ export default async function KreisDetailPage({ params }: PageProps) {
             >
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-[var(--np-yellow)] flex items-center justify-center">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#5a4a00" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <circle cx="12" cy="12" r="10" />
-                    <line x1="12" y1="8" x2="12" y2="12" />
-                    <line x1="12" y1="16" x2="12.01" y2="16" />
-                  </svg>
+                  <CircleAlert size={20} color="#5a4a00" />
                 </div>
                 <div>
                   <p className="font-medium text-foreground">{circle.openTensions} offene Spannungen</p>
                   <p className="text-xs text-muted-foreground">Alle anzeigen</p>
                 </div>
               </div>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-muted-foreground">
-                <polyline points="9 18 15 12 9 6" />
-              </svg>
+              <ChevronRight size={20} className="text-muted-foreground" />
             </Link>
           )}
         </div>

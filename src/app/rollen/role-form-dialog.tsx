@@ -13,6 +13,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { createRole, updateRole } from "@/lib/supabase/actions";
+import { X, Plus } from "lucide-react";
 
 interface RoleFormDialogProps {
   open: boolean;
@@ -146,9 +147,7 @@ export function RoleFormDialog({
                       onClick={() => setDomains((prev) => prev.filter((_, idx) => idx !== i))}
                       className="text-muted-foreground hover:text-destructive"
                     >
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
-                      </svg>
+                      <X size={14} />
                     </button>
                   </div>
                 ))}
@@ -163,9 +162,7 @@ export function RoleFormDialog({
                 className="h-9 rounded-xl text-sm"
               />
               <Button type="button" variant="outline" onClick={addDomain} disabled={!newDomain.trim()} className="h-9 rounded-xl px-3">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
-                </svg>
+                <Plus size={14} />
               </Button>
             </div>
           </div>
@@ -184,9 +181,7 @@ export function RoleFormDialog({
                       onClick={() => setAccountabilities((prev) => prev.filter((_, idx) => idx !== i))}
                       className="text-muted-foreground hover:text-destructive"
                     >
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
-                      </svg>
+                      <X size={14} />
                     </button>
                   </div>
                 ))}
@@ -201,9 +196,7 @@ export function RoleFormDialog({
                 className="h-9 rounded-xl text-sm"
               />
               <Button type="button" variant="outline" onClick={addAccountability} disabled={!newAccountability.trim()} className="h-9 rounded-xl px-3">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
-                </svg>
+                <Plus size={14} />
               </Button>
             </div>
           </div>

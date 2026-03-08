@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { addAllowedEmail, removeAllowedEmail, toggleAdminRole } from "@/lib/supabase/actions";
+import { Shield, X, Plus } from "lucide-react";
 
 interface AllowedEmail {
   id: string;
@@ -119,9 +120,7 @@ export function AdminEmails({ initialEmails, adminEmail, currentUserIsSuperAdmin
     <div className="bg-card rounded-2xl shadow-card border border-border/50 p-4">
       <div className="flex items-center gap-2 mb-3">
         <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-primary">
-            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-          </svg>
+          <Shield size={16} className="text-primary" />
         </div>
         <h2 className="text-sm font-medium text-muted-foreground">
           Administration
@@ -207,9 +206,7 @@ export function AdminEmails({ initialEmails, adminEmail, currentUserIsSuperAdmin
                         : "text-muted-foreground hover:text-primary hover:bg-primary/10"
                     }`}
                   >
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill={isDbAdmin ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-                    </svg>
+                    <Shield size={14} fill={isDbAdmin ? "currentColor" : "none"} />
                   </Button>
                 )}
                 {!isEnvAdmin && (
@@ -220,10 +217,7 @@ export function AdminEmails({ initialEmails, adminEmail, currentUserIsSuperAdmin
                     disabled={isPending}
                     className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10 flex-shrink-0"
                   >
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <line x1="18" y1="6" x2="6" y2="18" />
-                      <line x1="6" y1="6" x2="18" y2="18" />
-                    </svg>
+                    <X size={14} />
                   </Button>
                 )}
               </div>
@@ -280,10 +274,7 @@ export function AdminEmails({ initialEmails, adminEmail, currentUserIsSuperAdmin
             </svg>
           ) : (
             <span className="flex items-center gap-2">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <line x1="12" y1="5" x2="12" y2="19" />
-                <line x1="5" y1="12" x2="19" y2="12" />
-              </svg>
+              <Plus size={16} />
               Hinzufügen
             </span>
           )}

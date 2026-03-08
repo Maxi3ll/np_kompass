@@ -12,6 +12,7 @@ import {
 import { signOut } from "@/lib/supabase/actions";
 import { useUser } from "@/components/layout/user-context";
 import { NotificationBell } from "./notification-bell";
+import { ChevronLeft, Search, User, Users, LogOut } from "lucide-react";
 
 interface HeaderProps {
   title?: string;
@@ -37,19 +38,7 @@ export function Header({
               className="flex items-center justify-center w-10 h-10 -ml-2 rounded-full hover:bg-primary/10 active:bg-primary/20 transition-colors touch-target"
               aria-label="Zurück"
             >
-              <svg
-                width="20"
-                height="20"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="text-foreground"
-              >
-                <path d="M15 18l-6-6 6-6" />
-              </svg>
+              <ChevronLeft size={20} strokeWidth={2.5} className="text-foreground" />
             </Link>
           ) : (
             <div className="flex items-center gap-2 lg:hidden">
@@ -75,10 +64,7 @@ export function Header({
             className="flex items-center justify-center w-10 h-10 rounded-full hover:bg-primary/10 active:bg-primary/20 transition-colors touch-target"
             aria-label="Suche"
           >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-muted-foreground">
-              <circle cx="11" cy="11" r="8" />
-              <line x1="21" y1="21" x2="16.65" y2="16.65" />
-            </svg>
+            <Search size={20} className="text-muted-foreground" />
           </Link>
           <NotificationBell />
 
@@ -106,21 +92,13 @@ export function Header({
             <div className="p-1">
               <DropdownMenuItem asChild className="rounded-lg cursor-pointer">
                 <Link href="/profil" className="flex items-center gap-2">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
-                    <circle cx="12" cy="7" r="4" />
-                  </svg>
+                  <User size={16} />
                   Mein Profil
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild className="rounded-lg cursor-pointer">
                 <Link href="/profil" className="flex items-center gap-2">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-                    <circle cx="9" cy="7" r="4" />
-                    <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
-                    <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-                  </svg>
+                  <Users size={16} />
                   Meine Rollen
                 </Link>
               </DropdownMenuItem>
@@ -131,11 +109,7 @@ export function Header({
                 onClick={() => signOut()}
                 className="rounded-lg cursor-pointer text-destructive focus:text-destructive flex items-center gap-2"
               >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-                  <polyline points="16 17 21 12 16 7" />
-                  <line x1="21" y1="12" x2="9" y2="12" />
-                </svg>
+                <LogOut size={16} />
                 Abmelden
               </DropdownMenuItem>
             </div>

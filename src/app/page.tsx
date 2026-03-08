@@ -5,6 +5,7 @@ import { AppShell } from "@/components/layout/app-shell";
 import { getDashboardData } from "@/lib/supabase/queries";
 import { createClient } from "@/lib/supabase/server";
 import { RightPanel } from "@/components/dashboard/right-panel";
+import { Users, Crosshair, Zap, User, Rocket, Calendar, Clock, FilePlus } from "lucide-react";
 
 export const revalidate = 60; // Revalidate every 60 seconds
 
@@ -71,22 +72,14 @@ export default async function Home() {
                 <div className="relative">
                   <div className="flex items-center gap-1.5 mb-2">
                     <div className="w-7 h-7 rounded-lg bg-[var(--np-blue-light)] flex items-center justify-center">
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--np-blue)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-                        <circle cx="9" cy="7" r="4" />
-                        <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
-                        <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-                      </svg>
+                      <Users size={14} color="var(--np-blue)" strokeWidth={2.5} />
                     </div>
                   </div>
                   <p className="text-2xl font-bold text-foreground">{myRoles.length}</p>
                   <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">Rollen</span>
                   {myCircleIds.length > 0 && (
                     <div className="flex items-center gap-1 mt-1">
-                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="var(--np-blue)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                        <circle cx="12" cy="12" r="10" />
-                        <circle cx="12" cy="12" r="4" />
-                      </svg>
+                      <Crosshair size={10} color="var(--np-blue)" strokeWidth={2.5} />
                       <span className="text-[10px] font-medium text-[var(--np-blue)]">{myCircleIds.length} {myCircleIds.length === 1 ? 'Kreis' : 'Kreise'}</span>
                     </div>
                   )}
@@ -101,19 +94,14 @@ export default async function Home() {
                 <div className="relative">
                   <div className="flex items-center gap-1.5 mb-2">
                     <div className="w-7 h-7 rounded-lg bg-[var(--np-yellow-light)] flex items-center justify-center">
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--np-yellow-dark)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                        <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
-                      </svg>
+                      <Zap size={14} color="var(--np-yellow-dark)" strokeWidth={2.5} />
                     </div>
                   </div>
                   <p className="text-2xl font-bold text-foreground">{myCircleTensions}</p>
                   <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">Spannungen</span>
                   {assignedTensions > 0 && (
                     <div className="flex items-center gap-1 mt-1">
-                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="var(--np-yellow-dark)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
-                        <circle cx="12" cy="7" r="4" />
-                      </svg>
+                      <User size={10} color="var(--np-yellow-dark)" strokeWidth={2.5} />
                       <span className="text-[10px] font-medium text-[var(--np-yellow-dark)]">{assignedTensions} an dich</span>
                     </div>
                   )}
@@ -128,28 +116,19 @@ export default async function Home() {
                 <div className="relative">
                   <div className="flex items-center gap-1.5 mb-2">
                     <div className="w-7 h-7 rounded-lg bg-[var(--status-resolved)]/15 flex items-center justify-center">
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--status-resolved)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z" />
-                        <path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z" />
-                      </svg>
+                      <Rocket size={14} color="var(--status-resolved)" />
                     </div>
                   </div>
                   <p className="text-2xl font-bold text-foreground">{activeProjekteCount}</p>
                   <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">Projekte</span>
                   {myProjektName ? (
                     <div className="flex items-center gap-1 mt-1">
-                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="var(--status-resolved)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z" />
-                        <path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z" />
-                      </svg>
+                      <Rocket size={10} color="var(--status-resolved)" strokeWidth={2.5} />
                       <span className="text-[10px] font-medium text-[var(--status-resolved)] truncate max-w-[80px]">{myProjektName}</span>
                     </div>
                   ) : myVolunteerCount > 0 && (
                     <div className="flex items-center gap-1 mt-1">
-                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="var(--status-resolved)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-                        <circle cx="9" cy="7" r="4" />
-                      </svg>
+                      <Users size={10} color="var(--status-resolved)" strokeWidth={2.5} />
                       <span className="text-[10px] font-medium text-[var(--status-resolved)]">{myVolunteerCount} dabei</span>
                     </div>
                   )}
@@ -185,21 +164,13 @@ export default async function Home() {
                         className="w-10 h-10 rounded-xl flex items-center justify-center"
                         style={{ backgroundColor: `color-mix(in srgb, ${nextMeeting.circle?.color || "var(--np-blue)"} 15%, transparent)` }}
                       >
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={nextMeeting.circle?.color || "var(--np-blue)"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                          <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-                          <line x1="16" y1="2" x2="16" y2="6" />
-                          <line x1="8" y1="2" x2="8" y2="6" />
-                          <line x1="3" y1="10" x2="21" y2="10" />
-                        </svg>
+                        <Calendar size={20} color={nextMeeting.circle?.color || "var(--np-blue)"} />
                       </div>
                     </div>
 
                     <div className="mt-4 flex flex-wrap gap-3">
                       <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                          <circle cx="12" cy="12" r="10" />
-                          <polyline points="12 6 12 12 16 14" />
-                        </svg>
+                        <Clock size={16} />
                         <span>
                           {new Date(nextMeeting.date).toLocaleDateString("de-DE", {
                             day: "2-digit",
@@ -219,24 +190,14 @@ export default async function Home() {
                       href={`/meetings/${nextMeeting.id}`}
                       className="mt-4 flex items-center justify-center gap-2 w-full py-3 px-4 rounded-xl bg-primary text-primary-foreground font-medium text-sm transition-all hover:bg-primary/90 active:scale-[0.98]"
                     >
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                        <polyline points="14 2 14 8 20 8" />
-                        <line x1="12" y1="18" x2="12" y2="12" />
-                        <line x1="9" y1="15" x2="15" y2="15" />
-                      </svg>
+                      <FilePlus size={18} />
                       Termin vorbereiten
                     </Link>
                   </>
                 ) : (
                   <div className="text-center py-4">
                     <div className="w-12 h-12 rounded-xl bg-muted flex items-center justify-center mx-auto mb-3">
-                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-muted-foreground">
-                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-                        <line x1="16" y1="2" x2="16" y2="6" />
-                        <line x1="8" y1="2" x2="8" y2="6" />
-                        <line x1="3" y1="10" x2="21" y2="10" />
-                      </svg>
+                      <Calendar size={24} className="text-muted-foreground" />
                     </div>
                     <p className="text-sm text-muted-foreground">Kein Termin in einem deiner Kreise geplant</p>
                   </div>
@@ -259,9 +220,7 @@ export default async function Home() {
                   color: "var(--np-yellow)",
                   bgColor: "var(--np-yellow-light)",
                   icon: (
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
-                    </svg>
+                    <Zap size={22} />
                   ),
                 },
                 {
@@ -271,10 +230,7 @@ export default async function Home() {
                   color: "var(--np-blue)",
                   bgColor: "var(--np-blue-light)",
                   icon: (
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <circle cx="12" cy="12" r="10" />
-                      <circle cx="12" cy="12" r="4" />
-                    </svg>
+                    <Crosshair size={22} />
                   ),
                 },
                 {
@@ -284,12 +240,7 @@ export default async function Home() {
                   color: "var(--circle-finanzen)",
                   bgColor: "#F3EEFF",
                   icon: (
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-                      <circle cx="9" cy="7" r="4" />
-                      <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
-                      <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-                    </svg>
+                    <Users size={22} />
                   ),
                 },
               ].map((action) => (

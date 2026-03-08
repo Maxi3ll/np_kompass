@@ -6,6 +6,7 @@ import { getRoleById, getRoleHistory } from "@/lib/supabase/queries";
 import { isCurrentUserAdmin, getPersonsList } from "@/lib/supabase/actions";
 import { RoleAdminActions } from "./role-admin-actions";
 import { RoleHolders } from "./role-holders";
+import { CircleDot, Shield, CircleCheck, Clock, ChevronLeft } from "lucide-react";
 
 export const revalidate = 60;
 
@@ -55,10 +56,7 @@ export default async function RollenDetailPage({ params }: PageProps) {
           <div className="bg-card rounded-2xl shadow-card border border-border/50 p-5">
             <div className="flex items-center gap-2 mb-3">
               <div className="w-8 h-8 rounded-lg bg-[var(--np-blue-light)] flex items-center justify-center">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--np-blue)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="12" cy="12" r="10" />
-                  <circle cx="12" cy="12" r="3" />
-                </svg>
+                <CircleDot size={16} color="var(--np-blue)" />
               </div>
               <h2 className="font-semibold text-foreground">Zweck</h2>
             </div>
@@ -72,9 +70,7 @@ export default async function RollenDetailPage({ params }: PageProps) {
             <div className="bg-card rounded-2xl shadow-card border border-border/50 p-5">
               <div className="flex items-center gap-2 mb-3">
                 <div className="w-8 h-8 rounded-lg bg-[var(--circle-finanzen)]/15 flex items-center justify-center">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--circle-finanzen)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-                  </svg>
+                  <Shield size={16} color="var(--circle-finanzen)" />
                 </div>
                 <h2 className="font-semibold text-foreground">Domains</h2>
               </div>
@@ -97,10 +93,7 @@ export default async function RollenDetailPage({ params }: PageProps) {
             <div className="bg-card rounded-2xl shadow-card border border-border/50 p-5">
               <div className="flex items-center gap-2 mb-3">
                 <div className="w-8 h-8 rounded-lg bg-[var(--circle-gebaeude)]/15 flex items-center justify-center">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--circle-gebaeude)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
-                    <polyline points="22 4 12 14.01 9 11.01" />
-                  </svg>
+                  <CircleCheck size={16} color="var(--circle-gebaeude)" />
                 </div>
                 <h2 className="font-semibold text-foreground">Verantwortungen</h2>
               </div>
@@ -123,10 +116,7 @@ export default async function RollenDetailPage({ params }: PageProps) {
             <div className="bg-card rounded-2xl shadow-card border border-border/50 p-5">
               <div className="flex items-center gap-2 mb-3">
                 <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-muted-foreground">
-                    <circle cx="12" cy="12" r="10" />
-                    <polyline points="12 6 12 12 16 14" />
-                  </svg>
+                  <Clock size={16} className="text-muted-foreground" />
                 </div>
                 <h2 className="font-semibold text-foreground">Rollenhistorie</h2>
               </div>
@@ -177,9 +167,7 @@ export default async function RollenDetailPage({ params }: PageProps) {
             href={`/kreise/${role.circle_id}`}
             className="flex items-center justify-center gap-2 py-3 px-4 rounded-xl border border-border text-foreground font-medium text-sm transition-all hover:bg-accent active:scale-[0.98]"
           >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <polyline points="15 18 9 12 15 6" />
-            </svg>
+            <ChevronLeft size={18} />
             Zurück zu {role.circle_name}
           </Link>
         </div>

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Header } from "@/components/navigation/header";
 import { AppShell } from "@/components/layout/app-shell";
 import { getProjekte } from "@/lib/supabase/queries";
+import { Plus, SquareCheckBig, Calendar, Clock, Rocket } from "lucide-react";
 import type { ProjektWithDetails } from "@/types";
 
 export const revalidate = 30;
@@ -53,10 +54,7 @@ export default async function ProjektePage({ searchParams }: PageProps) {
             href="/projekte/neu"
             className="mt-4 inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-primary text-primary-foreground font-semibold text-sm transition-all hover:bg-primary/90 active:scale-[0.98] shadow-sm"
           >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <line x1="12" y1="5" x2="12" y2="19" />
-              <line x1="5" y1="12" x2="19" y2="12" />
-            </svg>
+            <Plus size={16} strokeWidth={2.5} />
             Neues Projekt
           </Link>
         </div>
@@ -179,10 +177,7 @@ export default async function ProjektePage({ searchParams }: PageProps) {
                       {/* Subtask Progress */}
                       {subtaskProgress && (
                         <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <polyline points="9 11 12 14 22 4" />
-                            <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
-                          </svg>
+                          <SquareCheckBig size={12} />
                           <span>{subtaskProgress}</span>
                         </div>
                       )}
@@ -190,12 +185,7 @@ export default async function ProjektePage({ searchParams }: PageProps) {
                       {/* Date Range */}
                       {(v.start_date || v.end_date) && (
                         <div className="flex items-center gap-1 text-xs text-muted-foreground ml-auto">
-                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-                            <line x1="16" y1="2" x2="16" y2="6" />
-                            <line x1="8" y1="2" x2="8" y2="6" />
-                            <line x1="3" y1="10" x2="21" y2="10" />
-                          </svg>
+                          <Calendar size={12} />
                           <span>
                             {v.start_date && new Date(v.start_date).toLocaleDateString('de-DE', { day: 'numeric', month: 'short' })}
                             {v.start_date && v.end_date && ' – '}
@@ -207,10 +197,7 @@ export default async function ProjektePage({ searchParams }: PageProps) {
                       {/* Created date (fallback when no dates) */}
                       {!v.start_date && !v.end_date && (
                         <div className="flex items-center gap-1 text-xs text-muted-foreground ml-auto">
-                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <circle cx="12" cy="12" r="10" />
-                            <polyline points="12 6 12 12 16 14" />
-                          </svg>
+                          <Clock size={12} />
                           <span>
                             {new Date(v.created_at).toLocaleDateString('de-DE', { day: 'numeric', month: 'short' })}
                           </span>
@@ -225,12 +212,7 @@ export default async function ProjektePage({ searchParams }: PageProps) {
             {projekte.length === 0 && (
               <div className="text-center py-12">
                 <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
-                  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-primary">
-                    <path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z" />
-                    <path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z" />
-                    <path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0" />
-                    <path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5" />
-                  </svg>
+                  <Rocket size={32} strokeWidth={1.5} className="text-primary" />
                 </div>
                 <p className="font-medium text-foreground">Keine Projekte</p>
                 <p className="text-sm text-muted-foreground mt-1">

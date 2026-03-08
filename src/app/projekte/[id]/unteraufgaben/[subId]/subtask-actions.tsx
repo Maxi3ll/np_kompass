@@ -20,6 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Pencil } from "lucide-react";
 import { updateSubtask, deleteSubtask } from "@/lib/supabase/actions";
 
 interface Person {
@@ -121,10 +122,7 @@ export function SubtaskActions({
     <Dialog open={detailsOpen} onOpenChange={setDetailsOpen}>
       <DialogTrigger asChild>
         <Button variant="outline" className={`${currentStatus === "DONE" ? "" : "w-full "}h-10 rounded-xl text-sm`}>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2">
-            <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
-            <path d="m15 5 4 4" />
-          </svg>
+          <Pencil size={16} className="mr-2" />
           Bearbeiten
         </Button>
       </DialogTrigger>

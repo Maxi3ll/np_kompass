@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { performSearch } from "@/lib/supabase/actions";
+import { Search, X, Rocket } from "lucide-react";
 
 interface SearchResults {
   circles: any[];
@@ -65,20 +66,7 @@ export function SearchClient() {
       {/* Search Input */}
       <div className="relative">
         <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-          <svg
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className="text-muted-foreground"
-          >
-            <circle cx="11" cy="11" r="8" />
-            <line x1="21" y1="21" x2="16.65" y2="16.65" />
-          </svg>
+          <Search size={20} className="text-muted-foreground" />
         </div>
         <input
           ref={inputRef}
@@ -93,10 +81,7 @@ export function SearchClient() {
             onClick={() => setQuery("")}
             className="absolute inset-y-0 right-0 pr-4 flex items-center text-muted-foreground hover:text-foreground"
           >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <line x1="18" y1="6" x2="6" y2="18" />
-              <line x1="6" y1="6" x2="18" y2="18" />
-            </svg>
+            <X size={18} />
           </button>
         )}
       </div>
@@ -115,10 +100,7 @@ export function SearchClient() {
       {!query && !results && (
         <div className="text-center py-12">
           <div className="w-16 h-16 rounded-2xl bg-muted flex items-center justify-center mx-auto mb-4">
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-muted-foreground">
-              <circle cx="11" cy="11" r="8" />
-              <line x1="21" y1="21" x2="16.65" y2="16.65" />
-            </svg>
+            <Search size={28} strokeWidth={1.5} className="text-muted-foreground" />
           </div>
           <p className="text-sm text-muted-foreground">
             Durchsuche Kreise, Rollen, Spannungen, Projekte und Personen
@@ -227,10 +209,7 @@ export function SearchClient() {
                   className="flex items-center gap-3 p-3 rounded-xl bg-card border border-border/50 hover:bg-muted/50 transition-colors"
                 >
                   <div className="w-10 h-10 rounded-xl flex items-center justify-center text-lg flex-shrink-0 bg-[var(--np-blue-light)]">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--np-blue)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z" />
-                      <path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z" />
-                    </svg>
+                    <Rocket size={18} color="var(--np-blue)" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="font-medium text-sm text-foreground truncate">{v.title}</p>

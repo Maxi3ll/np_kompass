@@ -5,6 +5,7 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import type { EmailOtpType } from "@supabase/supabase-js";
+import { CircleAlert, CircleCheck, Lock } from "lucide-react";
 
 function ConfirmContent() {
   const searchParams = useSearchParams();
@@ -58,20 +59,7 @@ function ConfirmContent() {
     return (
       <div className="text-center p-6 rounded-2xl bg-card border border-border/50">
         <div className="w-16 h-16 rounded-full bg-destructive/10 flex items-center justify-center mx-auto mb-4">
-          <svg
-            width="32"
-            height="32"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="var(--destructive)"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <circle cx="12" cy="12" r="10" />
-            <line x1="12" y1="8" x2="12" y2="12" />
-            <line x1="12" y1="16" x2="12.01" y2="16" />
-          </svg>
+          <CircleAlert size={32} color="var(--destructive)" />
         </div>
         <h2 className="text-lg font-semibold text-foreground mb-2">
           Ungültiger Link
@@ -94,28 +82,11 @@ function ConfirmContent() {
   return (
     <div className="text-center p-6 rounded-2xl bg-card border border-border/50">
       <div className="w-16 h-16 rounded-full bg-[var(--np-blue)]/10 flex items-center justify-center mx-auto mb-4">
-        <svg
-          width="32"
-          height="32"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="var(--np-blue)"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          {isRecovery ? (
-            <>
-              <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-              <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-            </>
-          ) : (
-            <>
-              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
-              <polyline points="22 4 12 14.01 9 11.01" />
-            </>
-          )}
-        </svg>
+        {isRecovery ? (
+          <Lock size={32} color="var(--np-blue)" />
+        ) : (
+          <CircleCheck size={32} color="var(--np-blue)" />
+        )}
       </div>
 
       <h2 className="text-lg font-semibold text-foreground mb-2">

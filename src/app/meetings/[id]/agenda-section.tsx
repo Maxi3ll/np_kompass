@@ -3,6 +3,7 @@
 import { useState, useTransition } from 'react';
 import Link from 'next/link';
 import { addAgendaItem, removeAgendaItem } from '@/lib/supabase/actions';
+import { X, Plus } from 'lucide-react';
 
 const PRIORITY_ICONS: Record<string, string> = {
   LOW: '○',
@@ -125,10 +126,7 @@ export function AgendaSection({ meetingId, agendaItems, openTensions, isPast }: 
                     className="w-9 h-9 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors flex-shrink-0 disabled:opacity-50"
                     title="Entfernen"
                   >
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <line x1="18" y1="6" x2="6" y2="18" />
-                      <line x1="6" y1="6" x2="18" y2="18" />
-                    </svg>
+                    <X size={14} />
                   </button>
                 )}
               </div>
@@ -198,10 +196,7 @@ export function AgendaSection({ meetingId, agendaItems, openTensions, isPast }: 
                   className="w-7 h-7 rounded-full flex items-center justify-center bg-[var(--np-yellow)] text-[#5a4a00] hover:bg-[var(--np-yellow)]/80 transition-colors flex-shrink-0 disabled:opacity-50"
                   title="Zur Agenda hinzufügen"
                 >
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                    <line x1="12" y1="5" x2="12" y2="19" />
-                    <line x1="5" y1="12" x2="19" y2="12" />
-                  </svg>
+                  <Plus size={14} strokeWidth={2.5} />
                 </button>
                 <Link
                   href={`/spannungen/${tension.id}`}

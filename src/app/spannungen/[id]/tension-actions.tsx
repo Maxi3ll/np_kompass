@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { Pencil, Trash2, UserPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -227,10 +228,7 @@ export function TensionActions({
         <Dialog open={detailsOpen} onOpenChange={setDetailsOpen}>
           <DialogTrigger asChild>
             <Button variant="outline" className="h-10 rounded-xl text-sm">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2">
-                <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
-                <path d="m15 5 4 4" />
-              </svg>
+              <Pencil size={16} className="mr-2" />
               Bearbeiten
             </Button>
           </DialogTrigger>
@@ -282,10 +280,7 @@ export function TensionActions({
         <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
           <DialogTrigger asChild>
             <Button variant="outline" className="h-10 rounded-xl text-sm text-destructive border-destructive/30 hover:bg-destructive/10">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2">
-                <polyline points="3 6 5 6 21 6" />
-                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-              </svg>
+              <Trash2 size={16} className="mr-2" />
               Löschen
             </Button>
           </DialogTrigger>
@@ -317,10 +312,7 @@ export function TensionActions({
           <Dialog open={detailsOpen} onOpenChange={setDetailsOpen}>
             <DialogTrigger asChild>
               <Button variant="outline" className="flex-1 h-10 rounded-xl text-sm">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2">
-                  <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
-                  <path d="m15 5 4 4" />
-                </svg>
+                <Pencil size={16} className="mr-2" />
                 Bearbeiten
               </Button>
             </DialogTrigger>
@@ -372,10 +364,7 @@ export function TensionActions({
           <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
             <DialogTrigger asChild>
               <Button variant="outline" className="h-10 rounded-xl text-sm text-destructive border-destructive/30 hover:bg-destructive/10">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2">
-                  <polyline points="3 6 5 6 21 6" />
-                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-                </svg>
+                <Trash2 size={16} className="mr-2" />
                 Löschen
               </Button>
             </DialogTrigger>
@@ -403,12 +392,7 @@ export function TensionActions({
         <Dialog open={assignOpen} onOpenChange={setAssignOpen}>
           <DialogTrigger asChild>
             <Button variant="outline" className="w-full h-10 rounded-xl text-sm">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2">
-                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-                <circle cx="9" cy="7" r="4" />
-                <line x1="19" y1="8" x2="19" y2="14" />
-                <line x1="22" y1="11" x2="16" y2="11" />
-              </svg>
+              <UserPlus size={16} className="mr-2" />
               {currentAssignedTo ? 'Neu zuweisen' : 'Zuweisen'}
             </Button>
           </DialogTrigger>

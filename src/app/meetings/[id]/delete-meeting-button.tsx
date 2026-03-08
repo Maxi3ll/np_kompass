@@ -11,6 +11,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Trash2 } from "lucide-react";
 
 interface DeleteMeetingButtonProps {
   meetingId: string;
@@ -61,10 +62,7 @@ export function DeleteMeetingButton({ meetingId, circleName, createdBy, facilita
         onClick={() => setDeleteOpen(true)}
         className="w-full h-10 rounded-xl text-sm text-destructive hover:text-destructive hover:bg-destructive/10"
       >
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="mr-2">
-          <polyline points="3 6 5 6 21 6" />
-          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-        </svg>
+        <Trash2 size={16} className="mr-2" />
         Termin löschen
       </Button>
 

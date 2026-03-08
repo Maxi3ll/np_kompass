@@ -2,6 +2,7 @@
 
 import { useState, useMemo, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
+import { ChevronRight } from "lucide-react";
 import { buildCircleTree, packCircles, type CircleNode, type LayoutItem } from "@/lib/circle-packing";
 
 interface CircleVisualizationProps {
@@ -154,9 +155,7 @@ export function CircleVisualization({ circles, roles }: CircleVisualizationProps
         {breadcrumbs.map((crumb, i) => (
           <span key={crumb.id} className="flex items-center gap-1.5">
             {i > 0 && (
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-muted-foreground/50 flex-shrink-0">
-                <polyline points="9 18 15 12 9 6" />
-              </svg>
+              <ChevronRight size={14} className="text-muted-foreground/50 flex-shrink-0" />
             )}
             <button
               onClick={() => handleBreadcrumbClick(crumb.path)}

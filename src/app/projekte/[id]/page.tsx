@@ -5,6 +5,7 @@ import { AppShell } from "@/components/layout/app-shell";
 import { getProjektById, getCircles } from "@/lib/supabase/queries";
 import { getPersonsList, isCurrentUserAdmin } from "@/lib/supabase/actions";
 import { createClient } from "@/lib/supabase/server";
+import { ChevronRight, Calendar } from "lucide-react";
 import { ProjektActions } from "./projekt-actions";
 import { SubtaskCreateDialog } from "./subtask-create-dialog";
 import type { SubtaskWithDetails } from "@/types";
@@ -136,9 +137,7 @@ export default async function ProjektDetailPage({ params }: PageProps) {
                       <p className="text-xs text-muted-foreground">{projekt.coordinator.email}</p>
                     )}
                   </div>
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-muted-foreground">
-                    <polyline points="9 18 15 12 9 6" />
-                  </svg>
+                  <ChevronRight size={20} className="text-muted-foreground" />
                 </div>
               </div>
             </Link>
@@ -152,12 +151,7 @@ export default async function ProjektDetailPage({ params }: PageProps) {
                 {projekt.start_date && (
                   <div className="flex items-center gap-2">
                     <div className="w-8 h-8 rounded-lg bg-[var(--np-blue-light)] flex items-center justify-center">
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--np-blue)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-                        <line x1="16" y1="2" x2="16" y2="6" />
-                        <line x1="8" y1="2" x2="8" y2="6" />
-                        <line x1="3" y1="10" x2="21" y2="10" />
-                      </svg>
+                      <Calendar size={14} color="var(--np-blue)" />
                     </div>
                     <div>
                       <p className="text-[10px] text-muted-foreground">Start</p>
@@ -170,12 +164,7 @@ export default async function ProjektDetailPage({ params }: PageProps) {
                 {projekt.end_date && (
                   <div className="flex items-center gap-2">
                     <div className="w-8 h-8 rounded-lg bg-[var(--np-yellow-light)] flex items-center justify-center">
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--np-yellow-dark)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-                        <line x1="16" y1="2" x2="16" y2="6" />
-                        <line x1="8" y1="2" x2="8" y2="6" />
-                        <line x1="3" y1="10" x2="21" y2="10" />
-                      </svg>
+                      <Calendar size={14} color="var(--np-yellow-dark)" />
                     </div>
                     <div>
                       <p className="text-[10px] text-muted-foreground">Ende</p>
@@ -265,9 +254,7 @@ export default async function ProjektDetailPage({ params }: PageProps) {
                             )}
                           </div>
                         </div>
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-muted-foreground flex-shrink-0">
-                          <polyline points="9 18 15 12 9 6" />
-                        </svg>
+                        <ChevronRight size={16} className="text-muted-foreground flex-shrink-0" />
                       </div>
                     </div>
                   </Link>

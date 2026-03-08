@@ -9,6 +9,7 @@ import {
 } from "@/lib/supabase/actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { CircleCheck } from "lucide-react";
 
 type Mode = "login" | "register" | "forgot";
 
@@ -187,19 +188,7 @@ export function LoginForm() {
     return (
       <div className="text-center p-6 rounded-2xl bg-card border border-border/50">
         <div className="w-16 h-16 rounded-full bg-[var(--status-resolved)]/10 flex items-center justify-center mx-auto mb-4">
-          <svg
-            width="32"
-            height="32"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="var(--status-resolved)"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
-            <polyline points="22 4 12 14.01 9 11.01" />
-          </svg>
+          <CircleCheck size={32} color="var(--status-resolved)" />
         </div>
         <h2 className="text-lg font-semibold text-foreground mb-2">
           E-Mail gesendet!

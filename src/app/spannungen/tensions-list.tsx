@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from 'react';
 import Link from 'next/link';
+import { Archive, CircleCheck, User, MessageSquare, Clock } from 'lucide-react';
 
 const STATUS_CONFIG = {
   NEW: { label: 'Neu', color: 'bg-[var(--status-new)]', textColor: 'text-white' },
@@ -47,16 +48,9 @@ export function TensionsList({ tensions, currentPersonId, isArchive, statusFilte
       <div className="text-center py-12">
         <div className="w-16 h-16 rounded-full bg-[var(--status-resolved)]/20 flex items-center justify-center mx-auto mb-4">
           {isArchive ? (
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--status-resolved)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="m21 8-2-2H5L3 8" />
-              <rect x="3" y="8" width="18" height="12" rx="1" />
-              <path d="M10 12h4" />
-            </svg>
+            <Archive size={32} color="var(--status-resolved)" />
           ) : (
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--status-resolved)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
-              <polyline points="22 4 12 14.01 9 11.01" />
-            </svg>
+            <CircleCheck size={32} color="var(--status-resolved)" />
           )}
         </div>
         <p className="font-medium text-foreground">
@@ -123,10 +117,7 @@ export function TensionsList({ tensions, currentPersonId, isArchive, statusFilte
                     <div className={`flex items-center gap-1 text-xs ${
                       isAssignedToMe ? 'text-primary font-medium' : 'text-muted-foreground'
                     }`}>
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
-                        <circle cx="12" cy="7" r="4" />
-                      </svg>
+                      <User size={12} />
                       <span>{isAssignedToMe ? 'Dir zugewiesen' : tension.assigned_to_person.name}</span>
                     </div>
                   )}
@@ -142,19 +133,14 @@ export function TensionsList({ tensions, currentPersonId, isArchive, statusFilte
                   {/* Comments */}
                   {tension.comment_count > 0 && (
                     <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-                      </svg>
+                      <MessageSquare size={12} />
                       <span>{tension.comment_count}</span>
                     </div>
                   )}
 
                   {/* Date */}
                   <div className="flex items-center gap-1 text-xs text-muted-foreground ml-auto">
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <circle cx="12" cy="12" r="10" />
-                      <polyline points="12 6 12 12 16 14" />
-                    </svg>
+                    <Clock size={12} />
                     <span>
                       {new Date(tension.created_at).toLocaleDateString('de-DE', { day: 'numeric', month: 'short' })}
                     </span>

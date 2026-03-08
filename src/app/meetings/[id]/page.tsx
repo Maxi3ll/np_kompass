@@ -13,6 +13,7 @@ import { DeleteMeetingButton } from "./delete-meeting-button";
 import { EditMeetingButton } from "./edit-meeting-button";
 import type { MeetingType } from "@/types";
 import { MEETING_TYPE_CONFIG } from "@/types";
+import { Calendar, ChevronRight } from "lucide-react";
 
 export const revalidate = 30;
 
@@ -86,12 +87,7 @@ export default async function MeetingDetailPage({ params }: PageProps) {
                   className="w-8 h-8 rounded-lg flex items-center justify-center"
                   style={{ backgroundColor: meeting.circle?.color || "#4A90D9" }}
                 >
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
-                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-                    <line x1="16" y1="2" x2="16" y2="6" />
-                    <line x1="8" y1="2" x2="8" y2="6" />
-                    <line x1="3" y1="10" x2="21" y2="10" />
-                  </svg>
+                  <Calendar size={16} color="white" />
                 </div>
                 <div>
                   <p className="font-medium text-foreground">
@@ -267,9 +263,7 @@ export default async function MeetingDetailPage({ params }: PageProps) {
                   <p className="text-xs text-muted-foreground">Zum Kreis</p>
                   <p className="font-medium text-foreground">{meeting.circle?.name}</p>
                 </div>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-muted-foreground">
-                  <polyline points="9 18 15 12 9 6" />
-                </svg>
+                <ChevronRight size={20} className="text-muted-foreground" />
               </div>
             </div>
           </Link>

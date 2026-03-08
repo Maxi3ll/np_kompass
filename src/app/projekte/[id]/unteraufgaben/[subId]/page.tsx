@@ -5,6 +5,7 @@ import { AppShell } from "@/components/layout/app-shell";
 import { getSubtaskById, getSubtaskComments } from "@/lib/supabase/queries";
 import { createClient } from "@/lib/supabase/server";
 import { getPersonsList } from "@/lib/supabase/actions";
+import { ChevronRight } from "lucide-react";
 import { SubtaskActions } from "./subtask-actions";
 import { SubtaskComments } from "./subtask-comments";
 import { VolunteerSection } from "./volunteer-section";
@@ -78,9 +79,7 @@ export default async function SubtaskDetailPage({ params }: PageProps) {
             <Link href={`/projekte/${id}`} className="hover:text-foreground transition-colors">
               {(subtask as SubtaskWithDetails & { projekt?: { title?: string } }).projekt?.title || 'Projekt'}
             </Link>
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <polyline points="9 18 15 12 9 6" />
-            </svg>
+            <ChevronRight size={12} />
             <span className="text-foreground font-medium">Unteraufgabe</span>
           </div>
 
@@ -112,9 +111,7 @@ export default async function SubtaskDetailPage({ params }: PageProps) {
                       <p className="text-xs text-muted-foreground">{subtask.contact_person.email}</p>
                     )}
                   </div>
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-muted-foreground">
-                    <polyline points="9 18 15 12 9 6" />
-                  </svg>
+                  <ChevronRight size={20} className="text-muted-foreground" />
                 </div>
               </div>
             </Link>

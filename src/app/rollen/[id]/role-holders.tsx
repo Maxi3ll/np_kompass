@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { Mail, Phone, CircleAlert, Users, ChevronDown } from "lucide-react";
 
 interface Holder {
   id: string;
@@ -64,19 +65,7 @@ function HolderRow({ holder, compact }: { holder: Holder; compact?: boolean }) {
             className="w-9 h-9 rounded-lg flex items-center justify-center text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
             title={`E-Mail an ${holder.name}`}
           >
-            <svg
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
-              <polyline points="22,6 12,13 2,6" />
-            </svg>
+            <Mail size={16} />
           </a>
         )}
         {holder.phone && (
@@ -85,18 +74,7 @@ function HolderRow({ holder, compact }: { holder: Holder; compact?: boolean }) {
             className="w-9 h-9 rounded-lg flex items-center justify-center text-muted-foreground hover:text-[#9a7b00] hover:bg-[var(--np-yellow)]/15 transition-colors"
             title={`${holder.name} anrufen`}
           >
-            <svg
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
-            </svg>
+            <Phone size={16} />
           </a>
         )}
       </div>
@@ -144,20 +122,7 @@ export function RoleHolders({ holders }: { holders: Holder[] }) {
       <div className="bg-card rounded-2xl shadow-card border border-border/50 overflow-hidden p-5">
         <div className="flex items-center gap-4">
           <div className="w-14 h-14 rounded-full bg-amber-100 flex items-center justify-center">
-            <svg
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="#b45309"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <circle cx="12" cy="12" r="10" />
-              <line x1="12" y1="8" x2="12" y2="12" />
-              <line x1="12" y1="16" x2="12.01" y2="16" />
-            </svg>
+            <CircleAlert size={24} color="#b45309" />
           </div>
           <div>
             <p className="font-semibold text-amber-700">Rolle vakant</p>
@@ -176,12 +141,7 @@ export function RoleHolders({ holders }: { holders: Holder[] }) {
       <div className="bg-card rounded-2xl shadow-card border border-border/50 overflow-hidden">
         <div className="px-5 pt-4 pb-2 flex items-center gap-2">
           <div className="w-7 h-7 rounded-lg bg-[var(--np-blue-light)] flex items-center justify-center">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--np-blue)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-              <circle cx="9" cy="7" r="4" />
-              <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
-              <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-            </svg>
+            <Users size={14} color="var(--np-blue)" strokeWidth={2.5} />
           </div>
           <span className="text-sm font-semibold text-foreground">
             {holders.length === 1
@@ -219,21 +179,12 @@ export function RoleHolders({ holders }: { holders: Holder[] }) {
             {holders.length > 3 && ` und ${holders.length - 3} weitere`}
           </p>
         </div>
-        <svg
-          width="18"
-          height="18"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
+        <ChevronDown
+          size={18}
           className={`text-muted-foreground transition-transform duration-200 flex-shrink-0 ${
             expanded ? "rotate-180" : ""
           }`}
-        >
-          <polyline points="6 9 12 15 18 9" />
-        </svg>
+        />
       </button>
 
       {/* Expanded list */}

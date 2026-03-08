@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { ChevronRight, Phone, SquareCheck, CircleCheck } from "lucide-react";
 import { Header } from "@/components/navigation/header";
 import { AppShell } from "@/components/layout/app-shell";
 import { getTensionById, getCircles, getTensionComments, getActivePersons } from "@/lib/supabase/queries";
@@ -102,9 +103,7 @@ export default async function SpannungDetailPage({ params }: PageProps) {
                   <p className="text-xs text-muted-foreground">Zugeordneter Kreis</p>
                   <p className="font-medium text-foreground">{tension.circle?.name}</p>
                 </div>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-muted-foreground">
-                  <polyline points="9 18 15 12 9 6" />
-                </svg>
+                <ChevronRight size={20} className="text-muted-foreground" />
               </div>
             </div>
           </Link>
@@ -153,9 +152,7 @@ export default async function SpannungDetailPage({ params }: PageProps) {
                     href={`tel:${tension.assigned_to_person.phone}`}
                     className="w-10 h-10 rounded-full bg-[var(--np-yellow)] flex items-center justify-center"
                   >
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#5a4a00" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
-                    </svg>
+                    <Phone size={18} color="#5a4a00" />
                   </a>
                 )}
               </div>
@@ -167,10 +164,7 @@ export default async function SpannungDetailPage({ params }: PageProps) {
             <div className="bg-[var(--np-yellow-light)] rounded-2xl border border-[var(--np-yellow)]/20 p-4">
               <div className="flex items-start gap-3">
                 <div className="w-8 h-8 rounded-lg bg-[var(--np-yellow)] flex items-center justify-center flex-shrink-0">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5a4a00" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <polyline points="9 11 12 14 22 4" />
-                    <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
-                  </svg>
+                  <SquareCheck size={16} color="#5a4a00" />
                 </div>
                 <div>
                   <p className="text-xs font-medium text-[#5a4a00]">Nächster Schritt</p>
@@ -185,10 +179,7 @@ export default async function SpannungDetailPage({ params }: PageProps) {
             <div className="bg-[var(--status-resolved)]/10 rounded-2xl border border-[var(--status-resolved)]/20 p-4">
               <div className="flex items-start gap-3">
                 <div className="w-8 h-8 rounded-lg bg-[var(--status-resolved)] flex items-center justify-center flex-shrink-0">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
-                    <polyline points="22 4 12 14.01 9 11.01" />
-                  </svg>
+                  <CircleCheck size={16} color="white" />
                 </div>
                 <div>
                   <p className="text-xs font-medium text-[var(--status-resolved)]">Lösung</p>

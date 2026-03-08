@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Archive } from "lucide-react";
 import { Header } from "@/components/navigation/header";
 import { AppShell } from "@/components/layout/app-shell";
 import { getTensions, getCircles, getPersonByAuthId } from "@/lib/supabase/queries";
@@ -118,11 +119,7 @@ export default async function SpannungenPage({ searchParams }: PageProps) {
                   : 'bg-muted text-muted-foreground hover:bg-muted/80'
               }`}
             >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="m21 8-2-2H5L3 8" />
-                <rect x="3" y="8" width="18" height="12" rx="1" />
-                <path d="M10 12h4" />
-              </svg>
+              <Archive size={14} />
               Archiv ({statusCounts.RESOLVED})
             </Link>
           </div>

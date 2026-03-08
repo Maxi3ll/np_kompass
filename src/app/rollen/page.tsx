@@ -3,6 +3,7 @@ import { Header } from "@/components/navigation/header";
 import { AppShell } from "@/components/layout/app-shell";
 import { getAllRoles, getCircles } from "@/lib/supabase/queries";
 import { KreiseRollenTabs } from "@/components/navigation/kreise-rollen-tabs";
+import { User, ChevronRight, Users } from "lucide-react";
 
 export const revalidate = 60;
 
@@ -132,10 +133,7 @@ export default async function RollenPage({ searchParams }: PageProps) {
                                   </p>
                                 )}
                                 <div className="flex items-center gap-1.5 mt-2 text-xs text-muted-foreground">
-                                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                                    <circle cx="12" cy="7" r="4" />
-                                  </svg>
+                                  <User size={14} />
                                   {role.holders && role.holders.length > 0 ? (
                                     <span className="text-foreground">
                                       {role.holders.length === 1
@@ -150,9 +148,7 @@ export default async function RollenPage({ searchParams }: PageProps) {
 
                               {/* Arrow */}
                               <div className="flex-shrink-0 text-muted-foreground/50">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                  <polyline points="9 18 15 12 9 6" />
-                                </svg>
+                                <ChevronRight size={20} />
                               </div>
                             </div>
                           </div>
@@ -166,12 +162,7 @@ export default async function RollenPage({ searchParams }: PageProps) {
           ) : (
             <div className="text-center py-12">
               <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mx-auto mb-4">
-                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-muted-foreground">
-                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-                  <circle cx="9" cy="7" r="4" />
-                  <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
-                  <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-                </svg>
+                <Users size={32} className="text-muted-foreground" />
               </div>
               <p className="font-medium text-foreground">Keine Rollen gefunden</p>
             </div>
