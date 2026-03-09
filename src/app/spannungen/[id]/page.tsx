@@ -57,7 +57,9 @@ export default async function SpannungDetailPage({ params }: PageProps) {
     notFound();
   }
 
-  const status = STATUS_CONFIG[tension.status as keyof typeof STATUS_CONFIG] || STATUS_CONFIG.NEW;
+  const statusConfig = STATUS_CONFIG[tension.status as keyof typeof STATUS_CONFIG] || STATUS_CONFIG.NEW;
+  const isOldNew = tension.status === 'NEW' && Date.now() - new Date(tension.created_at).getTime() > 5 * 24 * 60 * 60 * 1000;
+  const status = isOldNew ? { ...statusConfig, label: 'Offen', description: 'Diese Spannung wurde noch nicht bearbeitet.' } : statusConfig;
   const priority = PRIORITY_CONFIG[tension.priority as keyof typeof PRIORITY_CONFIG] || PRIORITY_CONFIG.MEDIUM;
 
   return (

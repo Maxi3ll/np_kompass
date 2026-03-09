@@ -71,7 +71,9 @@ export function TensionsList({ tensions, currentPersonId, isArchive, statusFilte
     <>
       <div className="space-y-3 stagger-fade-in">
         {visible.map((tension: any) => {
-          const status = STATUS_CONFIG[tension.status as keyof typeof STATUS_CONFIG] || STATUS_CONFIG.NEW;
+          const statusConfig = STATUS_CONFIG[tension.status as keyof typeof STATUS_CONFIG] || STATUS_CONFIG.NEW;
+          const isOldNew = tension.status === 'NEW' && Date.now() - new Date(tension.created_at).getTime() > 5 * 24 * 60 * 60 * 1000;
+          const status = isOldNew ? { ...statusConfig, label: 'Offen' } : statusConfig;
           const priority = PRIORITY_CONFIG[tension.priority as keyof typeof PRIORITY_CONFIG] || PRIORITY_CONFIG.MEDIUM;
           const isAssignedToMe = currentPersonId && tension.assigned_to === currentPersonId;
 

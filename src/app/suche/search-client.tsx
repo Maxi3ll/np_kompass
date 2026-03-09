@@ -173,7 +173,10 @@ export function SearchClient() {
           {/* Tensions */}
           {results.tensions.length > 0 && (
             <ResultSection title="Spannungen" count={results.tensions.length}>
-              {results.tensions.map((tension) => (
+              {results.tensions.map((tension) => {
+                const isOldNew = tension.status === 'NEW' && tension.created_at && Date.now() - new Date(tension.created_at).getTime() > 5 * 24 * 60 * 60 * 1000;
+                const statusLabel = isOldNew ? 'Offen' : (TENSION_STATUS[tension.status]?.label || tension.status);
+                return (
                 <Link
                   key={tension.id}
                   href={`/spannungen/${tension.id}`}
@@ -189,13 +192,14 @@ export function SearchClient() {
                     <p className="font-medium text-sm text-foreground truncate">{tension.title}</p>
                     <div className="flex items-center gap-2 mt-0.5">
                       <span className={`inline-flex text-[10px] px-1.5 py-0.5 rounded-full font-medium ${TENSION_STATUS[tension.status]?.class || ""}`}>
-                        {TENSION_STATUS[tension.status]?.label || tension.status}
+                        {statusLabel}
                       </span>
                       <span className="text-xs text-muted-foreground">{tension.circle?.name}</span>
                     </div>
                   </div>
                 </Link>
-              ))}
+                );
+              })}
             </ResultSection>
           )}
 

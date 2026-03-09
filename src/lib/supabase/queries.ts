@@ -26,7 +26,7 @@ export async function searchAll(query: string) {
       .limit(10),
     supabase
       .from('tensions')
-      .select('id, title, status, priority, circle:circles!tensions_circle_id_fkey(id, name, color, icon)')
+      .select('id, title, status, priority, created_at, circle:circles!tensions_circle_id_fkey(id, name, color, icon)')
       .or(`title.ilike.${q},description.ilike.${q}`)
       .order('created_at', { ascending: false })
       .limit(10),
