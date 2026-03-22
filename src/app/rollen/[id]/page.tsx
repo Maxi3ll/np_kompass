@@ -6,7 +6,7 @@ import { getRoleById, getRoleHistory } from "@/lib/supabase/queries";
 import { isCurrentUserAdmin, getPersonsList } from "@/lib/supabase/actions";
 import { RoleAdminActions } from "./role-admin-actions";
 import { RoleHolders } from "./role-holders";
-import { CircleDot, Shield, CircleCheck, Clock, ChevronLeft } from "lucide-react";
+import { CircleDot, Shield, CircleCheck, Clock, ChevronLeft, Ban, ArrowLeftRight, BookOpen, FileBox } from "lucide-react";
 
 export const revalidate = 60;
 
@@ -111,6 +111,98 @@ export default async function RollenDetailPage({ params }: PageProps) {
             </div>
           )}
 
+          {/* Not Accountable For */}
+          {role.not_accountable_for && role.not_accountable_for.length > 0 && (
+            <div className="bg-card rounded-2xl shadow-card border border-border/50 p-5">
+              <div className="flex items-center gap-2 mb-3">
+                <div className="w-8 h-8 rounded-lg bg-destructive/10 flex items-center justify-center">
+                  <Ban size={16} className="text-destructive" />
+                </div>
+                <h2 className="font-semibold text-foreground">Nicht-Zuständigkeiten</h2>
+              </div>
+              <p className="text-xs text-muted-foreground mb-3">
+                Bereiche, für die diese Rolle explizit nicht zuständig ist
+              </p>
+              <ul className="space-y-2">
+                {role.not_accountable_for.map((item: string, index: number) => (
+                  <li key={index} className="flex items-start gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-destructive mt-2 flex-shrink-0" />
+                    <span className="text-foreground">{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {/* Interfaces */}
+          {role.interfaces && role.interfaces.length > 0 && (
+            <div className="bg-card rounded-2xl shadow-card border border-border/50 p-5">
+              <div className="flex items-center gap-2 mb-3">
+                <div className="w-8 h-8 rounded-lg bg-[var(--np-blue-light)] flex items-center justify-center">
+                  <ArrowLeftRight size={16} color="var(--np-blue)" />
+                </div>
+                <h2 className="font-semibold text-foreground">Schnittstellen</h2>
+              </div>
+              <p className="text-xs text-muted-foreground mb-3">
+                Erwartungen und Abstimmungspunkte mit anderen Rollen
+              </p>
+              <ul className="space-y-2">
+                {role.interfaces.map((item: string, index: number) => (
+                  <li key={index} className="flex items-start gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[var(--np-blue)] mt-2 flex-shrink-0" />
+                    <span className="text-foreground">{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {/* Guidelines */}
+          {role.guidelines && role.guidelines.length > 0 && (
+            <div className="bg-card rounded-2xl shadow-card border border-border/50 p-5">
+              <div className="flex items-center gap-2 mb-3">
+                <div className="w-8 h-8 rounded-lg bg-[var(--np-yellow-light)] flex items-center justify-center">
+                  <BookOpen size={16} color="var(--np-yellow)" />
+                </div>
+                <h2 className="font-semibold text-foreground">Richtlinien</h2>
+              </div>
+              <p className="text-xs text-muted-foreground mb-3">
+                Regeln und Vorgaben, die für diese Rolle gelten
+              </p>
+              <ul className="space-y-2">
+                {role.guidelines.map((item: string, index: number) => (
+                  <li key={index} className="flex items-start gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[var(--np-yellow)] mt-2 flex-shrink-0" />
+                    <span className="text-foreground">{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {/* Artifacts */}
+          {role.artifacts && role.artifacts.length > 0 && (
+            <div className="bg-card rounded-2xl shadow-card border border-border/50 p-5">
+              <div className="flex items-center gap-2 mb-3">
+                <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center">
+                  <FileBox size={16} className="text-muted-foreground" />
+                </div>
+                <h2 className="font-semibold text-foreground">Verwaltete Artefakte</h2>
+              </div>
+              <p className="text-xs text-muted-foreground mb-3">
+                Dokumente und Systeme, die von dieser Rolle gepflegt werden
+              </p>
+              <ul className="space-y-2">
+                {role.artifacts.map((item: string, index: number) => (
+                  <li key={index} className="flex items-start gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-muted-foreground mt-2 flex-shrink-0" />
+                    <span className="text-foreground">{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
           {/* Role History */}
           {history && history.length > 1 && (
             <div className="bg-card rounded-2xl shadow-card border border-border/50 p-5">
@@ -155,6 +247,10 @@ export default async function RollenDetailPage({ params }: PageProps) {
                 purpose: role.role_purpose,
                 domains: role.domains,
                 accountabilities: role.accountabilities,
+                notAccountableFor: role.not_accountable_for,
+                interfaces: role.interfaces,
+                guidelines: role.guidelines,
+                artifacts: role.artifacts,
               }}
               holders={role.holders || []}
               circleId={role.circle_id}

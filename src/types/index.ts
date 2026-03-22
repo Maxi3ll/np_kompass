@@ -28,6 +28,8 @@ export interface Circle {
   id: string;
   name: string;
   purpose?: string;
+  accountabilities: string[];
+  domains: string[];
   parentCircleId?: string;
   createdAt: Date;
   updatedAt: Date;
@@ -39,6 +41,10 @@ export interface Role {
   purpose?: string;
   domains: string[];
   accountabilities: string[];
+  notAccountableFor: string[];
+  interfaces: string[];
+  guidelines: string[];
+  artifacts: string[];
   circleId: string;
   createdAt: Date;
   updatedAt: Date;
@@ -362,4 +368,6 @@ export const CIRCLE_ICONS = {
   'Personal': '👥',
   'Kommunikation': '📢',
   'Technologie & Systeme': '💻',
+  'Pädagogisches Team': '🎓',
+  'Vorstandsitzung': '🏛️',
 } as const;

@@ -22,6 +22,8 @@ interface CircleAdminActionsProps {
     purpose?: string | null;
     color?: string | null;
     icon?: string | null;
+    accountabilities?: string[];
+    domains?: string[];
   };
   hasRoles: boolean;
 }

@@ -13,6 +13,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { createCircle, updateCircle } from "@/lib/supabase/actions";
+import { X, Plus } from "lucide-react";
 
 const COLORS = [
   { value: "#4A90D9", label: "Blau" },
@@ -33,6 +34,8 @@ interface CircleFormDialogProps {
     purpose?: string | null;
     color?: string | null;
     icon?: string | null;
+    accountabilities?: string[];
+    domains?: string[];
   };
   parentCircleId?: string;
 }
@@ -52,6 +55,24 @@ export function CircleFormDialog({
   const [purpose, setPurpose] = useState(circle?.purpose || "");
   const [color, setColor] = useState(circle?.color || "#4A90D9");
   const [icon, setIcon] = useState(circle?.icon || "⭕");
+  const [accountabilities, setAccountabilities] = useState<string[]>(circle?.accountabilities || []);
+  const [domains, setDomains] = useState<string[]>(circle?.domains || []);
+  const [newAccountability, setNewAccountability] = useState("");
+  const [newDomain, setNewDomain] = useState("");
+
+  const addAccountability = () => {
+    if (newAccountability.trim()) {
+      setAccountabilities((prev) => [...prev, newAccountability.trim()]);
+      setNewAccountability("");
+    }
+  };
+
+  const addDomain = () => {
+    if (newDomain.trim()) {
+      setDomains((prev) => [...prev, newDomain.trim()]);
+      setNewDomain("");
+    }
+  };
 
   const handleSubmit = () => {
     if (!name.trim()) {
@@ -68,6 +89,8 @@ export function CircleFormDialog({
               purpose: purpose.trim() || undefined,
               color,
               icon: icon.trim() || "⭕",
+              accountabilities,
+              domains,
             })
           : await createCircle({
               name: name.trim(),
@@ -75,6 +98,8 @@ export function CircleFormDialog({
               color,
               icon: icon.trim() || "⭕",
               parentCircleId,
+              accountabilities,
+              domains,
             });
 
       if (result.error) {
@@ -89,7 +114,7 @@ export function CircleFormDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md max-h-[85vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
             {mode === "edit" ? "Kreis bearbeiten" : "Neuer Kreis"}
@@ -154,6 +179,74 @@ export function CircleFormDialog({
               className="h-10 rounded-lg w-20 text-center text-lg"
               maxLength={4}
             />
+          </div>
+
+          {/* Domains */}
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-foreground">Kreis-Domänen</label>
+            <p className="text-xs text-muted-foreground">Bereiche, über die dieser Kreis entscheidet</p>
+            {domains.length > 0 && (
+              <div className="space-y-1">
+                {domains.map((d, i) => (
+                  <div key={i} className="flex items-center gap-2 py-1 px-2 rounded-lg bg-muted/50 text-sm">
+                    <span className="flex-1">{d}</span>
+                    <button
+                      type="button"
+                      onClick={() => setDomains((prev) => prev.filter((_, idx) => idx !== i))}
+                      className="text-muted-foreground hover:text-destructive"
+                    >
+                      <X size={14} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+            <div className="flex gap-2">
+              <Input
+                placeholder="Neue Domäne"
+                value={newDomain}
+                onChange={(e) => setNewDomain(e.target.value)}
+                onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addDomain(); } }}
+                className="h-9 rounded-lg text-sm"
+              />
+              <Button type="button" variant="outline" onClick={addDomain} disabled={!newDomain.trim()} className="h-9 rounded-lg px-3">
+                <Plus size={14} />
+              </Button>
+            </div>
+          </div>
+
+          {/* Accountabilities */}
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-foreground">Kreis-Verantwortungen</label>
+            <p className="text-xs text-muted-foreground">Übergreifende Verantwortungen des Kreises</p>
+            {accountabilities.length > 0 && (
+              <div className="space-y-1">
+                {accountabilities.map((a, i) => (
+                  <div key={i} className="flex items-center gap-2 py-1 px-2 rounded-lg bg-muted/50 text-sm">
+                    <span className="flex-1">{a}</span>
+                    <button
+                      type="button"
+                      onClick={() => setAccountabilities((prev) => prev.filter((_, idx) => idx !== i))}
+                      className="text-muted-foreground hover:text-destructive"
+                    >
+                      <X size={14} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+            <div className="flex gap-2">
+              <Input
+                placeholder="Neue Verantwortung"
+                value={newAccountability}
+                onChange={(e) => setNewAccountability(e.target.value)}
+                onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addAccountability(); } }}
+                className="h-9 rounded-lg text-sm"
+              />
+              <Button type="button" variant="outline" onClick={addAccountability} disabled={!newAccountability.trim()} className="h-9 rounded-lg px-3">
+                <Plus size={14} />
+              </Button>
+            </div>
           </div>
         </div>
 

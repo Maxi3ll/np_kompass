@@ -1982,6 +1982,8 @@ export interface CreateCircleData {
   color?: string;
   icon?: string;
   parentCircleId?: string;
+  accountabilities?: string[];
+  domains?: string[];
 }
 
 export async function createCircle(data: CreateCircleData) {
@@ -1997,6 +1999,8 @@ export async function createCircle(data: CreateCircleData) {
       color: data.color || '#4A90D9',
       icon: data.icon || '⭕',
       parent_circle_id: data.parentCircleId || null,
+      accountabilities: data.accountabilities || [],
+      domains: data.domains || [],
     })
     .select()
     .single();
@@ -2017,6 +2021,8 @@ export async function updateCircle(id: string, data: Partial<CreateCircleData>) 
   if (data.purpose !== undefined) updateData.purpose = data.purpose;
   if (data.color !== undefined) updateData.color = data.color;
   if (data.icon !== undefined) updateData.icon = data.icon;
+  if (data.accountabilities !== undefined) updateData.accountabilities = data.accountabilities;
+  if (data.domains !== undefined) updateData.domains = data.domains;
 
   const serviceClient = createServiceClient();
   const { data: circle, error } = await serviceClient
@@ -2067,6 +2073,10 @@ export interface CreateRoleData {
   purpose?: string;
   domains?: string[];
   accountabilities?: string[];
+  notAccountableFor?: string[];
+  interfaces?: string[];
+  guidelines?: string[];
+  artifacts?: string[];
   circleId: string;
 }
 
@@ -2082,6 +2092,10 @@ export async function createRole(data: CreateRoleData) {
       purpose: data.purpose || null,
       domains: data.domains || [],
       accountabilities: data.accountabilities || [],
+      not_accountable_for: data.notAccountableFor || [],
+      interfaces: data.interfaces || [],
+      guidelines: data.guidelines || [],
+      artifacts: data.artifacts || [],
       circle_id: data.circleId,
     })
     .select()
@@ -2103,6 +2117,10 @@ export async function updateRole(id: string, data: Partial<Omit<CreateRoleData, 
   if (data.purpose !== undefined) updateData.purpose = data.purpose;
   if (data.domains !== undefined) updateData.domains = data.domains;
   if (data.accountabilities !== undefined) updateData.accountabilities = data.accountabilities;
+  if (data.notAccountableFor !== undefined) updateData.not_accountable_for = data.notAccountableFor;
+  if (data.interfaces !== undefined) updateData.interfaces = data.interfaces;
+  if (data.guidelines !== undefined) updateData.guidelines = data.guidelines;
+  if (data.artifacts !== undefined) updateData.artifacts = data.artifacts;
 
   const serviceClient = createServiceClient();
   const { data: role, error } = await serviceClient

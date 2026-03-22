@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ChevronRight, CircleAlert } from "lucide-react";
+import { ChevronRight, CircleAlert, Shield, CircleCheck } from "lucide-react";
 import { Header } from "@/components/navigation/header";
 import { AppShell } from "@/components/layout/app-shell";
 import { getCircleWithRoles } from "@/lib/supabase/queries";
@@ -71,9 +71,56 @@ export default async function KreisDetailPage({ params }: PageProps) {
           {/* Admin Actions */}
           {isAdmin && (
             <CircleAdminActions
-              circle={{ id: circle.id, name: circle.name, purpose: circle.purpose, color: circle.color, icon: circle.icon }}
+              circle={{ id: circle.id, name: circle.name, purpose: circle.purpose, color: circle.color, icon: circle.icon, accountabilities: circle.accountabilities, domains: circle.domains }}
               hasRoles={(circle.roles?.length || 0) > 0}
             />
+          )}
+        </div>
+
+        {/* Circle Domains & Accountabilities */}
+        <div className="px-5 max-w-2xl mx-auto lg:max-w-4xl mt-4 space-y-4">
+          {circle.domains && circle.domains.length > 0 && (
+            <div className="bg-card rounded-2xl shadow-card border border-border/50 p-5">
+              <div className="flex items-center gap-2 mb-3">
+                <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: `${circle.color}20` }}>
+                  <Shield size={16} style={{ color: circle.color }} />
+                </div>
+                <h2 className="font-semibold text-foreground">Kreis-Domänen</h2>
+              </div>
+              <p className="text-xs text-muted-foreground mb-3">
+                Bereiche, über die dieser Kreis eigenständig entscheiden darf
+              </p>
+              <ul className="space-y-2">
+                {circle.domains.map((domain: string, index: number) => (
+                  <li key={index} className="flex items-start gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full mt-2 flex-shrink-0" style={{ backgroundColor: circle.color }} />
+                    <span className="text-foreground">{domain}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {circle.accountabilities && circle.accountabilities.length > 0 && (
+            <div className="bg-card rounded-2xl shadow-card border border-border/50 p-5">
+              <div className="flex items-center gap-2 mb-3">
+                <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: `${circle.color}20` }}>
+                  <CircleCheck size={16} style={{ color: circle.color }} />
+                </div>
+                <h2 className="font-semibold text-foreground">Kreis-Verantwortungen</h2>
+              </div>
+              <p className="text-xs text-muted-foreground mb-3">
+                Übergreifende Verantwortungen des gesamten Kreises
+              </p>
+              <ul className="space-y-2">
+                {circle.accountabilities.map((acc: string, index: number) => (
+                  <li key={index} className="flex items-start gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full mt-2 flex-shrink-0" style={{ backgroundColor: circle.color }} />
+                    <span className="text-foreground">{acc}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
           )}
         </div>
 

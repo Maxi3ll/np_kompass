@@ -40,6 +40,10 @@ interface RoleAdminActionsProps {
     purpose?: string | null;
     domains?: string[];
     accountabilities?: string[];
+    notAccountableFor?: string[];
+    interfaces?: string[];
+    guidelines?: string[];
+    artifacts?: string[];
   };
   holders: Holder[];
   circleId: string;
@@ -159,6 +163,10 @@ export function RoleAdminActions({ role, holders, circleId, persons }: RoleAdmin
           purpose: role.purpose,
           domains: role.domains,
           accountabilities: role.accountabilities,
+          notAccountableFor: role.notAccountableFor,
+          interfaces: role.interfaces,
+          guidelines: role.guidelines,
+          artifacts: role.artifacts,
         }}
       />
 
