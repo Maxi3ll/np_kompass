@@ -784,8 +784,20 @@ export async function deleteMeeting(meetingId: string) {
 // =====================================================
 
 export async function addAgendaItem(meetingId: string, data: { notes?: string; tensionId?: string }) {
-  await requireAuth();
+  const auth = await requireAuth();
   const serviceClient = createServiceClient();
+
+  const { data: meeting } = await serviceClient
+    .from('meetings')
+    .select('facilitator_id')
+    .eq('id', meetingId)
+    .single();
+
+  if (!meeting) return { error: 'not_found' };
+
+  const isFacilitator = meeting.facilitator_id === auth.personId;
+  const isAdmin = await isCurrentUserAdmin();
+  if (!isFacilitator && !isAdmin) return { error: 'unauthorized' };
 
   // Get next position
   const { data: existing } = await serviceClient
@@ -818,8 +830,20 @@ export async function addAgendaItem(meetingId: string, data: { notes?: string; t
 }
 
 export async function removeAgendaItem(agendaItemId: string, meetingId: string) {
-  await requireAuth();
+  const auth = await requireAuth();
   const serviceClient = createServiceClient();
+
+  const { data: meeting } = await serviceClient
+    .from('meetings')
+    .select('facilitator_id')
+    .eq('id', meetingId)
+    .single();
+
+  if (!meeting) return { error: 'not_found' };
+
+  const isFacilitator = meeting.facilitator_id === auth.personId;
+  const isAdmin = await isCurrentUserAdmin();
+  if (!isFacilitator && !isAdmin) return { error: 'unauthorized' };
 
   const { error } = await serviceClient
     .from('meeting_agenda_items')
